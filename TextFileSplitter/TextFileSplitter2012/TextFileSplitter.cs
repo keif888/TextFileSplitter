@@ -74,14 +74,14 @@ namespace Martin.SQLServer.Dts
             this.ComponentMetaData.ContactInfo = "http://TextFileSplitter.codeplex.com/";
             ManageProperties.AddComponentProperties(this.ComponentMetaData.CustomPropertyCollection);
 
-            // Key Record Output
+            // PassThrough Record Output
             IDTSOutput output = this.ComponentMetaData.OutputCollection.New();
-            output.Name = MessageStrings.OutputName;
+            output.Name = MessageStrings.PassthroughOutputName;
             output.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
             output.ErrorOrTruncationOperation = MessageStrings.RowLevelTruncationOperation;
             output.SynchronousInputID = 0;
             ManageProperties.AddOutputProperties(output.CustomPropertyCollection);
-            ManageProperties.SetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.KeyRecords);
+            ManageProperties.SetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
 
             // Error Regular output.
             IDTSOutput errorOutput = this.ComponentMetaData.OutputCollection.New();
@@ -89,12 +89,10 @@ namespace Martin.SQLServer.Dts
             errorOutput.Name = MessageStrings.ErrorOutputName;
             ManageColumns.AddErrorOutputColumns(errorOutput);
 
-
             // Reserve space for the file connection.
             IDTSRuntimeConnection connectionSlot = this.ComponentMetaData.RuntimeConnectionCollection.New();
             connectionSlot.Name = MessageStrings.FileConnectionName;
             connectionSlot.Description = MessageStrings.FileConnectionDescription;
-
         }
 
         #endregion
@@ -139,6 +137,7 @@ namespace Martin.SQLServer.Dts
                 IDTSOutputCollection outputCollection = this.ComponentMetaData.OutputCollection;
                 // Ensure only one isErrorOutput!
                 int errorOutputs = 0;
+                int passThroughOutputs = 0;
                 foreach (IDTSOutput output in outputCollection)
                 {
                     if (output.IsErrorOut)
@@ -148,20 +147,26 @@ namespace Martin.SQLServer.Dts
                     }
                     else
                     {
-                        returnStatus = ValidateRegularOutput(output, returnStatus);
+                        returnStatus = ValidateRegularOutput(output, returnStatus, ref passThroughOutputs);
                     }
                 }
+
                 if (errorOutputs != 1)
                 {
                     this.PostError(MessageStrings.NoErrorOutput);
                     returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISBROKEN);
+                }
+                if (passThroughOutputs != 1)
+                {
+                    returnStatus = Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
+                    this.PostError(MessageStrings.InvalidPassThoughOutput);
                 }
             }
 
             return returnStatus;
         }
 
-        private DTSValidationStatus ValidateRegularOutput(IDTSOutput output, DTSValidationStatus oldStatus)
+        private DTSValidationStatus ValidateRegularOutput(IDTSOutput output, DTSValidationStatus oldStatus, ref int passThoughOutputs)
         {
             DTSValidationStatus returnStatus = oldStatus;
 
@@ -172,6 +177,14 @@ namespace Martin.SQLServer.Dts
             {
                 this.PostError(MessageStrings.APropertyIsMissing(output.Name));
                 return returnStatus;
+            }
+            else
+            {
+                if (((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput)) == Utilities.typeOfOutputEnum.PassThrough)
+                {
+                    passThoughOutputs++;
+                    returnStatus = ValidateExternalMetaData(output, returnStatus);
+                }
             }
 
             if (output.SynchronousInputID != 0)
@@ -190,6 +203,53 @@ namespace Martin.SQLServer.Dts
                 returnStatus = ValidateOutputColumns(outputColumnCollection, returnStatus);
             }
 
+            return returnStatus;
+        }
+
+        private DTSValidationStatus ValidateExternalMetaData(IDTSOutput passThroughOutput, DTSValidationStatus oldStatus)
+        {
+            DTSValidationStatus returnStatus = oldStatus;
+
+            if (ComponentMetaData.RuntimeConnectionCollection[0].ConnectionManager != null)
+            {
+
+                ConnectionManager cm = Microsoft.SqlServer.Dts.Runtime.DtsConvert.GetWrapper(ComponentMetaData.RuntimeConnectionCollection[0].ConnectionManager);
+                if (String.IsNullOrEmpty(cm.ConnectionString))
+                {
+                    PostWarning(MessageStrings.ConnectionManagerNotSet);
+                    return Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_NEEDSNEWMETADATA);
+                }
+                IDTSConnectionManagerFlatFile connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile;
+                if (passThroughOutput.ExternalMetadataColumnCollection.Count != connectionFlatFile.Columns.Count)
+                {
+                    PostWarning(MessageStrings.ExternalMetaDataOutOfSync);
+                    return Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_NEEDSNEWMETADATA);
+                }
+                else
+                {
+                    // Check that the External Meta Data is the same!
+                    for (int i = 0; i < connectionFlatFile.Columns.Count; i++)
+                    {
+                        IDTSOutputColumn outColumn = passThroughOutput.OutputColumnCollection[i];
+                        IDTSConnectionManagerFlatFileColumn FFcolumn = connectionFlatFile.Columns[i];
+                        if ((FFcolumn.MaximumWidth != outColumn.Length)
+                          || (FFcolumn.DataType != outColumn.DataType)
+                          || (FFcolumn.DataPrecision != outColumn.Precision)
+                          || (FFcolumn.DataScale != outColumn.Scale)
+                          || (connectionFlatFile.CodePage != outColumn.CodePage)
+                          || (outColumn.Name != ((IDTSName100)FFcolumn).Name))
+                        {
+                            PostWarning(MessageStrings.ExternalMetaDataOutOfSync);
+                            return Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_NEEDSNEWMETADATA);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                PostWarning(MessageStrings.ConnectionManagerNotSet);
+                return Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_NEEDSNEWMETADATA);
+            }
             return returnStatus;
         }
 
@@ -262,7 +322,9 @@ namespace Martin.SQLServer.Dts
                     foreach (IDTSConnectionManagerFlatFileColumn FFcolumn in connectionFlatFile.Columns)
                     {
                         IDTSOutputColumn outColumn = this.ComponentMetaData.OutputCollection[0].OutputColumnCollection.New();
-                        outColumn.Name = ((IDTSName100) FFcolumn).Name;
+                        ManageColumns.SetOutputColumnDefaults(outColumn);
+                        ManageProperties.AddOutputColumnProperties(outColumn.CustomPropertyCollection);
+                        outColumn.Name = ((IDTSName100)FFcolumn).Name;
                         outColumn.SetDataTypeProperties(FFcolumn.DataType, FFcolumn.MaximumWidth, FFcolumn.DataPrecision, FFcolumn.DataScale, connectionFlatFile.CodePage);
                         IDTSExternalMetadataColumn eColumn = this.ComponentMetaData.OutputCollection[0].ExternalMetadataColumnCollection.New();
                         eColumn.Name = outColumn.Name;
@@ -294,7 +356,6 @@ namespace Martin.SQLServer.Dts
                 else
                 {
                     fileName = cmFlatFile.ConnectionString;
-                    this.ComponentMetaData.FireWarning(0, this.ComponentMetaData.Name, fileName, string.Empty, 0);
                 }
             }
         }
@@ -614,7 +675,12 @@ namespace Martin.SQLServer.Dts
         #endregion
 
 
-        #region Error Handlers
+        #region Handlers
+        private void PostWarning(string warningMessage)
+        {
+            ComponentMetaData.FireWarning(0, ComponentMetaData.Name, warningMessage, string.Empty, 0);
+        }
+
         private void PostError(string errorMessage)
         {
             bool cancelled;

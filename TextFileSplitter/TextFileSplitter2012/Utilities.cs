@@ -24,6 +24,7 @@ namespace Martin.SQLServer.Dts
             ErrorRecords
             , KeyRecords
             , DataRecords
+            , PassThrough
         }
 
         public enum usageOfColumnEnum

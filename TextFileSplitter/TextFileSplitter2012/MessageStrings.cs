@@ -51,7 +51,7 @@ namespace Martin.SQLServer.Dts
 
         #region Input/Output Names
         public const string InputName = "TestFileSplitter Input";
-        public const string OutputName = "TestFileSplitter KeyRecord Output";
+        public const string PassthroughOutputName = "TestFileSplitter PassThrough Output";
         public const string ErrorOutputName = "TestFileSplitter Error Output";
         public const string FileConnectionName = "FileConnection";
         #endregion
@@ -77,6 +77,9 @@ namespace Martin.SQLServer.Dts
         public const string OnlyStringDataTypesSupported = "You can only use String data types with this component";
         public const string BadParsingGraphError = "WTF...  We have a Bad Parsing state from parsing the string!";
         public const string MustBeFlatFileConnection = "The connection manager MUST be a Flat File connection mamager";
+        public const string InvalidPassThoughOutput = "There MUST be One and Only One PassThrough output!";
+        public const string ExternalMetaDataOutOfSync = "The External Metadata is out of sync.";
+        public const string ConnectionManagerNotSet = "The Connection Manager Needs to be Setup.";
         #endregion
 
         #region Validation Strings
