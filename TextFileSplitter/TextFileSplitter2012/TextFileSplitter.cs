@@ -60,6 +60,10 @@ namespace Martin.SQLServer.Dts
         ManageProperties propertyManager = new ManageProperties();
         const int E_FAIL = unchecked((int)0x80004005);
         private String fileName = String.Empty;
+        private int passthroughOutputID = -1;
+        private int errorOutputID = -1;
+        private int keyRecordOutputID = -1;
+        private Dictionary<String, int> dataOutputIDs = new Dictionary<string, int>();
         #endregion
 
         #region Design Time
@@ -87,7 +91,18 @@ namespace Martin.SQLServer.Dts
             IDTSOutput errorOutput = this.ComponentMetaData.OutputCollection.New();
             errorOutput.IsErrorOut = true;
             errorOutput.Name = MessageStrings.ErrorOutputName;
+            ManageProperties.AddOutputProperties(errorOutput.CustomPropertyCollection);
+            ManageProperties.SetPropertyValue(errorOutput.CustomPropertyCollection, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ErrorRecords);
             ManageColumns.AddErrorOutputColumns(errorOutput);
+
+            // Key Records output.
+            IDTSOutput keyRecords = this.ComponentMetaData.OutputCollection.New();
+            keyRecords.Name = MessageStrings.KeyRecordOutputName;
+            keyRecords.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
+            keyRecords.ErrorOrTruncationOperation = MessageStrings.RowLevelTruncationOperation;
+            keyRecords.SynchronousInputID = 0;
+            ManageProperties.AddOutputProperties(keyRecords.CustomPropertyCollection);
+            ManageProperties.SetPropertyValue(keyRecords.CustomPropertyCollection, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.KeyRecords);
 
             // Reserve space for the file connection.
             IDTSRuntimeConnection connectionSlot = this.ComponentMetaData.RuntimeConnectionCollection.New();
@@ -112,11 +127,10 @@ namespace Martin.SQLServer.Dts
         public override DTSValidationStatus Validate()
         {
             DTSValidationStatus status = DTSValidationStatus.VS_ISVALID;
-
+            findOutputIDs();
             status = ValidateComponentProperties(status);
             status = ValidateOutputs(status);
-            //return status;
-            return DTSValidationStatus.VS_NEEDSNEWMETADATA;
+            return status;
         }
 
         private DTSValidationStatus ValidateComponentProperties(DTSValidationStatus oldStatus)
@@ -127,7 +141,7 @@ namespace Martin.SQLServer.Dts
         private DTSValidationStatus ValidateOutputs(DTSValidationStatus oldStatus)
         {
             DTSValidationStatus returnStatus = oldStatus;
-            if (this.ComponentMetaData.OutputCollection.Count < 2)
+            if (this.ComponentMetaData.OutputCollection.Count < 3)
             {
                 this.PostError(MessageStrings.UnexpectedNumberOfOutputs);
                 returnStatus = DTSValidationStatus.VS_ISCORRUPT;
@@ -135,9 +149,10 @@ namespace Martin.SQLServer.Dts
             else
             {
                 IDTSOutputCollection outputCollection = this.ComponentMetaData.OutputCollection;
-                // Ensure only one isErrorOutput!
+                // Ensure The required outputs exist and there is only one of each!
                 int errorOutputs = 0;
                 int passThroughOutputs = 0;
+                int keyOutputs = 0;
                 foreach (IDTSOutput output in outputCollection)
                 {
                     if (output.IsErrorOut)
@@ -147,7 +162,7 @@ namespace Martin.SQLServer.Dts
                     }
                     else
                     {
-                        returnStatus = ValidateRegularOutput(output, returnStatus, ref passThroughOutputs);
+                        returnStatus = ValidateRegularOutput(output, returnStatus, ref passThroughOutputs, ref keyOutputs);
                     }
                 }
 
@@ -161,12 +176,17 @@ namespace Martin.SQLServer.Dts
                     returnStatus = Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
                     this.PostError(MessageStrings.InvalidPassThoughOutput);
                 }
+                if (keyOutputs != 1)
+                {
+                    returnStatus = Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
+                    this.PostError(MessageStrings.InvalidPassKeyOutput);
+                }
             }
 
             return returnStatus;
         }
 
-        private DTSValidationStatus ValidateRegularOutput(IDTSOutput output, DTSValidationStatus oldStatus, ref int passThoughOutputs)
+        private DTSValidationStatus ValidateRegularOutput(IDTSOutput output, DTSValidationStatus oldStatus, ref int passThoughOutputs, ref int keyOutputs)
         {
             DTSValidationStatus returnStatus = oldStatus;
 
@@ -180,10 +200,25 @@ namespace Martin.SQLServer.Dts
             }
             else
             {
-                if (((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput)) == Utilities.typeOfOutputEnum.PassThrough)
+                switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
                 {
-                    passThoughOutputs++;
-                    returnStatus = ValidateExternalMetaData(output, returnStatus);
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                        this.PostError(MessageStrings.InvalidOutputType(output.Name, "ErrorRecords"));
+                        returnStatus  =  Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISBROKEN);
+                        break;
+                    case Utilities.typeOfOutputEnum.KeyRecords:
+                        keyOutputs++;
+                        break;
+                    case Utilities.typeOfOutputEnum.DataRecords:
+                        break;
+                    case Utilities.typeOfOutputEnum.PassThrough:
+                        passThoughOutputs++;
+                        returnStatus = ValidateExternalMetaData(output, returnStatus);
+                        break;
+                    default:
+                        this.PostError(MessageStrings.InvalidOutputType(output.Name, "Unknown"));
+                        returnStatus  =  Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISBROKEN);
+                        break;
                 }
             }
 
@@ -370,15 +405,21 @@ namespace Martin.SQLServer.Dts
 
 
 
-        //#region Set Component Property
-        //public override IDTSCustomProperty SetComponentProperty(string propertyName, object propertyValue)
-        //{
-        //    return base.SetComponentProperty(propertyName, propertyValue);
-        //}
-        //#endregion
+        #region Set Component Property
+        public override IDTSCustomProperty SetComponentProperty(string propertyName, object propertyValue)
+        {
+            return base.SetComponentProperty(propertyName, propertyValue);
+        }
+        #endregion
 
         #region Insert Input
 
+        /// <summary>
+        /// Prevents the addition of Input's to this component
+        /// </summary>
+        /// <param name="insertPlacement"></param>
+        /// <param name="inputID"></param>
+        /// <returns>null</returns>
         public override IDTSInput InsertInput(DTSInsertPlacement insertPlacement, int inputID)
         {
             this.PostErrorAndThrow(MessageStrings.CantAddInput);
@@ -388,6 +429,13 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region InsertOutput
+        /// <summary>
+        /// Add the Output at the selected location, and ensures that all the required MetaData is associated with the output.
+        /// This will also Propogate Columns marked as Key's from the "KeyRecords" output.
+        /// </summary>
+        /// <param name="insertPlacement">passed from SSIS</param>
+        /// <param name="outputID">passed from SSIS</param>
+        /// <returns>the new output</returns>
         public override IDTSOutput InsertOutput(DTSInsertPlacement insertPlacement, int outputID)
         {
             IDTSOutput thisOutput = base.InsertOutput(insertPlacement, outputID);
@@ -586,18 +634,23 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region DeleteOutputColumn
+        /// <summary>
+        /// Delete columns from outputs where the output is NOT and error output.
+        /// Also ensure that if this is a KeyRecord output, and the column is a Key, remove it from all other Data outputs
+        /// Also prevent deletion of Key columns from NON KeyRecord outputs.
+        /// </summary>
+        /// <param name="outputID"></param>
+        /// <param name="outputColumnID"></param>
         public override void DeleteOutputColumn(int outputID, int outputColumnID)
         {
-            IDTSOutputCollection100 thisOutputColl = ComponentMetaData.OutputCollection;
-            IDTSOutput100 thisOutput = thisOutputColl.GetObjectByID(outputID);
+            IDTSOutput100 thisOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(outputID);
             if (thisOutput != null)
             {
                 if (thisOutput.IsErrorOut)
                     this.PostErrorAndThrow(MessageStrings.CantChangeErrorOutputProperties);
                 else
                 {
-                    IDTSOutputColumnCollection100 thisColumnColl = thisOutput.OutputColumnCollection;
-                    IDTSOutputColumn100 thisColumn = thisColumnColl.GetObjectByID(outputColumnID);
+                    IDTSOutputColumn100 thisColumn = thisOutput.OutputColumnCollection.GetObjectByID(outputColumnID);
                     if (thisColumn != null)
                     {
                         if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
@@ -641,6 +694,7 @@ namespace Martin.SQLServer.Dts
         #region SetOutputProperty
         /// <summary>
         /// Called when a custom property of an output object is set.
+        /// Ensure that only valid values can be set.  Prevent Multiple Outputs of a specific type being created.
         /// </summary>
         /// <param name="outputID">The ID of the output.</param>
         /// <param name="propertyName">The name of the property.</param>
@@ -648,6 +702,46 @@ namespace Martin.SQLServer.Dts
         /// <returns>The custom property.</returns>
         public override IDTSCustomProperty SetOutputProperty(int outputID, string propertyName, object propertyValue)
         {
+            if (propertyName == ManageProperties.typeOfOutput)
+            {
+                switch ((Utilities.typeOfOutputEnum)propertyValue)
+                {
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                        if (!this.ComponentMetaData.OutputCollection.GetObjectByID(outputID).IsErrorOut)
+                        {
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                        }
+                        break;
+                    case Utilities.typeOfOutputEnum.KeyRecords:
+                        int keyOutputCount = 0;
+                        foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
+                        {
+                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
+                            { keyOutputCount++; }
+                        }
+                        if (keyOutputCount > 0)
+                        {
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                        }
+                        break;
+                    case Utilities.typeOfOutputEnum.DataRecords:
+                        break;
+                    case Utilities.typeOfOutputEnum.PassThrough:
+                        int passthroughOutputCount = 0;
+                        foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
+                        {
+                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
+                            { passthroughOutputCount++; }
+                        }
+                        if (passthroughOutputCount > 0)
+                        {
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
             return base.SetOutputProperty(outputID, propertyName, propertyValue);
         }
         #endregion
@@ -674,6 +768,37 @@ namespace Martin.SQLServer.Dts
 
         #endregion
 
+
+        #region Helpers
+        /// <summary>
+        /// Parse through all the outputs and find the three "special" outputs.
+        /// </summary>
+        /// <returns></returns>
+        private void findOutputIDs()
+        {
+            dataOutputIDs = new Dictionary<string, int>();
+            foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
+            {
+                switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                {
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                        errorOutputID = output.ID;
+                        break;
+                    case Utilities.typeOfOutputEnum.KeyRecords:
+                        keyRecordOutputID = output.ID;
+                        break;
+                    case Utilities.typeOfOutputEnum.DataRecords:
+                        dataOutputIDs.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), output.ID);
+                        break;
+                    case Utilities.typeOfOutputEnum.PassThrough:
+                        passthroughOutputID = output.ID;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        #endregion
 
         #region Handlers
         private void PostWarning(string warningMessage)

@@ -32,6 +32,12 @@ namespace Martin.SQLServer.Dts
         {
             return string.Format(APropertyIsMissingPattern, missingFrom);
         }
+
+        const string TheOutputTypeIsInvalidPattern = "The output {0} has an invalid type of {1}.";
+        public static string InvalidOutputType(string outputName, string outputType)
+        {
+            return String.Format(TheOutputTypeIsInvalidPattern, outputName, outputType);
+        }
         #endregion
 
         #region Name Descriptions
@@ -50,7 +56,7 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region Input/Output Names
-        public const string InputName = "TestFileSplitter Input";
+        public const string KeyRecordOutputName = "TestFileSplitter KeyRecords Output";
         public const string PassthroughOutputName = "TestFileSplitter PassThrough Output";
         public const string ErrorOutputName = "TestFileSplitter Error Output";
         public const string FileConnectionName = "FileConnection";
@@ -80,6 +86,7 @@ namespace Martin.SQLServer.Dts
         public const string InvalidPassThoughOutput = "There MUST be One and Only One PassThrough output!";
         public const string ExternalMetaDataOutOfSync = "The External Metadata is out of sync.";
         public const string ConnectionManagerNotSet = "The Connection Manager Needs to be Setup.";
+        public const string InvalidPassKeyOutput = "There MUST be One and Only One KeyRecord output!";
         #endregion
 
         #region Validation Strings
