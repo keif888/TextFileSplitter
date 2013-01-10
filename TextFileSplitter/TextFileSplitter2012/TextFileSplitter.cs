@@ -529,6 +529,22 @@ namespace Martin.SQLServer.Dts
                             {
                                 if ((Utilities.usageOfColumnEnum)propertyValue == Utilities.usageOfColumnEnum.Key)
                                 {
+                                    // Determine the correct position for this record in the output.
+                                    int keyPosition = 0;
+                                    for (int i = 0; i < thisOutput.OutputColumnCollection.Count; i++)
+                                    {
+                                        if (thisOutput.OutputColumnCollection[i].ID == outputColumnID)
+                                        {
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisOutput.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                            {
+                                                keyPosition++;
+                                            }
+                                        }
+                                    }
                                     // Add column to the other Non Error Outputs.
                                     foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
                                     {
@@ -536,7 +552,7 @@ namespace Martin.SQLServer.Dts
                                         {
                                             if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.DataRecords)
                                             {
-                                                IDTSOutputColumn outputColumn = output.OutputColumnCollection.NewAt(0);
+                                                IDTSOutputColumn outputColumn = output.OutputColumnCollection.NewAt(keyPosition);
                                                 outputColumn.Name = thisColumn.Name;
                                                 outputColumn.Description = MessageStrings.KeyColumnDescription;
                                                 ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
@@ -1024,7 +1040,7 @@ namespace Martin.SQLServer.Dts
                         for (int i = 0; i < columnData.ColumnCount; i++)
                         {
                             dataRowData.AddColumnData(columnData.GetColumnData(i));
-                            keyValues.Add(keyOutput.OutputColumnCollection[i].ID, columnData.GetColumnData(i));
+                            keyValues.Add(keyOutput.OutputColumnCollection[i].LineageID, columnData.GetColumnData(i));
                         }
                         keyBufferSink.AddRow(dataRowData);
                     }
@@ -1037,11 +1053,23 @@ namespace Martin.SQLServer.Dts
                             StringAsRowReader columnReader = new StringAsRowReader(rowData.GetColumnData(rowDataColumnID));
                             stringParser.ParseRow(columnReader, columnData);
                             RowData dataRowData = new RowData();
+                            IDTSOutput output = null;
+                            dataOutputs.TryGetValue(rowData.GetColumnData(rowTypeColumnID), out output);
 
-                            foreach (string keyValuesvalue in keyValues.Values)
+                            for (int i = 0; i < output.OutputColumnCollection.Count; i++)
                             {
-                                dataRowData.AddColumnData(keyValuesvalue);
+                                if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(output.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                {
+                                    String keyValuesvalue = String.Empty;
+                                    keyValues.TryGetValue((int)ManageProperties.GetPropertyValue(output.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.keyOutputColumnID), out keyValuesvalue);
+                                    dataRowData.AddColumnData(keyValuesvalue);
+                                }
                             }
+
+                            //foreach (string keyValuesvalue in keyValues.Values)
+                            //{
+                            //    dataRowData.AddColumnData(keyValuesvalue);
+                            //}
                             
                             for (int i = 0; i < columnData.ColumnCount; i++)
                             {
