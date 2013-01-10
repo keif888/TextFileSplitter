@@ -442,6 +442,8 @@ namespace Martin.SQLServer.Dts
             ManageProperties.AddOutputProperties(thisOutput.CustomPropertyCollection);
             thisOutput.ExternalMetadataColumnCollection.IsUsed = false;
             thisOutput.SynchronousInputID = 0;
+            thisOutput.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
+            thisOutput.ErrorOrTruncationOperation = MessageStrings.RowLevelTruncationOperation;
 
             // Add any keys that have already been defined!
             foreach (IDTSOutput keyOutput in this.ComponentMetaData.OutputCollection)
@@ -453,7 +455,7 @@ namespace Martin.SQLServer.Dts
                     {
                         if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(keyColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
                         {
-                            IDTSOutputColumn outputColumn = thisOutput.OutputColumnCollection.NewAt(0);
+                            IDTSOutputColumn outputColumn = thisOutput.OutputColumnCollection.New();
                             outputColumn.Name = keyColumn.Name;
                             outputColumn.Description = MessageStrings.KeyColumnDescription;
                             ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
@@ -492,6 +494,14 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region SetOutputColumnProperty
+        /// <summary>
+        /// Enables the setting of custom properties.  If the Property is Key, (and on the appropriate output), then the column will be propogated to all Data outputs.
+        /// </summary>
+        /// <param name="outputID"></param>
+        /// <param name="outputColumnID"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="propertyValue"></param>
+        /// <returns></returns>
         public override IDTSCustomProperty SetOutputColumnProperty(int outputID, int outputColumnID, string propertyName, object propertyValue)
         {
             if (propertyName == ManageProperties.keyOutputColumnID)
@@ -704,43 +714,45 @@ namespace Martin.SQLServer.Dts
         {
             if (propertyName == ManageProperties.typeOfOutput)
             {
-                switch ((Utilities.typeOfOutputEnum)propertyValue)
-                {
-                    case Utilities.typeOfOutputEnum.ErrorRecords:
-                        if (!this.ComponentMetaData.OutputCollection.GetObjectByID(outputID).IsErrorOut)
-                        {
-                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                        }
-                        break;
-                    case Utilities.typeOfOutputEnum.KeyRecords:
-                        int keyOutputCount = 0;
-                        foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-                        {
-                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
-                            { keyOutputCount++; }
-                        }
-                        if (keyOutputCount > 0)
-                        {
-                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                        }
-                        break;
-                    case Utilities.typeOfOutputEnum.DataRecords:
-                        break;
-                    case Utilities.typeOfOutputEnum.PassThrough:
-                        int passthroughOutputCount = 0;
-                        foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-                        {
-                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
-                            { passthroughOutputCount++; }
-                        }
-                        if (passthroughOutputCount > 0)
-                        {
-                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                // Do not allow the typeOfOutput to be changed.
+                throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                //switch ((Utilities.typeOfOutputEnum)propertyValue)
+                //{
+                //    case Utilities.typeOfOutputEnum.ErrorRecords:
+                //        if (!this.ComponentMetaData.OutputCollection.GetObjectByID(outputID).IsErrorOut)
+                //        {
+                //            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                //        }
+                //        break;
+                //    case Utilities.typeOfOutputEnum.KeyRecords:
+                //        int keyOutputCount = 0;
+                //        foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
+                //        {
+                //            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
+                //            { keyOutputCount++; }
+                //        }
+                //        if (keyOutputCount > 0)
+                //        {
+                //            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                //        }
+                //        break;
+                //    case Utilities.typeOfOutputEnum.DataRecords:
+                //        break;
+                //    case Utilities.typeOfOutputEnum.PassThrough:
+                //        int passthroughOutputCount = 0;
+                //        foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
+                //        {
+                //            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
+                //            { passthroughOutputCount++; }
+                //        }
+                //        if (passthroughOutputCount > 0)
+                //        {
+                //            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                //        }
+                //        break;
+                //    default:
+                //        break;
+                //}
             }
             return base.SetOutputProperty(outputID, propertyName, propertyValue);
         }
@@ -753,11 +765,22 @@ namespace Martin.SQLServer.Dts
             IDTSOutput thisOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(outputID);
             if (!thisOutput.IsErrorOut)
             {
-                if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
-                    this.PostErrorAndThrow(MessageStrings.CannotDeleteKeyOutput);
-                else
+                switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
                 {
-                    base.DeleteOutput(outputID);
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                        this.PostErrorAndThrow(MessageStrings.CannotDeleteErrorOutput);
+                        break;
+                    case Utilities.typeOfOutputEnum.KeyRecords:
+                        this.PostErrorAndThrow(MessageStrings.CannotDeleteKeyOutput);
+                        break;
+                    case Utilities.typeOfOutputEnum.DataRecords:
+                        base.DeleteOutput(outputID);
+                        break;
+                    case Utilities.typeOfOutputEnum.PassThrough:
+                        this.PostErrorAndThrow(MessageStrings.CannotDeletePassThroughOutput);
+                        break;
+                    default:
+                        break;
                 }
             }
             else
