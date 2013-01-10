@@ -28,8 +28,6 @@ namespace Martin.SQLServer.Dts
         public event PostErrorDelegate PostErrorEvent = null;
 
         // Component Properties
-        internal const string inputKeyColumnID = "inputKeyColumnID";
-        internal const string inputDataColumnID = "inputDataColumnID";
         internal const string columnDelimiter = "columnDelimiter";
         internal const string isTextDelmited = "isTextDelmited";
         internal const string textDelmiter = "textDelmiter";
@@ -72,9 +70,6 @@ namespace Martin.SQLServer.Dts
 
             this.propertyValidationTable.Add(usageOfColumn, new ValidateProperty(ValidateUsageOfColumnProperty));
             this.propertyValidationTable.Add(keyOutputColumnID, new ValidateProperty(ValidateIntegerProperty));
-
-            this.propertyValidationTable.Add(inputKeyColumnID, new ValidateProperty(ValidateIntegerProperty));
-            this.propertyValidationTable.Add(inputDataColumnID, new ValidateProperty(ValidateIntegerProperty));
         }
 
         private DTSValidationStatus ValidateRowTypeProperty(string propertyName, object propertyValue)
@@ -257,8 +252,6 @@ namespace Martin.SQLServer.Dts
             resultStatus = ValidatePropertyExists(customPropertyCollection, isTextDelmited, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, textDelmiter, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, columnDelimiter, resultStatus);
-            resultStatus = ValidatePropertyExists(customPropertyCollection, inputKeyColumnID, resultStatus);
-            resultStatus = ValidatePropertyExists(customPropertyCollection, inputDataColumnID, resultStatus);
             return resultStatus;
         }
 
@@ -336,8 +329,6 @@ namespace Martin.SQLServer.Dts
             AddCustomProperty(propertyCollection, isTextDelmited, MessageStrings.IsTextDelmitedPropDescription, true);
             AddCustomProperty(propertyCollection, textDelmiter, MessageStrings.TextDelmiterPropDescription, "\"");
             AddCustomProperty(propertyCollection, columnDelimiter, MessageStrings.ColumnDelimiterPropDescription, ",");
-            AddCustomProperty(propertyCollection, inputKeyColumnID, MessageStrings.InputKeyColumnIDPropDescription, -1);
-            AddCustomProperty(propertyCollection, inputDataColumnID, MessageStrings.InputDataColumnIDPropDescription, -1);
         }
 
         public static void AddInputColumnProperties(IDTSCustomPropertyCollection propertyCollection)
