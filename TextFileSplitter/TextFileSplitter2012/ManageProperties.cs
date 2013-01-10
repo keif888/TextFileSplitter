@@ -32,9 +32,6 @@ namespace Martin.SQLServer.Dts
         internal const string isTextDelmited = "isTextDelmited";
         internal const string textDelmiter = "textDelmiter";
 
-        // Input Column Properties
-        internal const string splitFieldType = "splitFieldType";
-
         // Output Properties
         internal const string typeOfOutput = "typeOfOutput";
         internal const string rowTypeValue = "rowTypeValue";
@@ -46,7 +43,7 @@ namespace Martin.SQLServer.Dts
         // Defaults
         const string DefaultDelimiter = ",";
         const int MaxDelimLength = 20;
-        const int MaxRowTypeLength = 20;
+        const int MaxRowTypeLength = 128;
 
         private Dictionary<string, ValidateProperty> propertyValidationTable = new Dictionary<string, ValidateProperty>();
 
@@ -65,7 +62,6 @@ namespace Martin.SQLServer.Dts
             this.propertyValidationTable.Add(columnDelimiter, new ValidateProperty(ValidateDelimiterProperty));
             this.propertyValidationTable.Add(textDelmiter, new ValidateProperty(ValidateDelimiterProperty));
 
-            this.propertyValidationTable.Add(splitFieldType, new ValidateProperty(ValidateSplitEnumProperty));
             this.propertyValidationTable.Add(rowTypeValue, new ValidateProperty(ValidateRowTypeProperty));
 
             this.propertyValidationTable.Add(usageOfColumn, new ValidateProperty(ValidateUsageOfColumnProperty));
@@ -86,19 +82,6 @@ namespace Martin.SQLServer.Dts
                     this.PostError(MessageStrings.PropertyStringTooLong(propertyName, propertyValue.ToString()));
                     return DTSValidationStatus.VS_ISBROKEN;
                 }
-            }
-            else
-            {
-                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
-                return DTSValidationStatus.VS_ISCORRUPT;
-            }
-        }
-
-        private DTSValidationStatus ValidateSplitEnumProperty(string propertyName, object propertyValue)
-        {
-            if (Enum.IsDefined(typeof(Utilities.splitFieldTypeEnum), propertyValue))
-            {
-                return DTSValidationStatus.VS_ISVALID;
             }
             else
             {
@@ -133,34 +116,6 @@ namespace Martin.SQLServer.Dts
                 return DTSValidationStatus.VS_ISCORRUPT;
             }
         }
-
-        // No Longer Used
-        /*
-        private DTSValidationStatus ValidateKeyRecordProperty(string propertyName, object propertyValue)
-        {
-            if (propertyValue is string)
-            {
-                string value = (string)propertyValue;
-                try
-                {
-                    String xmlData = Utilities.XmlDecodeFromString(value);
-                    KeyRecordFormat keyRecords = (KeyRecordFormat) Utilities.XmlDeserializeFromString(xmlData, typeof(KeyRecordFormat));
-
-                    return DTSValidationStatus.VS_ISVALID;
-                }
-                catch
-                {
-                    this.PostError(MessageStrings.PropertyDoesntDecode(propertyName, propertyValue.ToString()));
-                    return DTSValidationStatus.VS_ISBROKEN;
-                }
-            }
-            else
-            {
-                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
-                return DTSValidationStatus.VS_ISCORRUPT;
-            }
-        }
-        */
 
         private DTSValidationStatus ValidateBooleanProperty(string propertyName, object propertyValue)
         {
@@ -256,13 +211,6 @@ namespace Martin.SQLServer.Dts
         }
 
 
-        public static DTSValidationStatus ValidateInputColumnProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
-        {
-            DTSValidationStatus resultStatus = oldStatus;
-            resultStatus = ValidatePropertyExists(customPropertyCollection, splitFieldType, resultStatus);
-            return resultStatus;
-        }
-
         public static DTSValidationStatus ValidateOutputProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus resultStatus = oldStatus;
@@ -329,11 +277,6 @@ namespace Martin.SQLServer.Dts
             AddCustomProperty(propertyCollection, isTextDelmited, MessageStrings.IsTextDelmitedPropDescription, true);
             AddCustomProperty(propertyCollection, textDelmiter, MessageStrings.TextDelmiterPropDescription, "\"");
             AddCustomProperty(propertyCollection, columnDelimiter, MessageStrings.ColumnDelimiterPropDescription, ",");
-        }
-
-        public static void AddInputColumnProperties(IDTSCustomPropertyCollection propertyCollection)
-        {
-            AddCustomProperty(propertyCollection, splitFieldType, MessageStrings.SplitFieldTypePropDescription, Utilities.splitFieldTypeEnum.Ignore, typeof(Utilities.splitFieldTypeEnum).AssemblyQualifiedName);
         }
 
         public static void AddOutputProperties(IDTSCustomPropertyCollection propertyCollection)

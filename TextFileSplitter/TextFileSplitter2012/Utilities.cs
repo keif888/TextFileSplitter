@@ -12,13 +12,6 @@ namespace Martin.SQLServer.Dts
 {
     public static class Utilities
     {
-        public enum splitFieldTypeEnum
-        {
-            RowType
-           , Data
-           , Ignore
-        }
-
         public enum typeOfOutputEnum
         {
             ErrorRecords
