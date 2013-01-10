@@ -22,7 +22,9 @@ namespace Martin.SQLServer.Dts
 
         public enum usageOfColumnEnum
         {
-            Passthrough
+              RowType
+            , RowData
+            , Passthrough
             , Key
             , Ignore
         }

@@ -31,6 +31,7 @@ namespace Martin.SQLServer.Dts
         internal const string columnDelimiter = "columnDelimiter";
         internal const string isTextDelmited = "isTextDelmited";
         internal const string textDelmiter = "textDelmiter";
+        internal const string treatEmptyStringsAsNull = "treatEmptyStringsAsNull";
 
         // Output Properties
         internal const string typeOfOutput = "typeOfOutput";
@@ -207,6 +208,7 @@ namespace Martin.SQLServer.Dts
             resultStatus = ValidatePropertyExists(customPropertyCollection, isTextDelmited, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, textDelmiter, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, columnDelimiter, resultStatus);
+            resultStatus = ValidatePropertyExists(customPropertyCollection, treatEmptyStringsAsNull, resultStatus);
             return resultStatus;
         }
 
@@ -277,6 +279,7 @@ namespace Martin.SQLServer.Dts
             AddCustomProperty(propertyCollection, isTextDelmited, MessageStrings.IsTextDelmitedPropDescription, true);
             AddCustomProperty(propertyCollection, textDelmiter, MessageStrings.TextDelmiterPropDescription, "\"");
             AddCustomProperty(propertyCollection, columnDelimiter, MessageStrings.ColumnDelimiterPropDescription, ",");
+            AddCustomProperty(propertyCollection, treatEmptyStringsAsNull, MessageStrings.TreatEmptyStringsAsNullPropDescription, true);
         }
 
         public static void AddOutputProperties(IDTSCustomPropertyCollection propertyCollection)

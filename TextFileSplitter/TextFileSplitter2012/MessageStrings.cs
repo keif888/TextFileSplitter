@@ -38,6 +38,36 @@ namespace Martin.SQLServer.Dts
         {
             return String.Format(TheOutputTypeIsInvalidPattern, outputName, outputType);
         }
+
+        const string RowOverflowPattern = "Row #{0}: The number of parsed row columns ({1}) is greater than the number ({2}) of defined output columns.";
+        public static string RowOverflow(Int64 rowNumber, int rowColumnCount, int outputColumnCount)
+        {
+            return string.Format(RowOverflowPattern, rowNumber, rowColumnCount, outputColumnCount);
+        }
+
+        const string FailedToAssignColumnValuePattern = "Row #{0}: Failed to assign the following value \"{1}\" to {2}.";
+        public static string FailedToAssignColumnValue(Int64 rowNumber, string columnValue, string columnIdentification)
+        {
+            return string.Format(FailedToAssignColumnValuePattern, rowNumber, columnValue, columnIdentification);
+        }
+
+        const string ParsingBufferOverflowPattern = "Row #{0}, column #{1}: Size of the parsed data exceeded maximum parsing buffer size ({2}).";
+        public static string ParsingBufferOverflow(Int64 rowNumber, int columnNumber, int maxBufferSize)
+        {
+            return string.Format(ParsingBufferOverflowPattern, rowNumber, columnNumber, maxBufferSize);
+        }
+
+        const string MaximumColumnNumberOverflowPattern = "Row #{0}: This row contains more columns than the maximum allowed number ({1}).";
+        public static string MaximumColumnNumberOverflow(Int64 rowNumber, int maxNoColumns)
+        {
+            return string.Format(MaximumColumnNumberOverflowPattern, rowNumber, maxNoColumns);
+        }
+
+        public const string FileDoesNotExistPattern = "The following file {0} does not exist.";
+        public static string FileDoesNotExist(string fileName)
+        {
+            return string.Format(FileDoesNotExistPattern, fileName);
+        }
         #endregion
 
         #region Name Descriptions
@@ -53,6 +83,7 @@ namespace Martin.SQLServer.Dts
         public const string FileConnectionDescription = "This is the Text File connection, which should be a standard Text File, with 2 columns defined!";
         public const string InputKeyColumnIDPropDescription = "Stores the Lineage ID of the Key column";
         public const string InputDataColumnIDPropDescription = "Stores the Lineage ID of the Data column";
+        public const string TreatEmptyStringsAsNullPropDescription = "If a string is empty then return it as a Null?";
         #endregion
 
         #region Input/Output Names
@@ -88,6 +119,7 @@ namespace Martin.SQLServer.Dts
         public const string ExternalMetaDataOutOfSync = "The External Metadata is out of sync.";
         public const string ConnectionManagerNotSet = "The Connection Manager Needs to be Setup.";
         public const string InvalidPassKeyOutput = "There MUST be One and Only One KeyRecord output!";
+        public const string ThereCanOnlyBeOneRowTypeColumn = "There can only be one RowType column in the PassThrough output.";
         #endregion
 
         #region Validation Strings
