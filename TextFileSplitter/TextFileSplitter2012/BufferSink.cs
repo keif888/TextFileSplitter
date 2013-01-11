@@ -146,7 +146,7 @@ namespace Martin.SQLServer.Dts
             bool rowHandled = false;
             if (rowData.ColumnCount > this.bufferService.ColumnCount)
             {
-                string errorMessage = MessageStrings.RowOverflow(this.currentRowCount, rowData.ColumnCount, this.bufferService.ColumnCount);
+                string errorMessage = MessageStrings.RowOverflow(this.currentRowCount, rowData.ColumnCount, this.bufferService.ColumnCount, this.output.Name);
                 if (this.bufferService.ErrorOutputUsed)
                 {
                     if (this.output.TruncationRowDisposition == DTSRowDisposition.RD_RedirectRow)

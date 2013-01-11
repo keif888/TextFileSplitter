@@ -39,10 +39,10 @@ namespace Martin.SQLServer.Dts
             return String.Format(TheOutputTypeIsInvalidPattern, outputName, outputType);
         }
 
-        const string RowOverflowPattern = "Row #{0}: The number of parsed row columns ({1}) is greater than the number ({2}) of defined output columns.";
-        public static string RowOverflow(Int64 rowNumber, int rowColumnCount, int outputColumnCount)
+        const string RowOverflowPattern = "Row #{0}: The number of parsed row columns ({1}) is greater than the number ({2}) of defined output columns in output ({3}).";
+        public static string RowOverflow(Int64 rowNumber, int rowColumnCount, int outputColumnCount, string outputName)
         {
-            return string.Format(RowOverflowPattern, rowNumber, rowColumnCount, outputColumnCount);
+            return string.Format(RowOverflowPattern, rowNumber, rowColumnCount, outputColumnCount, outputName);
         }
 
         const string FailedToAssignColumnValuePattern = "Row #{0}: Failed to assign the following value \"{1}\" to {2}.";
