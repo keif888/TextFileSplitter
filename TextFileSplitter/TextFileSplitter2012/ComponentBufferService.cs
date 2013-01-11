@@ -9,7 +9,7 @@ namespace Martin.SQLServer.Dts
 {
     internal interface IComponentBufferService
     {
-        void AddErrorRow(string errorMessage, string columnData, string rowData);
+        void AddErrorRow(int errorCode, int errorColumn, string errorMessage, string columnData, string rowData);
         void AddRow();
         int ColumnCount { get; }
         bool ErrorOutputUsed { get; }
@@ -61,12 +61,21 @@ namespace Martin.SQLServer.Dts
             this.mainBuffer.SetNull(index);
         }
 
-        public void AddErrorRow(string errorMessage, string columnData, string rowData)
+        public void AddErrorRow(int errorCode, int errorColumn, string errorMessage, string columnData, string rowData)
         {
             if (this.errorBuffer != null)
             {
                 this.errorBuffer.AddRow();
-
+                if (errorCode == 0)
+                {
+                    this.errorBuffer.SetNull(0);
+                    this.errorBuffer.SetNull(1);
+                }
+                else
+                {
+                    this.errorBuffer.SetInt32(0, errorCode);
+                    this.errorBuffer.SetInt32(1, errorColumn);
+                }
                 this.errorBuffer.SetString(2, LimitBufferString(errorMessage));
                 this.errorBuffer.SetString(3, LimitBufferString(columnData));
                 this.errorBuffer.SetString(4, LimitBufferString(rowData));

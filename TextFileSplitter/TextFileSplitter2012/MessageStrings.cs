@@ -94,7 +94,7 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region Messages
-        public const string RowLevelTruncationOperation = "Truncation - too many columns in a parsed row.";
+        public const string RowLevelTruncationOperation = "Error or truncation whilst parsing row values.";
         public const string ColumnLevelErrorTruncationOperation = "Error or truncation while assigning column values.";
         public const string NotExpectedInputs = "The number of inputs is NOT one.";
         public const string UnexpectedNumberOfOutputs = "The number of outputs is less than two.";

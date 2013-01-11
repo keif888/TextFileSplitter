@@ -151,7 +151,7 @@ namespace Martin.SQLServer.Dts
                 {
                     if (this.output.TruncationRowDisposition == DTSRowDisposition.RD_RedirectRow)
                     {
-                        this.bufferService.AddErrorRow(errorMessage, string.Empty, rowData.RowText);
+                        this.bufferService.AddErrorRow(-1071611003, 0, errorMessage, string.Empty, rowData.RowText);
                         rowHandled = true;
                     }
                     else if (this.output.TruncationRowDisposition == DTSRowDisposition.RD_IgnoreFailure)
@@ -193,11 +193,11 @@ namespace Martin.SQLServer.Dts
                                 ex is OverflowException ||
                                 ex is System.Data.SqlTypes.SqlTruncateException)
                             {
-                                this.HandleColumnErrorDistribution(outputColumn.TruncationRowDisposition, outputColumn.IdentificationString, columnData, rowData.RowText, ex);
+                                this.HandleColumnErrorDistribution(outputColumn.TruncationRowDisposition, outputColumn.LineageID, outputColumn.IdentificationString, columnData, rowData.RowText, ex);
                             }
                             else
                             {
-                                this.HandleColumnErrorDistribution(outputColumn.ErrorRowDisposition, outputColumn.IdentificationString, columnData, rowData.RowText, ex);
+                                this.HandleColumnErrorDistribution(outputColumn.ErrorRowDisposition, outputColumn.LineageID, outputColumn.IdentificationString, columnData, rowData.RowText, ex);
                             }
                             // If we get this far, it means the error row is redirected or ignored. Stop the loop.
                             break;
@@ -211,7 +211,7 @@ namespace Martin.SQLServer.Dts
             }
         }
 
-        private void HandleColumnErrorDistribution(DTSRowDisposition rowDisposition, string columnIdString, string columnData, string rowData, Exception ex)
+        private void HandleColumnErrorDistribution(DTSRowDisposition rowDisposition, int columnLineage, string columnIdString, string columnData, string rowData, Exception ex)
         {
             bool rowHandled = false;
 
@@ -220,7 +220,7 @@ namespace Martin.SQLServer.Dts
             {
                 if (rowDisposition == DTSRowDisposition.RD_RedirectRow)
                 {
-                    this.bufferService.AddErrorRow(errorMessage, columnData, rowData);
+                    this.bufferService.AddErrorRow(System.Runtime.InteropServices.Marshal.GetHRForException(ex), columnLineage, errorMessage, columnData, rowData);
                     rowHandled = true;
                 }
                 else if (rowDisposition == DTSRowDisposition.RD_IgnoreFailure)

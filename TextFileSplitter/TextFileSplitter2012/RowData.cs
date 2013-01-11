@@ -44,6 +44,20 @@ namespace Martin.SQLServer.Dts
             return this.columnValues[columnIndex];
         }
 
+        public void RebuildRowText(string columnDelimiter)
+        {
+            rowText.Clear();
+            if (columnValues.Count > 0)
+            {
+                rowText.Append(columnValues[0]);
+                for (int i = 1; i < columnValues.Count; i++)
+                {
+                    rowText.Append(columnDelimiter);
+                    rowText.Append(columnValues[i]);
+                }
+            }
+        }
+
         #region IRowParsingContext Members
 
         public int ColumnCount

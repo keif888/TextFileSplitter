@@ -445,6 +445,7 @@ namespace Martin.SQLServer.Dts
             thisOutput.ExternalMetadataColumnCollection.IsUsed = false;
             thisOutput.SynchronousInputID = 0;
             thisOutput.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
+            thisOutput.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
             thisOutput.ErrorOrTruncationOperation = MessageStrings.RowLevelTruncationOperation;
 
             // Add any keys that have already been defined!
@@ -484,6 +485,9 @@ namespace Martin.SQLServer.Dts
             {
                 IDTSOutputColumn col = base.InsertOutputColumnAt(outputID, outputColumnIndex, name, description);
                 ManageProperties.AddOutputColumnProperties(col.CustomPropertyCollection);
+                col.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
+                col.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
+                col.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
                 col.SetDataTypeProperties(DataType.DT_STR, 50, 0, 0, 1252);
                 return col;
             }
@@ -1075,6 +1079,8 @@ namespace Martin.SQLServer.Dts
                             {
                                 dataRowData.AddColumnData(columnData.GetColumnData(i));
                             }
+
+                            dataRowData.RebuildRowText(columnDelimter);
                             BufferSink dataSink = null;
                             dataBufferSinks.TryGetValue(rowData.GetColumnData(rowTypeColumnID), out dataSink);
                             dataSink.AddRow(dataRowData);
