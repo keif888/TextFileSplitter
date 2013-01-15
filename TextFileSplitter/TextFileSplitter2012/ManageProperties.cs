@@ -313,6 +313,17 @@ namespace Martin.SQLServer.Dts
             return null;
         }
 
+        public static object GetPropertyValue(Dictionary<String, SSISProperty> propertyCollection, string name)
+        {
+            SSISProperty value = null;
+            if (propertyCollection.TryGetValue(name, out value))
+            {
+                return value.Value;
+            }
+            else
+                return null;
+        }
+
         #endregion
 
         #region Set Properties

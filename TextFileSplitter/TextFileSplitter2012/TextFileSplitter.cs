@@ -896,13 +896,13 @@ namespace Martin.SQLServer.Dts
             PipelineBuffer keyRecordBuffer = null;
             PipelineBuffer passThroughBuffer = null;
             Dictionary<String, PipelineBuffer> dataBuffers = new Dictionary<string, PipelineBuffer>();
-            Dictionary<String, IDTSOutput> dataOutputs = new Dictionary<string, IDTSOutput>();
+            Dictionary<String, SSISOutput> dataOutputs = new Dictionary<string, SSISOutput>();
             int rowTypeColumnID = -1;
             int rowDataColumnID = -1;
             String keyValue = string.Empty;
-            IDTSOutput keyOutput = null;
+            SSISOutput keyOutput = null;
 
-            IDTSOutput passThroughOutput = null;
+            SSISOutput passThroughOutput = null;
 
             int errorOutID = 0;
             int errorOutIndex = 0;
@@ -929,7 +929,7 @@ namespace Martin.SQLServer.Dts
                             {
                                 keyRecordBuffer = buffers[i];
                                 keyValue = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
-                                keyOutput = output;
+                                keyOutput = new SSISOutput(output);
                                 break;
                             }
                         }
@@ -940,7 +940,7 @@ namespace Martin.SQLServer.Dts
                             if (outputIDs[i] == output.ID)
                             {
                                 dataBuffers.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), buffers[i]);
-                                dataOutputs.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), output);
+                                dataOutputs.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), new SSISOutput(output));
                                 break;
                             }
                         }
@@ -952,7 +952,7 @@ namespace Martin.SQLServer.Dts
                             if (outputIDs[i] == output.ID)
                             {
                                 passThroughBuffer = buffers[i];
-                                passThroughOutput = output;
+                                passThroughOutput = new SSISOutput(output);
                                 break;
                             }
                         }
@@ -1004,7 +1004,7 @@ namespace Martin.SQLServer.Dts
             foreach (string key in dataBuffers.Keys)
             {
                 PipelineBuffer workingBuffer = null;
-                IDTSOutput output = null;
+                SSISOutput output = null;
                 dataBuffers.TryGetValue(key, out workingBuffer);
                 dataOutputs.TryGetValue(key, out output);
                 ComponentBufferService dataCBS = new ComponentBufferService(workingBuffer, errorBuffer);
@@ -1057,7 +1057,7 @@ namespace Martin.SQLServer.Dts
                             StringAsRowReader columnReader = new StringAsRowReader(rowData.GetColumnData(rowDataColumnID));
                             stringParser.ParseRow(columnReader, columnData);
                             RowData dataRowData = new RowData();
-                            IDTSOutput output = null;
+                            SSISOutput output = null;
                             dataOutputs.TryGetValue(rowData.GetColumnData(rowTypeColumnID), out output);
 
                             for (int i = 0; i < output.OutputColumnCollection.Count; i++)

@@ -46,17 +46,17 @@ namespace Martin.SQLServer.Dts
     {
         IComponentBufferService bufferService = null;
 
-        IDTSOutput output = null;
+        SSISOutput output = null;
         Int64 currentRowCount = 0;
 
         bool treatEmptyStringAsNull = true;
         private ComponentBufferService bufferService1;
-        private IDTSOutput passThroughOutput;
+        private SSISOutput passThroughOutput;
         private bool treatNulls;
         private String columnDelimter;
         private bool concatenateIfToManyColumns;
 
-        public BufferSink(IComponentBufferService bufferService, IDTSOutput output, bool treatEmptyStringAsNull)
+        public BufferSink(IComponentBufferService bufferService, SSISOutput output, bool treatEmptyStringAsNull)
         {
             ArgumentVerifier.CheckObjectArgument(bufferService, "bufferService");
             ArgumentVerifier.CheckObjectArgument(output, "output");
@@ -69,7 +69,7 @@ namespace Martin.SQLServer.Dts
         }
 
 
-        public BufferSink(IComponentBufferService bufferService, IDTSOutput output, bool treatEmptyStringAsNull, String columnDelimter, bool concatenateIfToManyColumns)
+        public BufferSink(IComponentBufferService bufferService, SSISOutput output, bool treatEmptyStringAsNull, String columnDelimter, bool concatenateIfToManyColumns)
         {
             ArgumentVerifier.CheckObjectArgument(bufferService, "bufferService");
             ArgumentVerifier.CheckObjectArgument(output, "output");
@@ -188,7 +188,7 @@ namespace Martin.SQLServer.Dts
                         }
                         catch (Exception ex)
                         {
-                            IDTSOutputColumn outputColumn = this.output.OutputColumnCollection[i];
+                            SSISOutputColumn outputColumn = this.output.OutputColumnCollection[i];
                             if (ex is DoesNotFitBufferException ||
                                 ex is OverflowException ||
                                 ex is System.Data.SqlTypes.SqlTruncateException)
