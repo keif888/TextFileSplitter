@@ -8,7 +8,7 @@ namespace Martin.SQLServer.Dts
 {
     internal static class MessageStrings
     {
-        #region Name Strings
+        #region Dynamic Messages
         const string InvalidPropertyValuePattern = "Invalid value \"{1}\" for property {0}.";
         public static string InvalidPropertyValue(string propertyName, object propertyValue)
         {
@@ -68,6 +68,18 @@ namespace Martin.SQLServer.Dts
         {
             return string.Format(FileDoesNotExistPattern, fileName);
         }
+
+        public const string MasterRecordIDInvalidPattern = "The Master Record ID for output {0} is invalid.";
+        public static string MasterRecordIDInvalid(string outputName)
+        {
+            return string.Format(MasterRecordIDInvalidPattern, outputName);
+        }
+
+        public const string ChildColumnInvalidPattern = "The Child Column {1} is not valid or is missing in output {0}.";
+        public static string ChildColumnInvalid(string outputName, string columnName)
+        {
+            return string.Format(ChildColumnInvalidPattern, outputName, columnName);
+        }
         #endregion
 
         #region Name Descriptions
@@ -84,6 +96,8 @@ namespace Martin.SQLServer.Dts
         public const string InputKeyColumnIDPropDescription = "Stores the Lineage ID of the Key column";
         public const string InputDataColumnIDPropDescription = "Stores the Lineage ID of the Data column";
         public const string TreatEmptyStringsAsNullPropDescription = "If a string is empty then return it as a Null?";
+        public const string MasterRecordIDPropDescription = "Stores the Lineage ID of the output that contains the Master Record for this Child Record.";
+        public const string DotNetFormatStringPropDescription = "Stores the Dot Net Format String to describe this data conversion from String.  eg. yyyy/MM/dd";
         #endregion
 
         #region Input/Output Names
@@ -120,6 +134,7 @@ namespace Martin.SQLServer.Dts
         public const string ConnectionManagerNotSet = "The Connection Manager Needs to be Setup.";
         public const string InvalidPassKeyOutput = "There MUST be One and Only One KeyRecord output!";
         public const string ThereCanOnlyBeOneRowTypeColumn = "There can only be one RowType column in the PassThrough output.";
+        public const string CannotSetMasterRecordID = "The Master Record ID can only be set on ChildRecords or ChildMasterRecords.";
         #endregion
 
         #region Validation Strings

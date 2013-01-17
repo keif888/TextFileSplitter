@@ -172,8 +172,8 @@ namespace Martin.SQLServer.Dts
 
                 if (errorOutputs != 1)
                 {
-                    this.PostError(MessageStrings.NoErrorOutput);
                     returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISBROKEN);
+                    this.PostError(MessageStrings.NoErrorOutput);
                 }
                 if (passThroughOutputs != 1)
                 {
@@ -218,6 +218,16 @@ namespace Martin.SQLServer.Dts
                     case Utilities.typeOfOutputEnum.PassThrough:
                         passThoughOutputs++;
                         returnStatus = ValidateExternalMetaData(output, returnStatus);
+                        break;
+                    case Utilities.typeOfOutputEnum.MasterRecord:
+                        // ToDo: Validate Master Record
+                        break;
+                    case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                        // ToDo: Validate Master Record
+                        returnStatus = ValidateChildOutput(output, returnStatus);
+                        break;
+                    case Utilities.typeOfOutputEnum.ChildRecord:
+                        returnStatus = ValidateChildOutput(output, returnStatus);
                         break;
                     default:
                         this.PostError(MessageStrings.InvalidOutputType(output.Name, "Unknown"));
@@ -338,12 +348,72 @@ namespace Martin.SQLServer.Dts
                 dataType == DataType.DT_IMAGE)
             {
                 this.PostError(MessageStrings.UnsupportedDataType(dataType.ToString()));
-                return DTSValidationStatus.VS_ISCORRUPT;
+                return DTSValidationStatus.VS_ISBROKEN;
             }
             else
             {
                 return DTSValidationStatus.VS_ISVALID;
             }
+        }
+
+
+        private DTSValidationStatus ValidateChildOutput(IDTSOutput output, DTSValidationStatus oldStatus)
+        {
+            // Make sure that the Master Record ID is pointing at a Master Output
+            int masterRecordID = (int) ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID);
+            if (masterRecordID == 0)
+            {
+                this.PostError(MessageStrings.MasterRecordIDInvalid(output.Name));
+                return Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
+            }
+
+            IDTSOutput masterOutput = this.ComponentMetaData.OutputCollection.FindObjectByID(masterRecordID);
+            if (masterOutput == null)
+            {
+                this.PostError(MessageStrings.MasterRecordIDInvalid(output.Name));
+                return Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
+            }
+
+            // Loop though all the output columns on the Master, and make sure that the Child has them, and they are of the correct data types.
+            foreach (IDTSOutputColumn masterOutputColumn in masterOutput.OutputColumnCollection)
+            {
+                if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(masterOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                {
+                    Boolean foundColumn = false;
+                    foreach (IDTSOutputColumn childOutputColumn in output.OutputColumnCollection)
+                    {
+                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(childOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                        {
+                            if ((int)ManageProperties.GetPropertyValue(childOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == masterOutputColumn.LineageID)
+                            {
+                                foundColumn = true;
+                                oldStatus = ValidateOutputAndKeyColumn(masterOutputColumn, childOutputColumn, output.Name, oldStatus);
+                            }
+                        }
+                    }
+                    if (!foundColumn)
+                    {
+                        this.PostError(MessageStrings.ChildColumnInvalid(output.Name, masterOutputColumn.Name));
+                        return Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
+                    }
+                }
+            }
+
+            return oldStatus;
+        }
+
+        private DTSValidationStatus ValidateOutputAndKeyColumn(IDTSOutputColumn keyColumn, IDTSOutputColumn dataColumn, String dataOutputName, DTSValidationStatus oldStatus)
+        {
+            if ((keyColumn.CodePage != dataColumn.CodePage)
+             || (keyColumn.DataType != dataColumn.DataType)
+             || (keyColumn.Length != dataColumn.Length)
+             || (keyColumn.Precision != dataColumn.Precision)
+             || (keyColumn.Scale != dataColumn.Scale))
+            {
+                this.PostError(MessageStrings.ChildColumnInvalid(dataOutputName, dataColumn.Name));
+                return Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
+            }
+            return oldStatus;
         }
 
         #endregion

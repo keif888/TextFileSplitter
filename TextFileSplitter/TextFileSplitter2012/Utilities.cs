@@ -18,6 +18,9 @@ namespace Martin.SQLServer.Dts
             , KeyRecords
             , DataRecords
             , PassThrough
+            , MasterRecord
+            , ChildMasterRecord
+            , ChildRecord
         }
 
         public enum usageOfColumnEnum
@@ -27,6 +30,7 @@ namespace Martin.SQLServer.Dts
             , Passthrough
             , Key
             , Ignore
+            , MasterValue
         }
 
         public static string XmlSerializeToString(this object objectInstance)

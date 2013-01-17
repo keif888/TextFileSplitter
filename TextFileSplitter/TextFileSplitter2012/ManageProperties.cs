@@ -36,10 +36,12 @@ namespace Martin.SQLServer.Dts
         // Output Properties
         internal const string typeOfOutput = "typeOfOutput";
         internal const string rowTypeValue = "rowTypeValue";
+        internal const string masterRecordID = "masterRecordID";
 
         // Output Column Properties
         internal const string usageOfColumn = "usageOfColumn";
         internal const string keyOutputColumnID = "keyOutputColumnID";
+        internal const string dotNetFormatString = "dotNetFormatString";
 
         // Defaults
         const string DefaultDelimiter = ",";
@@ -57,16 +59,18 @@ namespace Martin.SQLServer.Dts
         #region Private
         private void SetPropertyValidationTable()
         {
-            this.propertyValidationTable.Add(isTextDelmited, new ValidateProperty(ValidateBooleanProperty));
-            this.propertyValidationTable.Add(typeOfOutput, new ValidateProperty(ValidateTypeOfOutputProperty));
-            
             this.propertyValidationTable.Add(columnDelimiter, new ValidateProperty(ValidateDelimiterProperty));
+            this.propertyValidationTable.Add(isTextDelmited, new ValidateProperty(ValidateBooleanProperty));
             this.propertyValidationTable.Add(textDelmiter, new ValidateProperty(ValidateDelimiterProperty));
+            this.propertyValidationTable.Add(treatEmptyStringsAsNull, new ValidateProperty(ValidateBooleanProperty));
 
+            this.propertyValidationTable.Add(typeOfOutput, new ValidateProperty(ValidateTypeOfOutputProperty));
             this.propertyValidationTable.Add(rowTypeValue, new ValidateProperty(ValidateRowTypeProperty));
+            this.propertyValidationTable.Add(masterRecordID, new ValidateProperty(ValidateIntegerProperty));
 
             this.propertyValidationTable.Add(usageOfColumn, new ValidateProperty(ValidateUsageOfColumnProperty));
             this.propertyValidationTable.Add(keyOutputColumnID, new ValidateProperty(ValidateIntegerProperty));
+            this.propertyValidationTable.Add(dotNetFormatString, new ValidateProperty(ValidateStringProperty));
         }
 
         private DTSValidationStatus ValidateRowTypeProperty(string propertyName, object propertyValue)
@@ -166,6 +170,19 @@ namespace Martin.SQLServer.Dts
             }
         }
 
+        private DTSValidationStatus ValidateStringProperty(string propertyName, object propertyValue)
+        {
+            if (propertyValue is string)
+            {
+                return DTSValidationStatus.VS_ISVALID;
+            }
+            else
+            {
+                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
+                return DTSValidationStatus.VS_ISCORRUPT;
+            }
+        }
+
         private static DTSValidationStatus ValidatePropertyExists(IDTSCustomPropertyCollection customPropertyCollection, string propertyName, DTSValidationStatus oldStatus)
         {
 
@@ -218,6 +235,7 @@ namespace Martin.SQLServer.Dts
             DTSValidationStatus resultStatus = oldStatus;
             resultStatus = ValidatePropertyExists(customPropertyCollection, rowTypeValue, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, typeOfOutput, resultStatus);
+            resultStatus = ValidatePropertyExists(customPropertyCollection, masterRecordID, resultStatus);
             return resultStatus;
         }
 
@@ -226,6 +244,7 @@ namespace Martin.SQLServer.Dts
             DTSValidationStatus resultStatus = oldStatus;
             resultStatus = ValidatePropertyExists(customPropertyCollection, usageOfColumn, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, keyOutputColumnID, resultStatus);
+            resultStatus = ValidatePropertyExists(customPropertyCollection, dotNetFormatString, resultStatus);
             return resultStatus;
         }
 
@@ -241,12 +260,10 @@ namespace Martin.SQLServer.Dts
             AddCustomProperty(propertyCollection, name, description, defaultValue, string.Empty, false);
         }
 
-        // Uncomment the following if you ever need it.
-        // It's not covered by Unit tests at this point, so it's commented out.
-        //private static void AddCustomProperty(IDTSCustomPropertyCollection propertyCollection, string name, string description, object defaultValue, Boolean valueContainsID)
-        //{
-        //    AddCustomProperty(propertyCollection, name, description, defaultValue, string.Empty, valueContainsID);
-        //}
+        private static void AddCustomProperty(IDTSCustomPropertyCollection propertyCollection, string name, string description, object defaultValue, Boolean valueContainsID)
+        {
+            AddCustomProperty(propertyCollection, name, description, defaultValue, string.Empty, valueContainsID);
+        }
 
         private static void AddCustomProperty(IDTSCustomPropertyCollection propertyCollection, string name, string description, object defaultValue, string typeConverter)
         {
@@ -286,13 +303,15 @@ namespace Martin.SQLServer.Dts
         {
             AddCustomProperty(propertyCollection, typeOfOutput, MessageStrings.TypeOfOutputPropDescription, Utilities.typeOfOutputEnum.DataRecords, typeof(Utilities.typeOfOutputEnum).AssemblyQualifiedName);
             AddCustomProperty(propertyCollection, rowTypeValue, MessageStrings.RowTypeValuePropDescription, String.Empty);
+            AddCustomProperty(propertyCollection, masterRecordID, MessageStrings.MasterRecordIDPropDescription, -1); //, true);
         }
 
         
         public static void AddOutputColumnProperties(IDTSCustomPropertyCollection propertyCollection)
         {
             AddCustomProperty(propertyCollection, usageOfColumn, MessageStrings.UsageOfColumnPropDescription, Utilities.usageOfColumnEnum.Passthrough, typeof(Utilities.usageOfColumnEnum).AssemblyQualifiedName);
-            AddCustomProperty(propertyCollection, keyOutputColumnID, MessageStrings.KeyOutputColumnIDPropDescription, -1);
+            AddCustomProperty(propertyCollection, keyOutputColumnID, MessageStrings.KeyOutputColumnIDPropDescription, -1); // null, true);
+            AddCustomProperty(propertyCollection, dotNetFormatString, MessageStrings.DotNetFormatStringPropDescription, String.Empty);
         }
 
         #endregion
