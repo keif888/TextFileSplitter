@@ -8,6 +8,7 @@ using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
 using System.Runtime.InteropServices;
 using Microsoft.SqlServer.Dts.Runtime;
+using FileHelpers.Dynamic;
 
 #if SQL2012
 using IDTSOutput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
@@ -25,6 +26,7 @@ using IDTSExternalMetadataColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTS
 using IDTSRuntimeConnection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSRuntimeConnection100;
 using IDTSConnectionManagerFlatFile = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFile100;
 using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFileColumn100;
+using FileHelpers;
 #endif
 #if SQL2008
     using IDTSOutput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
@@ -1077,6 +1079,7 @@ namespace Martin.SQLServer.Dts
             SSISOutput keyOutput = null;
 
             SSISOutput passThroughOutput = null;
+            IDTSOutput test = null;
 
             int errorOutID = 0;
             int errorOutIndex = 0;
@@ -1127,6 +1130,7 @@ namespace Martin.SQLServer.Dts
                             {
                                 passThroughBuffer = buffers[i];
                                 passThroughOutput = new SSISOutput(output);
+                                test = output;
                                 break;
                             }
                         }
@@ -1163,6 +1167,29 @@ namespace Martin.SQLServer.Dts
             bool firstRowColumnNames = connectionFlatFile.ColumnNamesInFirstDataRow; //(bool)this.GetComponentPropertyValue(ManageProperties.ColumnNamesInFirstRowPropName);
             bool treatNulls = (bool)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.treatEmptyStringsAsNull);
             columnDelimter = connectionFlatFile.Columns[0].ColumnDelimiter;
+
+            String passThroughClassString = string.Empty;
+            passThroughClassString = DynamicClassStringFromOutput(test, firstRowColumnNames, connectionFlatFile.Columns[connectionFlatFile.Columns.Count - 1].ColumnDelimiter);
+
+            Type passThroughType = ClassBuilder.ClassFromString(passThroughClassString);
+            System.Reflection.FieldInfo[] fieldList = passThroughType.GetFields();
+            // DelimitedClassBuilder PassThrough = new DelimitedClassBuilder("PassThrough", columnDelimter);
+            FileHelperAsyncEngine engine = new FileHelperAsyncEngine(passThroughType);
+            engine.BeginReadFile(fileName);
+            while (engine.ReadNext() != null)
+            {
+                passThroughBuffer.AddRow();
+                for (int i = 0; i < fieldList.Length; i++)
+                {
+                    passThroughBuffer[i] = fieldList[i].GetValue(engine.LastRecord);
+                }
+            }
+
+            foreach (PipelineBuffer buffer in buffers)
+            {
+                buffer.SetEndOfRowset();
+            }
+            return;
 
             FileReader reader = new FileReader(this.fileName, this.GetEncoding());
             DelimitedFileParser parser = this.CreateParser();
@@ -1297,6 +1324,122 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region Helpers
+
+        private String DynamicClassStringFromOutput(IDTSOutput output, Boolean firstRowColumnNames, String rowTerminator)
+        {
+            String classString = string.Empty;
+            classString += "[DelimitedRecord(\"" + columnDelimter + "\")]\r\n";
+            if (firstRowColumnNames)
+            {
+                classString += "[IgnoreFirst(1)]\r\n";
+            }
+            classString += "public sealed class " + output.Name.Replace(" ", String.Empty) + "\r\n";
+            classString += "{\r\n";
+            for (int i = 0; i < output.OutputColumnCollection.Count; i++ )
+            {
+                IDTSOutputColumn outputColumn = output.OutputColumnCollection[i];
+                String conversionString = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.dotNetFormatString);
+                if (i + 1 == output.OutputColumnCollection.Count)
+                {
+                    classString += "[FieldDelimiterAttribute(\"\\n\")]\r\n"; //" + rowTerminator + "\"]\r\n";
+                }
+                switch (outputColumn.DataType)
+                {
+                    case DataType.DT_BOOL:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Boolean, \'" + conversionString + "\")]\r\n";
+                        classString += "public Boolean ";
+                        break;
+                    case DataType.DT_DATE:
+                    case DataType.DT_DBDATE:
+                    case DataType.DT_DBTIME:
+                    case DataType.DT_DBTIME2:
+                    case DataType.DT_DBTIMESTAMP:
+                    case DataType.DT_DBTIMESTAMP2:
+                    case DataType.DT_DBTIMESTAMPOFFSET:
+                    case DataType.DT_FILETIME:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Date, \'" + conversionString + "\")]\r\n";
+                        classString += "public DateTime ";
+                        break;
+                    case DataType.DT_CY:
+                    case DataType.DT_DECIMAL:
+                    case DataType.DT_NUMERIC:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Decimal, \'" + conversionString + "\")]\r\n";
+                        classString += "public Decimal ";
+                        break;
+                    case DataType.DT_I1:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Byte, \'" + conversionString + "\")]\r\n";
+                        classString += "public Byte ";
+                        break;
+                    case DataType.DT_I2:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Int16, \'" + conversionString + "\")]\r\n";
+                        classString += "public Int16 ";
+                        break;
+                    case DataType.DT_I4:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Int32, \'" + conversionString + "\")]\r\n";
+                        classString += "public Int32 ";
+                        break;
+                    case DataType.DT_I8:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Int64, \'" + conversionString + "\")]\r\n";
+                        classString += "public Int64 ";
+                        break;
+                    case DataType.DT_R4:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Single, \'" + conversionString + "\")]\r\n";
+                        classString += "public Single ";
+                        break;
+                    case DataType.DT_R8:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Dpuble, \'" + conversionString + "\")]\r\n";
+                        classString += "public Double ";
+                        break;
+                    case DataType.DT_UI1:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.SByte, \'" + conversionString + "\")]\r\n";
+                        classString += "public SByte ";
+                        break;
+                    case DataType.DT_UI2:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.UInt16, \'" + conversionString + "\")]\r\n";
+                        classString += "public UInt16 ";
+                        break;
+                    case DataType.DT_UI4:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.UInt32, \'" + conversionString + "\")]\r\n";
+                        classString += "public UInt32 ";
+                        break;
+                    case DataType.DT_UI8:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.UInt64, \'" + conversionString + "\")]\r\n";
+                        classString += "public UInt64 ";
+                        break;
+                    case DataType.DT_GUID:
+                        if (!String.IsNullOrEmpty(conversionString))
+                            classString += "[FieldConverter(ConverterKind.Guid, \'" + conversionString + "\")]\r\n";
+                        classString += "public Guid ";
+                        break;
+                    case DataType.DT_STR:
+                    case DataType.DT_TEXT:
+                    case DataType.DT_NTEXT:
+                    case DataType.DT_WSTR:
+                        classString += "public String ";
+                        break;
+                    default:
+                        classString += "public String ";
+                        break;
+                }
+                classString += outputColumn.Name.Replace(" ", String.Empty) + ";\r\n";
+            }
+            classString += "}\r\n";
+            return classString;
+        }
+
 
         private void PushMasterValueColumnsToChildren(IDTSOutput thisOutput, int outputColumnID, IDTSOutputColumn thisColumn)//int masterOutputID, IDTSOutputColumn masterOutputColumn)
         {

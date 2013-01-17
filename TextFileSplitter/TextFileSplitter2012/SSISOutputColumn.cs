@@ -21,6 +21,7 @@ namespace Martin.SQLServer.Dts
             _identificationString = outputColumn.IdentificationString;
             _errorRowDisposition = outputColumn.ErrorRowDisposition;
             _lineageID = outputColumn.LineageID;
+            _systemType = outputColumn.DataType.GetType();
             for (int j = 0; j < outputColumn.CustomPropertyCollection.Count; j++)
             {
                 SSISProperty newProperty = new SSISProperty();
@@ -76,6 +77,14 @@ namespace Martin.SQLServer.Dts
         {
             get { return _errorRowDisposition; }
             set { _errorRowDisposition = value; }
+        }
+
+        private System.Type _systemType;
+
+        public System.Type SystemType
+        {
+            get { return _systemType; }
+            set { _systemType = value; }
         }
         
         
