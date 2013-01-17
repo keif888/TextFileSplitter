@@ -135,6 +135,7 @@ namespace Martin.SQLServer.Dts
         public const string InvalidPassKeyOutput = "There MUST be One and Only One KeyRecord output!";
         public const string ThereCanOnlyBeOneRowTypeColumn = "There can only be one RowType column in the PassThrough output.";
         public const string CannotSetMasterRecordID = "The Master Record ID can only be set on ChildRecords or ChildMasterRecords.";
+        public const string ThereCanOnlyBeOneRowDataColumn = "There can only be one RowData column in the PassThrough output.";
         #endregion
 
         #region Validation Strings

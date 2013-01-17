@@ -303,14 +303,14 @@ namespace Martin.SQLServer.Dts
         {
             AddCustomProperty(propertyCollection, typeOfOutput, MessageStrings.TypeOfOutputPropDescription, Utilities.typeOfOutputEnum.DataRecords, typeof(Utilities.typeOfOutputEnum).AssemblyQualifiedName);
             AddCustomProperty(propertyCollection, rowTypeValue, MessageStrings.RowTypeValuePropDescription, String.Empty);
-            AddCustomProperty(propertyCollection, masterRecordID, MessageStrings.MasterRecordIDPropDescription, -1); //, true);
+            AddCustomProperty(propertyCollection, masterRecordID, MessageStrings.MasterRecordIDPropDescription, -1, true);
         }
 
         
         public static void AddOutputColumnProperties(IDTSCustomPropertyCollection propertyCollection)
         {
             AddCustomProperty(propertyCollection, usageOfColumn, MessageStrings.UsageOfColumnPropDescription, Utilities.usageOfColumnEnum.Passthrough, typeof(Utilities.usageOfColumnEnum).AssemblyQualifiedName);
-            AddCustomProperty(propertyCollection, keyOutputColumnID, MessageStrings.KeyOutputColumnIDPropDescription, -1); // null, true);
+            AddCustomProperty(propertyCollection, keyOutputColumnID, MessageStrings.KeyOutputColumnIDPropDescription, -1, true);
             AddCustomProperty(propertyCollection, dotNetFormatString, MessageStrings.DotNetFormatStringPropDescription, String.Empty);
         }
 

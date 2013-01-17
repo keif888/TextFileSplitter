@@ -60,6 +60,7 @@ namespace Martin.SQLServer.Dts
         ManageProperties propertyManager = new ManageProperties();
         const int E_FAIL = unchecked((int)0x80004005);
         private String fileName = String.Empty;
+        private int codePage = 1252;
         private int passthroughOutputID = -1;
         private int errorOutputID = -1;
         private int keyRecordOutputID = -1;
@@ -431,7 +432,7 @@ namespace Martin.SQLServer.Dts
                     foreach (IDTSConnectionManagerFlatFileColumn FFcolumn in connectionFlatFile.Columns)
                     {
                         IDTSOutputColumn outColumn = this.ComponentMetaData.OutputCollection[0].OutputColumnCollection.New();
-                        ManageColumns.SetOutputColumnDefaults(outColumn);
+                        ManageColumns.SetOutputColumnDefaults(outColumn, connectionFlatFile.CodePage);
                         ManageProperties.AddOutputColumnProperties(outColumn.CustomPropertyCollection);
                         outColumn.Name = ((IDTSName100)FFcolumn).Name;
                         outColumn.SetDataTypeProperties(FFcolumn.DataType, FFcolumn.MaximumWidth, FFcolumn.DataPrecision, FFcolumn.DataScale, connectionFlatFile.CodePage);
@@ -465,6 +466,7 @@ namespace Martin.SQLServer.Dts
                 else
                 {
                     fileName = cmFlatFile.ConnectionString;
+                    this.codePage = connectionFlatFile.CodePage;
                 }
             }
         }
@@ -480,7 +482,14 @@ namespace Martin.SQLServer.Dts
         #region Set Component Property
         public override IDTSCustomProperty SetComponentProperty(string propertyName, object propertyValue)
         {
-            return base.SetComponentProperty(propertyName, propertyValue);
+            if (this.propertyManager.ValidatePropertyValue(propertyName, propertyValue, DTSValidationStatus.VS_ISVALID) == DTSValidationStatus.VS_ISVALID)
+            {
+                return base.SetComponentProperty(propertyName, propertyValue);
+            }
+            else
+            {
+                throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
+            }
         }
         #endregion
 
@@ -534,7 +543,6 @@ namespace Martin.SQLServer.Dts
                             ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
                             ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
                             ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, keyColumn.LineageID);
-                            ManageProperties.SetContainsLineage(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, true);
                             outputColumn.SetDataTypeProperties(keyColumn.DataType, keyColumn.Length, keyColumn.Precision, keyColumn.Scale, keyColumn.CodePage);
                         }
                     }
@@ -556,9 +564,7 @@ namespace Martin.SQLServer.Dts
                 IDTSOutputColumn col = base.InsertOutputColumnAt(outputID, outputColumnIndex, name, description);
                 ManageProperties.AddOutputColumnProperties(col.CustomPropertyCollection);
                 col.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
-                col.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
-                col.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
-                col.SetDataTypeProperties(DataType.DT_STR, 50, 0, 0, 1252);
+                ManageColumns.SetOutputColumnDefaults(col, codePage);
                 return col;
             }
             else
@@ -591,6 +597,7 @@ namespace Martin.SQLServer.Dts
                 {
                     IDTSOutput thisOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(outputID);
                     IDTSOutputColumn thisColumn = thisOutput.OutputColumnCollection.GetObjectByID(outputColumnID);
+                    Utilities.usageOfColumnEnum oldValue;
                     switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -598,7 +605,7 @@ namespace Martin.SQLServer.Dts
                         case Utilities.typeOfOutputEnum.KeyRecords:
                             #region KeyRecords
                             // The Key value can be used here, BUT the column must be added to the other outputs!
-                            Utilities.usageOfColumnEnum oldValue = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
+                            oldValue = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
                             if ((oldValue != (Utilities.usageOfColumnEnum)propertyValue) && ((oldValue == Utilities.usageOfColumnEnum.Key) || ((Utilities.usageOfColumnEnum)propertyValue == Utilities.usageOfColumnEnum.Key)))
                             {
                                 if ((Utilities.usageOfColumnEnum)propertyValue == Utilities.usageOfColumnEnum.Key)
@@ -632,7 +639,6 @@ namespace Martin.SQLServer.Dts
                                                 ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
                                                 ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
                                                 ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, thisColumn.LineageID);
-                                                ManageProperties.SetContainsLineage(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, true);
                                                 outputColumn.SetDataTypeProperties(thisColumn.DataType, thisColumn.Length, thisColumn.Precision, thisColumn.Scale, thisColumn.CodePage);
                                             }
                                         }
@@ -641,47 +647,23 @@ namespace Martin.SQLServer.Dts
                                 else
                                 {
                                     // Remove this column from the outputs
-                                    foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-                                    {
-                                        if (!output.IsErrorOut)
-                                        {
-                                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.DataRecords)
-                                            {
-                                                int IDToDelete = -1;
-                                                foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
-                                                {
-                                                    if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
-                                                    {
-                                                        IDToDelete = outputColumn.ID;
-                                                    }
-                                                }
-                                                if (IDToDelete != -1)
-                                                {
-                                                    output.OutputColumnCollection.RemoveObjectByID(IDToDelete);
-                                                }
-                                            }
-                                        }
-                                    }
+                                    RemoveLinkedColumnFromOutputs(thisColumn);
                                 }
                             } 
                             #endregion
                             break;
                         case Utilities.typeOfOutputEnum.DataRecords:
+                        case Utilities.typeOfOutputEnum.ChildRecord:
                             switch ((Utilities.usageOfColumnEnum) propertyValue)
 	                        {
                                 case Utilities.usageOfColumnEnum.RowType:
-                                    throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
                                 case Utilities.usageOfColumnEnum.RowData:
-                                    throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
-                                case Utilities.usageOfColumnEnum.Passthrough:
-                                    break;
                                 case Utilities.usageOfColumnEnum.Key:
+                                case Utilities.usageOfColumnEnum.MasterValue:
                                     throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
-                                case Utilities.usageOfColumnEnum.Ignore:
-                                    break;
                                 default:
                                     break;
-	                        }                            
+	                        }
                             break;
                         case Utilities.typeOfOutputEnum.PassThrough:
                             switch ((Utilities.usageOfColumnEnum) propertyValue)
@@ -701,16 +683,59 @@ namespace Martin.SQLServer.Dts
                                     }
                                     break;
                                 case Utilities.usageOfColumnEnum.RowData:
+                                    int CountOfRowDatas = 0;
+                                    foreach (IDTSOutputColumn outputColumn in thisOutput.OutputColumnCollection)
+                                    {
+                                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.RowData)
+                                        {
+                                            CountOfRowDatas++;
+                                        }
+                                    }
+                                    if (CountOfRowDatas > 0)
+                                    {
+                                        throw new COMException(MessageStrings.ThereCanOnlyBeOneRowDataColumn, E_FAIL);
+                                    }
                                     break;
                                 case Utilities.usageOfColumnEnum.Passthrough:
-                                    throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
                                 case Utilities.usageOfColumnEnum.Key:
+                                case Utilities.usageOfColumnEnum.MasterValue:
                                     throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
                                 case Utilities.usageOfColumnEnum.Ignore:
                                     break;
                                 default:
                                     break;
 	                        }
+                            break;
+                        case Utilities.typeOfOutputEnum.MasterRecord:
+                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                            switch ((Utilities.usageOfColumnEnum)propertyValue)
+	                            {
+                                    case Utilities.usageOfColumnEnum.RowType:
+                                    case Utilities.usageOfColumnEnum.RowData:
+                                    case Utilities.usageOfColumnEnum.Key:
+                                        throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
+                                    case Utilities.usageOfColumnEnum.Passthrough:
+                                    case Utilities.usageOfColumnEnum.Ignore:
+                                    case Utilities.usageOfColumnEnum.MasterValue:
+                                        oldValue = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
+                                        if ((oldValue != (Utilities.usageOfColumnEnum)propertyValue) && (oldValue != Utilities.usageOfColumnEnum.MasterValue))
+                                        {
+                                            // Determine the correct position for this record in the output.
+                                            PushMasterValueColumnsToChildren(thisOutput, thisColumn.ID, thisColumn);
+                                        }
+                                        else
+                                        {
+                                            if ((oldValue != (Utilities.usageOfColumnEnum)propertyValue) && (oldValue == Utilities.usageOfColumnEnum.MasterValue))
+                                            {
+                                                // Remove this column from the other outputs
+                                                RemoveLinkedColumnFromOutputs(thisColumn);
+                                            }
+                                        }
+                                        //ToDo: Apply Value down the Chain!
+                                        break;
+                                    default:
+                                        throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
+                                }
                             break;
                         default:
                             break;
@@ -723,6 +748,9 @@ namespace Martin.SQLServer.Dts
                 throw new COMException(string.Empty, E_FAIL);
             }
         }
+
+
+        
         #endregion
 
         #region SetOutputColumnDataTypeProperties
@@ -832,6 +860,27 @@ namespace Martin.SQLServer.Dts
                                 }
                             }
                         }
+                        else if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                        {
+                            if (((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.MasterRecord)
+                             || ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                            {
+                                if ((int)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) <= 0)
+                                {
+                                    // Need to delete the "children"!
+                                    RemoveLinkedColumnFromOutputs(thisColumn);
+                                }
+                                else
+                                {
+                                    throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                                }
+                            }
+                            else
+                            {
+                                throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                            }
+
+                        }
                     }
                 }
             }
@@ -850,49 +899,104 @@ namespace Martin.SQLServer.Dts
         /// <returns>The custom property.</returns>
         public override IDTSCustomProperty SetOutputProperty(int outputID, string propertyName, object propertyValue)
         {
-            if (propertyName == ManageProperties.typeOfOutput)
+            IDTSOutput currentOutput = null;
+            if (this.propertyManager.ValidatePropertyValue(propertyName, propertyValue, DTSValidationStatus.VS_ISVALID) != DTSValidationStatus.VS_ISVALID)
             {
-                // Do not allow the typeOfOutput to be changed.
-                throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                //switch ((Utilities.typeOfOutputEnum)propertyValue)
-                //{
-                //    case Utilities.typeOfOutputEnum.ErrorRecords:
-                //        if (!this.ComponentMetaData.OutputCollection.GetObjectByID(outputID).IsErrorOut)
-                //        {
-                //            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                //        }
-                //        break;
-                //    case Utilities.typeOfOutputEnum.KeyRecords:
-                //        int keyOutputCount = 0;
-                //        foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-                //        {
-                //            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
-                //            { keyOutputCount++; }
-                //        }
-                //        if (keyOutputCount > 0)
-                //        {
-                //            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                //        }
-                //        break;
-                //    case Utilities.typeOfOutputEnum.DataRecords:
-                //        break;
-                //    case Utilities.typeOfOutputEnum.PassThrough:
-                //        int passthroughOutputCount = 0;
-                //        foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-                //        {
-                //            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
-                //            { passthroughOutputCount++; }
-                //        }
-                //        if (passthroughOutputCount > 0)
-                //        {
-                //            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                //        }
-                //        break;
-                //    default:
-                //        break;
-                //}
+                throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
             }
-            return base.SetOutputProperty(outputID, propertyName, propertyValue);
+            else
+            {
+                if (propertyName == ManageProperties.masterRecordID)
+                {
+                    currentOutput = this.ComponentMetaData.OutputCollection.FindObjectByID(outputID);
+                    switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                    {
+                        case Utilities.typeOfOutputEnum.ErrorRecords:
+                        case Utilities.typeOfOutputEnum.KeyRecords:
+                        case Utilities.typeOfOutputEnum.DataRecords:
+                        case Utilities.typeOfOutputEnum.PassThrough:
+                        case Utilities.typeOfOutputEnum.MasterRecord:
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                        case Utilities.typeOfOutputEnum.ChildRecord:
+                            // Add the "MasterValue" columns into this record
+                            IDTSOutput masterOutput = this.ComponentMetaData.OutputCollection.FindObjectByID((int)propertyValue);
+                            if (masterOutput == null)
+                            {
+                                throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
+                            }
+                            Utilities.typeOfOutputEnum masterType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(masterOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                            if ((masterType == Utilities.typeOfOutputEnum.ChildMasterRecord) || (masterType == Utilities.typeOfOutputEnum.MasterRecord))
+                            {
+                                int columnPosition = 0;
+                                foreach (IDTSOutputColumn outputColumn in masterOutput.OutputColumnCollection)
+                                {
+                                    if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                    {
+                                        columnPosition++;
+                                    }
+                                    if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                                    {
+                                        IDTSOutputColumn newOutputColumn = currentOutput.OutputColumnCollection.NewAt(columnPosition);
+                                        newOutputColumn.Name = outputColumn.Name;
+                                        newOutputColumn.Description = MessageStrings.KeyColumnDescription;
+                                        ManageProperties.AddOutputColumnProperties(newOutputColumn.CustomPropertyCollection);
+                                        ManageProperties.SetPropertyValue(newOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
+                                        ManageProperties.SetPropertyValue(newOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, outputColumn.LineageID);
+                                        newOutputColumn.SetDataTypeProperties(outputColumn.DataType, outputColumn.Length, outputColumn.Precision, outputColumn.Scale, outputColumn.CodePage); 
+                                        columnPosition++;
+                                    }
+                                    if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord)
+                                    {
+                                        PushMasterValueColumnsToChildren(masterOutput, outputColumn.ID, outputColumn);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // You can only set to a Master or MasterChild value
+                                throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
+                            }
+                            break;
+                        default:
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                    }
+                }
+                else if (propertyName == ManageProperties.typeOfOutput)
+                {
+                    currentOutput = this.ComponentMetaData.OutputCollection.FindObjectByID(outputID);
+                    switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                    {
+                        case Utilities.typeOfOutputEnum.ErrorRecords:
+                        case Utilities.typeOfOutputEnum.KeyRecords:
+                        case Utilities.typeOfOutputEnum.PassThrough:
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                        case Utilities.typeOfOutputEnum.MasterRecord:
+                        case Utilities.typeOfOutputEnum.DataRecords:
+                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                        case Utilities.typeOfOutputEnum.ChildRecord:
+                            switch ((Utilities.typeOfOutputEnum)propertyValue)
+                            {
+                                case Utilities.typeOfOutputEnum.ErrorRecords:
+                                case Utilities.typeOfOutputEnum.KeyRecords:
+                                case Utilities.typeOfOutputEnum.PassThrough:
+                                    throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
+                                case Utilities.typeOfOutputEnum.DataRecords:
+                                case Utilities.typeOfOutputEnum.MasterRecord:
+                                case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                                case Utilities.typeOfOutputEnum.ChildRecord:
+                                    // These are the Valid Cases!
+                                    break;
+                                default:
+                                    throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
+                            }
+                            break;
+                        default:
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                    }
+                }
+                return base.SetOutputProperty(outputID, propertyName, propertyValue);
+            }
         }
         #endregion
 
@@ -1193,6 +1297,79 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region Helpers
+
+        private void PushMasterValueColumnsToChildren(IDTSOutput thisOutput, int outputColumnID, IDTSOutputColumn thisColumn)//int masterOutputID, IDTSOutputColumn masterOutputColumn)
+        {
+            int keyPosition = 0;
+            for (int i = 0; i < thisOutput.OutputColumnCollection.Count; i++)
+            {
+                if (thisOutput.OutputColumnCollection[i].ID == outputColumnID)
+                {
+                    break;
+                }
+                else
+                {
+                    if (((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisOutput.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                    || ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisOutput.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue))
+                    {
+                        keyPosition++;
+                    }
+                }
+            }
+            // Add column to the Child Outputs.
+            int MasterOutputID = thisOutput.ID;
+            foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
+            {
+                if (!output.IsErrorOut)
+                {
+                    IDTSOutputColumn outputColumn = null;
+                    if ((((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildRecord)
+                     || ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                    && ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == MasterOutputID))
+                    {
+                        outputColumn = output.OutputColumnCollection.NewAt(keyPosition);
+                        outputColumn.Name = thisColumn.Name;
+                        outputColumn.Description = MessageStrings.KeyColumnDescription;
+                        ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
+                        ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
+                        ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, thisColumn.LineageID);
+                        outputColumn.SetDataTypeProperties(thisColumn.DataType, thisColumn.Length, thisColumn.Precision, thisColumn.Scale, thisColumn.CodePage);
+                        if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord)
+                        {
+                            PushMasterValueColumnsToChildren(output, outputColumn.ID, outputColumn);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void RemoveLinkedColumnFromOutputs(IDTSOutputColumn thisColumn)
+        {
+            foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
+            {
+                if (!output.IsErrorOut)
+                {
+                    if (((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildRecord)
+                        || ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                    {
+                        int IDToDelete = -1;
+                        foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
+                        {
+                            if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
+                            {
+                                IDToDelete = outputColumn.ID;
+                                break;
+                            }
+                        }
+                        if (IDToDelete != -1)
+                        {
+                            output.OutputColumnCollection.RemoveObjectByID(IDToDelete);
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Parse through all the outputs and find the three "special" outputs.
         /// </summary>

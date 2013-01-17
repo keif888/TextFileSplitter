@@ -64,12 +64,12 @@ namespace Martin.SQLServer.Dts
             outputColumn.SetDataTypeProperties(DataType.DT_WSTR, 4000, 0, 0, 0);
         }
 
-        public static void SetOutputColumnDefaults(IDTSOutputColumn outputColumn)
+        public static void SetOutputColumnDefaults(IDTSOutputColumn outputColumn, int CodePage)
         {
             outputColumn.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
             outputColumn.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
             outputColumn.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
-            outputColumn.SetDataTypeProperties(DataType.DT_WSTR, DefaultStringColumnSize, 0, 0, 0);
+            outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, CodePage);
         }
     }
 }
