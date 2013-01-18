@@ -23,6 +23,7 @@ using IDTSExternalMetadataColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTS
 using IDTSRuntimeConnection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSRuntimeConnection100;
 using IDTSConnectionManagerFlatFile = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFile100;
 using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFileColumn100;
+using IDTSBufferManager = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSBufferManager100;
 #endif
 #if SQL2008
     using IDTSOutput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
@@ -40,6 +41,7 @@ using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrap
     using IDTSRuntimeConnection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSRuntimeConnection100;
     using IDTSConnectionManagerFlatFile = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFile100;
     using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFileColumn100;
+    using IDTSBufferManager = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSBufferManager100;
 #endif
 
 namespace Martin.SQLServer.Dts
@@ -52,11 +54,11 @@ namespace Martin.SQLServer.Dts
             _outputColumnCollection = new List<SSISOutputColumn>();
         }
 
-        public SSISOutput(IDTSOutput output)
+        public SSISOutput(IDTSOutput output, IDTSBufferManager bufferManager)
         {
             _customPropertyCollection = new Dictionary<string, SSISProperty>();
             _outputColumnCollection = new List<SSISOutputColumn>();
-            _name = output.Name;
+            _name = output.Name.Replace(" ", String.Empty);
 
             // Get the Custom Properties
             for (int i = 0; i < output.CustomPropertyCollection.Count; i++)
@@ -70,7 +72,7 @@ namespace Martin.SQLServer.Dts
             // Get the Columns
             for (int i = 0; i < output.OutputColumnCollection.Count; i++)
             {
-                SSISOutputColumn newColumn = new SSISOutputColumn(output.OutputColumnCollection[i]);
+                SSISOutputColumn newColumn = new SSISOutputColumn(output.OutputColumnCollection[i], bufferManager, output.Buffer);
                 _outputColumnCollection.Add(newColumn);
             }
         }
@@ -104,7 +106,7 @@ namespace Martin.SQLServer.Dts
         public String Name
         {
             get { return _name; }
-            set { _name = value; }
+            set { _name = value.Replace(" ", String.Empty); }
         }
         
     }
