@@ -63,10 +63,6 @@ namespace Martin.SQLServer.Dts
         const int E_FAIL = unchecked((int)0x80004005);
         private String fileName = String.Empty;
         private int codePage = 1252;
-        private int passthroughOutputID = -1;
-        private int errorOutputID = -1;
-        private int keyRecordOutputID = -1;
-        private Dictionary<String, int> dataOutputIDs = new Dictionary<string, int>();
         private string columnDelimter = string.Empty;
         #endregion
 
@@ -131,7 +127,6 @@ namespace Martin.SQLServer.Dts
         public override DTSValidationStatus Validate()
         {
             DTSValidationStatus status = DTSValidationStatus.VS_ISVALID;
-            findOutputIDs();
             status = ValidateComponentProperties(status);
             status = ValidateOutputs(status);
             return status;
@@ -1040,18 +1035,10 @@ namespace Martin.SQLServer.Dts
 
         #region RunTime
 
-        #region Pre Execute
-        public override void PreExecute()
-        {
-            base.PreExecute();
-        }
-        #endregion
-
         #region Prime Ouputs
         public override void PrimeOutput(int outputs, int[] outputIDs, PipelineBuffer[] buffers)
         {
             PipelineBuffer errorBuffer = null;
-            PipelineBuffer keyRecordBuffer = null;
             PipelineBuffer passThroughBuffer = null;
             Dictionary<String, PipelineBuffer> dataBuffers = new Dictionary<string, PipelineBuffer>();
             Dictionary<String, SSISOutput> dataOutputs = new Dictionary<string, SSISOutput>();
@@ -1059,24 +1046,12 @@ namespace Martin.SQLServer.Dts
             Dictionary<String, Type> classBuffers = new Dictionary<string, Type>();
             Dictionary<String, FileHelperEngine> engines = new Dictionary<string, FileHelperEngine>();
             Dictionary<String, int> badRecords = new Dictionary<string, int>();
-            int rowTypeColumnID = -1;
-            int rowDataColumnID = -1;
-            String keyValue = string.Empty;
-            SSISOutput keyOutput = null;
             String RowDataValue = string.Empty;
             String RowTypeValue = string.Empty;
             Boolean pbFireAgain = true;
             Boolean pbCancel = false;
-
             SSISOutput passThroughOutput = null;
-            IDTSOutput test = null;
-
-            int errorOutID = 0;
-            int errorOutIndex = 0;
-
             Int64 recordsRead = 0;
-
-            GetErrorOutputInfo(ref errorOutID, ref errorOutIndex);
 
             columnDelimter = (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
 
@@ -1099,19 +1074,17 @@ namespace Martin.SQLServer.Dts
                         {
                             if (outputIDs[i] == output.ID)
                             {
-                                keyRecordBuffer = buffers[i];
                                 dataBuffers.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), buffers[i]);
-                                //keyValue = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
-                                keyOutput = new SSISOutput(output, BufferManager);
-                                dataOutputs.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), keyOutput);
-                                foreach (SSISOutputColumn outputColumn in keyOutput.OutputColumnCollection)
+                                SSISOutput dataOutput = new SSISOutput(output, BufferManager);
+                                dataOutputs.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), dataOutput);
+                                foreach (SSISOutputColumn outputColumn in dataOutput.OutputColumnCollection)
                                 {
                                     if (outputColumn.IsMasterOrKey)
                                     {
                                         keyMasterValues.Add(outputColumn.LineageID, null);
                                     }
                                 }
-                                SetupFileHelper(output, keyOutput, ref classBuffers, ref engines);
+                                SetupFileHelper(output, dataOutput, ref classBuffers, ref engines);
                                 break;
                             }
                         }
@@ -1159,29 +1132,7 @@ namespace Martin.SQLServer.Dts
                             {
                                 passThroughBuffer = buffers[i];
                                 passThroughOutput = new SSISOutput(output, BufferManager);
-                                test = output;
                                 break;
-                            }
-                        }
-                        // Locate the RowType Column.
-                        for (int i = 0; i < output.OutputColumnCollection.Count; i++)
-                        {
-                            switch ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(output.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.usageOfColumn))
-                            {
-                                case Utilities.usageOfColumnEnum.RowType:
-                                    rowTypeColumnID = i;
-                                    break;
-                                case Utilities.usageOfColumnEnum.RowData:
-                                    rowDataColumnID = i;
-                                    break;
-                                case Utilities.usageOfColumnEnum.Passthrough:
-                                    break;
-                                case Utilities.usageOfColumnEnum.Key:
-                                    break;
-                                case Utilities.usageOfColumnEnum.Ignore:
-                                    break;
-                                default:
-                                    break;
                             }
                         }
                         break;
@@ -1368,13 +1319,6 @@ namespace Martin.SQLServer.Dts
             }
 
             this.ComponentMetaData.FireInformation(0, this.ComponentMetaData.Name, String.Format("Total Number of records read is {0}.", recordsRead), string.Empty, 0, ref pbFireAgain);
-        }
-        #endregion
-
-        #region Post Execute
-        public override void PostExecute()
-        {
-            base.PostExecute();
         }
         #endregion
 
@@ -1602,35 +1546,6 @@ namespace Martin.SQLServer.Dts
                     {
                         output.OutputColumnCollection.RemoveObjectByID(IDToDelete);
                     }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Parse through all the outputs and find the three "special" outputs.
-        /// </summary>
-        /// <returns></returns>
-        private void findOutputIDs()
-        {
-            dataOutputIDs = new Dictionary<string, int>();
-            foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-            {
-                switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
-                {
-                    case Utilities.typeOfOutputEnum.ErrorRecords:
-                        errorOutputID = output.ID;
-                        break;
-                    case Utilities.typeOfOutputEnum.KeyRecords:
-                        keyRecordOutputID = output.ID;
-                        break;
-                    case Utilities.typeOfOutputEnum.DataRecords:
-                        dataOutputIDs.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), output.ID);
-                        break;
-                    case Utilities.typeOfOutputEnum.PassThrough:
-                        passthroughOutputID = output.ID;
-                        break;
-                    default:
-                        break;
                 }
             }
         }
