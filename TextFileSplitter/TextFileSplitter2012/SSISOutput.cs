@@ -59,6 +59,7 @@ namespace Martin.SQLServer.Dts
             _customPropertyCollection = new Dictionary<string, SSISProperty>();
             _outputColumnCollection = new List<SSISOutputColumn>();
             _name = "_" + output.Name.Replace(" ", String.Empty).Replace("_", String.Empty).Replace("@", String.Empty);
+            _errorRowDisposition = output.ErrorRowDisposition;
 
             // Get the Custom Properties
             for (int i = 0; i < output.CustomPropertyCollection.Count; i++)
@@ -93,12 +94,12 @@ namespace Martin.SQLServer.Dts
             set { _outputColumnCollection = value; }
         }
 
-        private DTSRowDisposition _truncationRowDisposition;
+        private DTSRowDisposition _errorRowDisposition;
 
-        public DTSRowDisposition TruncationRowDisposition
+        public DTSRowDisposition ErrorRowDisposition
         {
-            get { return _truncationRowDisposition; }
-            set { _truncationRowDisposition = value; }
+            get { return _errorRowDisposition; }
+            set { _errorRowDisposition = value; }
         }
 
         private String _name;

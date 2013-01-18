@@ -66,9 +66,10 @@ namespace Martin.SQLServer.Dts
 
         public static void SetOutputColumnDefaults(IDTSOutputColumn outputColumn, int CodePage)
         {
-            outputColumn.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
-            outputColumn.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
-            outputColumn.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
+            // If any column has a failure, use the Output level dispositions for redirection.
+            //outputColumn.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
+            //outputColumn.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
+            //outputColumn.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
             outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, CodePage);
         }
     }

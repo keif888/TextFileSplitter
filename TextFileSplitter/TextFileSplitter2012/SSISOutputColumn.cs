@@ -9,18 +9,18 @@ namespace Martin.SQLServer.Dts
 {
     internal class SSISOutputColumn
     {
-        public SSISOutputColumn()
-        {
-            _customPropertyCollection = new Dictionary<string, SSISProperty>();
-        }
+        //public SSISOutputColumn()
+        //{
+        //    _customPropertyCollection = new Dictionary<string, SSISProperty>();
+        //}
 
         public SSISOutputColumn(IDTSOutputColumn100 outputColumn, IDTSBufferManager100 bufferManager, int bufferID)
         {
             _customPropertyCollection = new Dictionary<string, SSISProperty>();
             _name = "_" + outputColumn.Name.Replace(" ", String.Empty).Replace("_", String.Empty).Replace("@", String.Empty);
-            _truncationRowDisposition = outputColumn.TruncationRowDisposition;
+            //_truncationRowDisposition = outputColumn.TruncationRowDisposition;
             _identificationString = outputColumn.IdentificationString;
-            _errorRowDisposition = outputColumn.ErrorRowDisposition;
+            //_errorRowDisposition = outputColumn.ErrorRowDisposition;
             _lineageID = outputColumn.LineageID;
             _datatype = outputColumn.DataType;
             for (int j = 0; j < outputColumn.CustomPropertyCollection.Count; j++)
@@ -89,13 +89,13 @@ namespace Martin.SQLServer.Dts
             set { _name = value.Replace(" ", String.Empty); }
         }
 
-        private DTSRowDisposition _truncationRowDisposition;
+        //private DTSRowDisposition _truncationRowDisposition;
 
-        public DTSRowDisposition TruncationRowDisposition
-        {
-            get { return _truncationRowDisposition; }
-            set { _truncationRowDisposition = value; }
-        }
+        //public DTSRowDisposition TruncationRowDisposition
+        //{
+        //    get { return _truncationRowDisposition; }
+        //    set { _truncationRowDisposition = value; }
+        //}
 
         private int _lineageID;
 
@@ -113,13 +113,13 @@ namespace Martin.SQLServer.Dts
             set { _identificationString = value; }
         }
 
-        private DTSRowDisposition _errorRowDisposition;
+        //private DTSRowDisposition _errorRowDisposition;
 
-        public DTSRowDisposition ErrorRowDisposition
-        {
-            get { return _errorRowDisposition; }
-            set { _errorRowDisposition = value; }
-        }
+        //public DTSRowDisposition ErrorRowDisposition
+        //{
+        //    get { return _errorRowDisposition; }
+        //    set { _errorRowDisposition = value; }
+        //}
 
         private DataType _datatype;
 

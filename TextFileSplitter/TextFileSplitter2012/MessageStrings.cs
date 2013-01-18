@@ -109,6 +109,7 @@ namespace Martin.SQLServer.Dts
 
         #region Messages
         public const string RowLevelTruncationOperation = "Error or truncation whilst parsing row values.";
+        public const string RowLevelErrorOperation = "Error whilst parsing row values.";
         public const string ColumnLevelErrorTruncationOperation = "Error or truncation while assigning column values.";
         public const string NotExpectedInputs = "The number of inputs is NOT one.";
         public const string UnexpectedNumberOfOutputs = "The number of outputs is less than two.";

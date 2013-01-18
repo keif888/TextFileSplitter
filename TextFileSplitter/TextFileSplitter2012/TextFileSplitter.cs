@@ -85,8 +85,8 @@ namespace Martin.SQLServer.Dts
             // PassThrough Record Output
             IDTSOutput output = this.ComponentMetaData.OutputCollection.New();
             output.Name = MessageStrings.PassthroughOutputName;
-            output.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
-            output.ErrorOrTruncationOperation = MessageStrings.RowLevelTruncationOperation;
+            output.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
+            output.ErrorOrTruncationOperation = MessageStrings.RowLevelErrorOperation;
             output.SynchronousInputID = 0;
             ManageProperties.AddOutputProperties(output.CustomPropertyCollection);
             ManageProperties.SetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
@@ -102,8 +102,8 @@ namespace Martin.SQLServer.Dts
             // Key Records output.
             IDTSOutput keyRecords = this.ComponentMetaData.OutputCollection.New();
             keyRecords.Name = MessageStrings.KeyRecordOutputName;
-            keyRecords.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
-            keyRecords.ErrorOrTruncationOperation = MessageStrings.RowLevelTruncationOperation;
+            keyRecords.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
+            keyRecords.ErrorOrTruncationOperation = MessageStrings.RowLevelErrorOperation;
             keyRecords.SynchronousInputID = 0;
             ManageProperties.AddOutputProperties(keyRecords.CustomPropertyCollection);
             ManageProperties.SetPropertyValue(keyRecords.CustomPropertyCollection, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.KeyRecords);
@@ -525,9 +525,8 @@ namespace Martin.SQLServer.Dts
             ManageProperties.AddOutputProperties(thisOutput.CustomPropertyCollection);
             thisOutput.ExternalMetadataColumnCollection.IsUsed = false;
             thisOutput.SynchronousInputID = 0;
-            thisOutput.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
             thisOutput.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
-            thisOutput.ErrorOrTruncationOperation = MessageStrings.RowLevelTruncationOperation;
+            thisOutput.ErrorOrTruncationOperation = MessageStrings.RowLevelErrorOperation;
 
             // Add any keys that have already been defined!
             foreach (IDTSOutput keyOutput in this.ComponentMetaData.OutputCollection)
@@ -1041,37 +1040,16 @@ namespace Martin.SQLServer.Dts
 
         #region RunTime
 
-        private StringData stringData;
-        private StringParser stringParser;
-        private Dictionary<int, String> keyValues;
-
-
         #region Pre Execute
         public override void PreExecute()
         {
             base.PreExecute();
-            Boolean isTextDelimited = (Boolean)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.isTextDelmited);
-            String textDelimiter = (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.textDelmiter);
-            String columnDelimiter = (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
-            findOutputIDs();
-            stringData = new StringData();
-            stringParser = null;
-            if (isTextDelimited)
-            {
-                stringParser = new StringParser(columnDelimiter, textDelimiter);
-            }
-            else
-            {
-                stringParser = new StringParser(columnDelimiter, string.Empty);
-            }
-            keyValues = new Dictionary<int, string>();
         }
         #endregion
 
         #region Prime Ouputs
         public override void PrimeOutput(int outputs, int[] outputIDs, PipelineBuffer[] buffers)
         {
-            //base.PrimeOutput(outputs, outputIDs, buffers);
             PipelineBuffer errorBuffer = null;
             PipelineBuffer keyRecordBuffer = null;
             PipelineBuffer passThroughBuffer = null;
@@ -1087,6 +1065,8 @@ namespace Martin.SQLServer.Dts
             SSISOutput keyOutput = null;
             String RowDataValue = string.Empty;
             String RowTypeValue = string.Empty;
+            Boolean pbFireAgain = true;
+            Boolean pbCancel = false;
 
             SSISOutput passThroughOutput = null;
             IDTSOutput test = null;
@@ -1131,14 +1111,7 @@ namespace Martin.SQLServer.Dts
                                         keyMasterValues.Add(outputColumn.LineageID, null);
                                     }
                                 }
-                                String classString = DynamicClassStringFromOutput(keyOutput, false, string.Empty, (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter));
-                                Type classType = ClassBuilder.ClassFromString(classString);
-                                foreach (SSISOutputColumn ssisColumn in keyOutput.OutputColumnCollection)
-                                {
-                                    ssisColumn.FileHelperField = classType.GetField(ssisColumn.Name);
-                                }
-                                classBuffers.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), classType);
-                                engines.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), new FileHelperEngine(classType));
+                                SetupFileHelper(output, keyOutput, ref classBuffers, ref engines);
                                 break;
                             }
                         }
@@ -1152,14 +1125,7 @@ namespace Martin.SQLServer.Dts
                                 dataBuffers.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), buffers[i]);
                                 SSISOutput dataOutput = new SSISOutput(output, BufferManager);
                                 dataOutputs.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), dataOutput);
-                                String classString = DynamicClassStringFromOutput(dataOutput, false, string.Empty, (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter));
-                                Type classType = ClassBuilder.ClassFromString(classString);
-                                foreach (SSISOutputColumn ssisColumn in dataOutput.OutputColumnCollection)
-                                {
-                                    ssisColumn.FileHelperField = classType.GetField(ssisColumn.Name);
-                                }
-                                classBuffers.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), classType);
-                                engines.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), new FileHelperEngine(classType));
+                                SetupFileHelper(output, dataOutput, ref classBuffers, ref engines);
                                 break;
                             }
                         }
@@ -1181,14 +1147,7 @@ namespace Martin.SQLServer.Dts
                                         keyMasterValues.Add(outputColumn.LineageID, null);
                                     }
                                 }
-                                String classString = DynamicClassStringFromOutput(dataOutput, false, string.Empty, (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter));
-                                Type classType = ClassBuilder.ClassFromString(classString);
-                                foreach (SSISOutputColumn ssisColumn in dataOutput.OutputColumnCollection)
-                                {
-                                    ssisColumn.FileHelperField = classType.GetField(ssisColumn.Name);
-                                }
-                                classBuffers.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), classType);
-                                engines.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), new FileHelperEngine(classType));
+                                SetupFileHelper(output, dataOutput, ref classBuffers, ref engines);
                                 break;
                             }
                         }
@@ -1234,7 +1193,7 @@ namespace Martin.SQLServer.Dts
             ConnectionManager cm = Microsoft.SqlServer.Dts.Runtime.DtsConvert.GetWrapper(ComponentMetaData.RuntimeConnectionCollection[0].ConnectionManager);
             IDTSConnectionManagerFlatFile connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile;
 
-            bool firstRowColumnNames = connectionFlatFile.ColumnNamesInFirstDataRow; //(bool)this.GetComponentPropertyValue(ManageProperties.ColumnNamesInFirstRowPropName);
+            bool firstRowColumnNames = connectionFlatFile.ColumnNamesInFirstDataRow;
             bool treatNulls = (bool)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.treatEmptyStringsAsNull);
             columnDelimter = connectionFlatFile.Columns[0].ColumnDelimiter;
 
@@ -1247,7 +1206,6 @@ namespace Martin.SQLServer.Dts
                 ssisColumn.FileHelperField = passThroughType.GetField(ssisColumn.Name);
             }
             System.Reflection.FieldInfo[] fieldList = passThroughType.GetFields();
-            // DelimitedClassBuilder PassThrough = new DelimitedClassBuilder("PassThrough", columnDelimter);
             FileHelperAsyncEngine engine = new FileHelperAsyncEngine(passThroughType);
             engine.BeginReadFile(fileName);
             while (engine.ReadNext() != null)
@@ -1265,37 +1223,121 @@ namespace Martin.SQLServer.Dts
                     {
                         RowTypeValue = (String)ssisColumn.FileHelperField.GetValue(engine.LastRecord);
                     }
-                    //if (ssisColumn.IsMasterOrKey)
-                    //{
-                    //    keyMasterValues[ssisColumn.LineageID] = ssisColumn.FileHelperField.GetValue(engine.LastRecord);
-                    //}
                 }
                 PipelineBuffer currentBuffer = null;
                 if (dataBuffers.TryGetValue(RowTypeValue, out currentBuffer))
                 {
                     FileHelperEngine currentEngine = engines[RowTypeValue];
                     List<Object> parseResults = currentEngine.ReadStringAsList(RowDataValue);
-                    foreach (Object result in parseResults)
+                    SSISOutput currentOutput = dataOutputs[RowTypeValue];
+                    if (currentEngine.ErrorManager.HasErrors)
                     {
-                        currentBuffer.AddRow();
-                        SSISOutput currentOutput = dataOutputs[RowTypeValue];
-                        foreach (SSISOutputColumn currentOutputColumn in currentOutput.OutputColumnCollection)
+                        switch (currentOutput.ErrorRowDisposition)
                         {
-                            Object currentValue = null;
-                            if (currentOutputColumn.IsDerived)
-                            {
-                                if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                            case DTSRowDisposition.RD_FailComponent:
+                                foreach (ErrorInfo err in currentEngine.ErrorManager.Errors)
                                 {
-                                    currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                    this.ComponentMetaData.FireError(999, this.ComponentMetaData.Name, err.ExceptionInfo.Message,string.Empty, 0, out pbCancel);
                                 }
-                            }
-                            else
-                            {
-                                currentBuffer[currentOutputColumn.OutputBufferID] = currentOutputColumn.FileHelperField.GetValue(result);
-                                if (currentOutputColumn.IsMasterOrKey)
+                                throw new COMException(String.Format("Parsing Exception raised on or around input file line {0}.", recordsRead),E_FAIL);
+                            case DTSRowDisposition.RD_IgnoreFailure:
+                                foreach (ErrorInfo err in currentEngine.ErrorManager.Errors)
                                 {
-                                    keyMasterValues[currentOutputColumn.LineageID] = currentOutputColumn.FileHelperField.GetValue(result);
+                                    this.ComponentMetaData.FireInformation(999, this.ComponentMetaData.Name, err.ExceptionInfo.Message,string.Empty, 0, ref pbFireAgain);
                                 }
+                                currentEngine.ErrorManager.ClearErrors();
+                                break;
+                            case DTSRowDisposition.RD_NotUsed:
+                                currentEngine.ErrorManager.ClearErrors();
+                                break;
+                            case DTSRowDisposition.RD_RedirectRow:
+                                foreach (ErrorInfo err in currentEngine.ErrorManager.Errors)
+                                {
+                                    errorBuffer.AddRow();
+                                    errorBuffer[2] = TruncateStringTo4000(err.ExceptionInfo.Message);
+                                    errorBuffer[4] = TruncateStringTo4000(err.RecordString);
+                                }
+                                currentEngine.ErrorManager.ClearErrors();
+                                break;
+                            default:
+                                currentEngine.ErrorManager.ClearErrors();
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        foreach (Object result in parseResults)
+                        {
+                            currentBuffer.AddRow();
+                            foreach (SSISOutputColumn currentOutputColumn in currentOutput.OutputColumnCollection)
+                            {
+                                Boolean errorFound = false;
+                                try
+                                {
+                                    Object currentValue = null;
+                                    if (currentOutputColumn.IsDerived)
+                                    {
+                                        if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                        {
+                                            currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        currentValue = currentOutputColumn.FileHelperField.GetValue(result);
+                                        if (currentValue != null)
+                                        {
+                                            if (currentValue is String)
+                                            {
+                                                if (String.IsNullOrEmpty((String)currentValue))
+                                                {
+                                                    if (!treatNulls)
+                                                    {
+                                                        currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                            }
+                                        }
+                                        if (currentOutputColumn.IsMasterOrKey)
+                                        {
+                                            keyMasterValues[currentOutputColumn.LineageID] = currentValue;
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    switch (currentOutput.ErrorRowDisposition)
+                                    {
+                                        case DTSRowDisposition.RD_FailComponent:
+                                            this.ComponentMetaData.FireError(999, this.ComponentMetaData.Name, String.Format("Exception {0} thrown on Record {1} for field {2}.",ex.Message, recordsRead, currentOutputColumn.Name), string.Empty, 0, out pbCancel);
+                                            throw new COMException(String.Format("Parsing Exception raised on or around input file line {0}.", recordsRead), E_FAIL);
+                                        case DTSRowDisposition.RD_IgnoreFailure:
+                                            this.ComponentMetaData.FireInformation(999, this.ComponentMetaData.Name, String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name), string.Empty, 0, ref pbFireAgain);
+                                            break;
+                                        case DTSRowDisposition.RD_NotUsed:
+                                            break;
+                                        case DTSRowDisposition.RD_RedirectRow:
+                                            errorBuffer.AddRow();
+                                            errorBuffer[2] = TruncateStringTo4000(String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name));
+                                            errorBuffer[3] = TruncateStringTo4000(currentOutputColumn.FileHelperField.GetValue(result).ToString());
+                                            errorBuffer[4] = TruncateStringTo4000(RowDataValue);
+                                            currentBuffer.RemoveRow();
+                                            errorFound = true;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                                if (errorFound)
+                                    break;
                             }
                         }
                     }
@@ -1320,136 +1362,12 @@ namespace Martin.SQLServer.Dts
                 buffer.SetEndOfRowset();
             }
 
-            Boolean pbFireAgain = true;
             foreach (KeyValuePair<String, int> badRecord in badRecords)
             {
-                this.ComponentMetaData.FireInformation(0, this.ComponentMetaData.Name, String.Format("The RowType value of {0} was found {1} times.", badRecord.Key, badRecord.Value), string.Empty, 0, ref pbFireAgain);
+                this.ComponentMetaData.FireInformation(0, this.ComponentMetaData.Name, String.Format("The Unexpected RowType value of {0} was found {1} times.", badRecord.Key, badRecord.Value), string.Empty, 0, ref pbFireAgain);
             }
 
             this.ComponentMetaData.FireInformation(0, this.ComponentMetaData.Name, String.Format("Total Number of records read is {0}.", recordsRead), string.Empty, 0, ref pbFireAgain);
-
-            return;
-
-            FileReader reader = new FileReader(this.fileName, this.GetEncoding());
-            DelimitedFileParser parser = this.CreateParser();
-            ComponentBufferService passThroughBufferService = new ComponentBufferService(passThroughBuffer, errorBuffer);
-            BufferSink passThroughBufferSink = new BufferSink(passThroughBufferService, passThroughOutput, treatNulls, parser.ColumnDelimiter, true);
-
-            ComponentBufferService keyBufferService = new ComponentBufferService(keyRecordBuffer, errorBuffer);
-            BufferSink keyBufferSink = new BufferSink(keyBufferService, keyOutput, treatNulls, parser.ColumnDelimiter, true);
-
-            Dictionary<String, ComponentBufferService> dataBufferServices = new Dictionary<string, ComponentBufferService>();
-            Dictionary<String, BufferSink> dataBufferSinks = new Dictionary<string, BufferSink>();
-
-            foreach (string key in dataBuffers.Keys)
-            {
-                PipelineBuffer workingBuffer = null;
-                SSISOutput output = null;
-                dataBuffers.TryGetValue(key, out workingBuffer);
-                dataOutputs.TryGetValue(key, out output);
-                ComponentBufferService dataCBS = new ComponentBufferService(workingBuffer, errorBuffer);
-                BufferSink dataBS = new BufferSink(dataCBS, output, treatNulls, (string)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter), false);
-                dataBufferServices.Add(key, dataCBS);
-                dataBufferSinks.Add(key, dataBS);
-            }
-
-            passThroughBufferSink.CurrentRowCount = parser.HeaderRowsToSkip + parser.DataRowsToSkip + (firstRowColumnNames ? 1 : 0);
-            int currentRowCount = parser.HeaderRowsToSkip + parser.DataRowsToSkip + (firstRowColumnNames ? 1 : 0);
-            try
-            {
-                parser.SkipInitialRows(reader);
-
-                RowData rowData = new RowData();
-                while (!reader.IsEOF)
-                {
-                    parser.ParseNextRow(reader, rowData);
-                    if (rowData.ColumnCount == 0)
-                    {
-                        // Last row with no data will be ignored.
-                        break;
-                    }
-                    ConcatenateRowOverflow(ref rowData, passThroughBuffer.ColumnCount);
-                    // Add record to PassThrough
-                    passThroughBufferSink.AddRow(rowData);
-
-                    if (rowData.GetColumnData(rowTypeColumnID) == keyValue)
-                    {
-                        keyValues.Clear();
-
-                        StringData columnData = new StringData();
-                        StringAsRowReader columnReader = new StringAsRowReader(rowData.GetColumnData(rowDataColumnID));
-                        stringParser.ParseRow(columnReader, columnData);
-                        RowData dataRowData = new RowData();
-
-                        for (int i = 0; i < columnData.ColumnCount; i++)
-                        {
-                            dataRowData.AddColumnData(columnData.GetColumnData(i));
-                            keyValues.Add(keyOutput.OutputColumnCollection[i].LineageID, columnData.GetColumnData(i));
-                        }
-                        keyBufferSink.AddRow(dataRowData);
-                    }
-                    else
-                    {
-                        if (dataBuffers.ContainsKey(rowData.GetColumnData(rowTypeColumnID)))
-                        {
-
-                            StringData columnData = new StringData();
-                            StringAsRowReader columnReader = new StringAsRowReader(rowData.GetColumnData(rowDataColumnID));
-                            stringParser.ParseRow(columnReader, columnData);
-                            RowData dataRowData = new RowData();
-                            SSISOutput output = null;
-                            dataOutputs.TryGetValue(rowData.GetColumnData(rowTypeColumnID), out output);
-
-                            for (int i = 0; i < output.OutputColumnCollection.Count; i++)
-                            {
-                                if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(output.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
-                                {
-                                    String keyValuesvalue = String.Empty;
-                                    keyValues.TryGetValue((int)ManageProperties.GetPropertyValue(output.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.keyOutputColumnID), out keyValuesvalue);
-                                    dataRowData.AddColumnData(keyValuesvalue);
-                                }
-                            }
-
-                            //foreach (string keyValuesvalue in keyValues.Values)
-                            //{
-                            //    dataRowData.AddColumnData(keyValuesvalue);
-                            //}
-                            
-                            for (int i = 0; i < columnData.ColumnCount; i++)
-                            {
-                                dataRowData.AddColumnData(columnData.GetColumnData(i));
-                            }
-
-                            dataRowData.RebuildRowText(columnDelimter);
-                            BufferSink dataSink = null;
-                            dataBufferSinks.TryGetValue(rowData.GetColumnData(rowTypeColumnID), out dataSink);
-                            dataSink.AddRow(dataRowData);
-                        }
-                        else
-                        {
-                            this.ComponentMetaData.FireWarning(0, this.ComponentMetaData.Name, String.Format("The RowType value of {0} was not expected!", rowData.GetColumnData(rowTypeColumnID)), string.Empty, 0);
-                            // Send a record to the Error output somehow.
-                        }
-                    }
-                }
-            }
-            catch (ParsingBufferOverflowException ex)
-            {
-                this.PostErrorAndThrow(MessageStrings.ParsingBufferOverflow(currentRowCount + 1, ex.ColumnIndex + 1, FieldParser.ParsingBufferMaxSize));
-            }
-            catch (RowColumnNumberOverflow)
-            {
-                this.PostErrorAndThrow(MessageStrings.MaximumColumnNumberOverflow(currentRowCount + 1, RowParser.MaxColumnNumber));
-            }
-            finally
-            {
-                reader.Close();
-            }
-
-            foreach (PipelineBuffer buffer in buffers)
-            {
-                buffer.SetEndOfRowset();
-            }
         }
         #endregion
 
@@ -1463,6 +1381,32 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region Helpers
+
+        private String TruncateStringTo4000(String inputData)
+        {
+            if (inputData.Length > 4000)
+            {
+                return inputData.Substring(0, 4000);
+            }
+            else
+            {
+                return inputData;
+            }
+        }
+
+        private void SetupFileHelper(IDTSOutput output, SSISOutput dataOutput, ref Dictionary<String, Type> classBuffers, ref Dictionary<String, FileHelperEngine> engines)
+        {
+            String classString = DynamicClassStringFromOutput(dataOutput, false, string.Empty, (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter));
+            Type classType = ClassBuilder.ClassFromString(classString);
+            foreach (SSISOutputColumn ssisColumn in dataOutput.OutputColumnCollection)
+            {
+                ssisColumn.FileHelperField = classType.GetField(ssisColumn.Name);
+            }
+            classBuffers.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), classType);
+            FileHelperEngine tempEngine = new FileHelperEngine(classType);
+            tempEngine.ErrorManager.ErrorMode = ErrorMode.SaveAndContinue;
+            engines.Add((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue), tempEngine);
+        }
 
         private String ReplaceEscapes(String stringToCleanse)
         {
@@ -1495,7 +1439,7 @@ namespace Martin.SQLServer.Dts
                         case DataType.DT_BOOL:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Boolean, \"" + conversionString + "\")]\r\n";
-                            classString += "public Boolean ";
+                            classString += "public Boolean? ";
                             break;
                         case DataType.DT_DATE:
                         case DataType.DT_DBDATE:
@@ -1507,69 +1451,69 @@ namespace Martin.SQLServer.Dts
                         case DataType.DT_FILETIME:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Date, \"" + conversionString + "\")]\r\n";
-                            classString += "public DateTime ";
+                            classString += "public DateTime? ";
                             break;
                         case DataType.DT_CY:
                         case DataType.DT_DECIMAL:
                         case DataType.DT_NUMERIC:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Decimal, \"" + conversionString + "\")]\r\n";
-                            classString += "public Decimal ";
+                            classString += "public Decimal? ";
                             break;
                         case DataType.DT_I1:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Byte, \"" + conversionString + "\")]\r\n";
-                            classString += "public Byte ";
+                            classString += "public Byte? ";
                             break;
                         case DataType.DT_I2:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Int16, \"" + conversionString + "\")]\r\n";
-                            classString += "public Int16 ";
+                            classString += "public Int16? ";
                             break;
                         case DataType.DT_I4:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Int32, \"" + conversionString + "\")]\r\n";
-                            classString += "public Int32 ";
+                            classString += "public Int32? ";
                             break;
                         case DataType.DT_I8:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Int64, \"" + conversionString + "\")]\r\n";
-                            classString += "public Int64 ";
+                            classString += "public Int64? ";
                             break;
                         case DataType.DT_R4:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Single, \"" + conversionString + "\")]\r\n";
-                            classString += "public Single ";
+                            classString += "public Single? ";
                             break;
                         case DataType.DT_R8:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Dpuble, \"" + conversionString + "\")]\r\n";
-                            classString += "public Double ";
+                            classString += "public Double? ";
                             break;
                         case DataType.DT_UI1:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.SByte, \"" + conversionString + "\")]\r\n";
-                            classString += "public SByte ";
+                            classString += "public SByte? ";
                             break;
                         case DataType.DT_UI2:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.UInt16, \"" + conversionString + "\")]\r\n";
-                            classString += "public UInt16 ";
+                            classString += "public UInt16? ";
                             break;
                         case DataType.DT_UI4:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.UInt32, \"" + conversionString + "\")]\r\n";
-                            classString += "public UInt32 ";
+                            classString += "public UInt32? ";
                             break;
                         case DataType.DT_UI8:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.UInt64, \"" + conversionString + "\")]\r\n";
-                            classString += "public UInt64 ";
+                            classString += "public UInt64? ";
                             break;
                         case DataType.DT_GUID:
                             if (!String.IsNullOrEmpty(conversionString))
                                 classString += "[FieldConverter(ConverterKind.Guid, \"" + conversionString + "\")]\r\n";
-                            classString += "public Guid ";
+                            classString += "public Guid? ";
                             break;
                         case DataType.DT_STR:
                         case DataType.DT_TEXT:
@@ -1691,28 +1635,6 @@ namespace Martin.SQLServer.Dts
             }
         }
 
-        private DelimitedFileParser CreateParser()
-        {
-            ConnectionManager cm = Microsoft.SqlServer.Dts.Runtime.DtsConvert.GetWrapper(ComponentMetaData.RuntimeConnectionCollection[0].ConnectionManager);
-            IDTSConnectionManagerFlatFile connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile;
-            string headerRowDelimiter = connectionFlatFile.HeaderRowDelimiter;
-            int headerRowsToSkip = connectionFlatFile.HeaderRowsToSkip;
-            int dataRowsToSkip = connectionFlatFile.DataRowsToSkip;
-            bool columnNamesInFirstRow = connectionFlatFile.ColumnNamesInFirstDataRow;
-            string textQualifier = connectionFlatFile.TextQualifier;
-            string columnDelimiter = connectionFlatFile.Columns[0].ColumnDelimiter;
-            string rowDelimiter = connectionFlatFile.Columns[connectionFlatFile.Columns.Count - 1].ColumnDelimiter;
-
-            DelimitedFileParser parser = new DelimitedFileParser(columnDelimiter, rowDelimiter);
-            parser.HeaderRowDelimiter = headerRowDelimiter;
-            parser.HeaderRowsToSkip = headerRowsToSkip;
-            parser.DataRowsToSkip = dataRowsToSkip;
-            parser.TextQualifier = textQualifier;
-            parser.ColumnNameInFirstRow = columnNamesInFirstRow;
-
-            return parser;
-        }
-
         private System.Text.Encoding GetEncoding()
         {
             ConnectionManager cm = Microsoft.SqlServer.Dts.Runtime.DtsConvert.GetWrapper(ComponentMetaData.RuntimeConnectionCollection[0].ConnectionManager);
@@ -1729,30 +1651,6 @@ namespace Martin.SQLServer.Dts
             }
 
             return encoding;
-        }
-
-
-        private void ConcatenateRowOverflow(ref RowData rowData, int columnCount)
-        {
-            if ((rowData.ColumnCount > columnCount) && (columnCount > 0))
-            {
-                String overflowData = String.Empty;
-                for (int i = columnCount - 1; i < rowData.ColumnCount; i++)
-                {
-                    overflowData += (overflowData.Length == 0 ? String.Empty : this.columnDelimter) + rowData.GetColumnData(i);
-                }
-                List<string> columnValues = new List<string>();
-                for (int i = 0; i < columnCount - 1; i++)
-                {
-                    columnValues.Add(rowData.GetColumnData(i));
-                }
-                columnValues.Add(overflowData);
-                rowData.ResetColumnData();
-                for (int i = 0; i < columnValues.Count; i++)
-                {
-                    rowData.AddColumnData(columnValues[i]);
-                }
-            }
         }
 
         #endregion
