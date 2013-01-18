@@ -58,7 +58,7 @@ namespace Martin.SQLServer.Dts
         {
             _customPropertyCollection = new Dictionary<string, SSISProperty>();
             _outputColumnCollection = new List<SSISOutputColumn>();
-            _name = output.Name.Replace(" ", String.Empty);
+            _name = "_" + output.Name.Replace(" ", String.Empty).Replace("_", String.Empty).Replace("@", String.Empty);
 
             // Get the Custom Properties
             for (int i = 0; i < output.CustomPropertyCollection.Count; i++)

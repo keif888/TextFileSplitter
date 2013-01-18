@@ -17,7 +17,7 @@ namespace Martin.SQLServer.Dts
         public SSISOutputColumn(IDTSOutputColumn100 outputColumn, IDTSBufferManager100 bufferManager, int bufferID)
         {
             _customPropertyCollection = new Dictionary<string, SSISProperty>();
-            _name = outputColumn.Name.Replace(" ", "");
+            _name = "_" + outputColumn.Name.Replace(" ", String.Empty).Replace("_", String.Empty).Replace("@", String.Empty);
             _truncationRowDisposition = outputColumn.TruncationRowDisposition;
             _identificationString = outputColumn.IdentificationString;
             _errorRowDisposition = outputColumn.ErrorRowDisposition;

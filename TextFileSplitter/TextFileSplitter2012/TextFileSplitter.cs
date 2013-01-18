@@ -633,7 +633,11 @@ namespace Martin.SQLServer.Dts
                                     {
                                         if (!output.IsErrorOut)
                                         {
-                                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.DataRecords)
+                                            Utilities.typeOfOutputEnum outputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                                            if ((outputType == Utilities.typeOfOutputEnum.DataRecords)
+                                             || (outputType == Utilities.typeOfOutputEnum.MasterRecord)
+                                             || (outputType == Utilities.typeOfOutputEnum.ChildRecord)
+                                             || (outputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
                                             {
                                                 IDTSOutputColumn outputColumn = output.OutputColumnCollection.NewAt(keyPosition);
                                                 outputColumn.Name = thisColumn.Name;
@@ -1636,22 +1640,23 @@ namespace Martin.SQLServer.Dts
             {
                 if (!output.IsErrorOut)
                 {
-                    if (((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildRecord)
-                        || ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                    int IDToDelete = -1;
+                    foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
                     {
-                        int IDToDelete = -1;
-                        foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
+                        if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                         {
-                            if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
+                            IDToDelete = outputColumn.ID;
+                            if (((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.MasterRecord)
+                                || ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord))
                             {
-                                IDToDelete = outputColumn.ID;
-                                break;
+                                RemoveLinkedColumnFromOutputs(outputColumn);
                             }
+                            break;
                         }
-                        if (IDToDelete != -1)
-                        {
-                            output.OutputColumnCollection.RemoveObjectByID(IDToDelete);
-                        }
+                    }
+                    if (IDToDelete != -1)
+                    {
+                        output.OutputColumnCollection.RemoveObjectByID(IDToDelete);
                     }
                 }
             }
