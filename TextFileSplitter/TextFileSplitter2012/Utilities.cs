@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
+﻿using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+using System;
 using System.IO;
+using System.Text;
 using System.Xml;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+using System.Xml.Serialization;
 
 namespace Martin.SQLServer.Dts
 {

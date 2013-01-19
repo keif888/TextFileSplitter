@@ -1,24 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-using System.Xml;
-using System.IO;
 
-#if SQL2012
-    using IDTSCustomProperty = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
-    using IDTSCustomPropertyCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomPropertyCollection100;
-#endif
-#if SQL2008
-    using IDTSCustomProperty = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
-    using IDTSCustomPropertyCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomPropertyCollection100;
-#endif
-#if SQL2005
-    using IDTSCustomProperty = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty90;
-    using IDTSCustomPropertyCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomPropertyCollection90;
-#endif
+
+using IDTSCustomProperty = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
+using IDTSCustomPropertyCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomPropertyCollection100;
+
 
 
 namespace Martin.SQLServer.Dts
