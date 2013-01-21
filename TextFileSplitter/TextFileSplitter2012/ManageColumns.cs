@@ -49,5 +49,22 @@ namespace Martin.SQLServer.Dts
             //outputColumn.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
             outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, CodePage);
         }
+
+        internal static void AddNumberOfRowsOutputColumns(IDTSOutput numberOfRows)
+        {
+            IDTSOutputColumnCollection outputColumnCollection = numberOfRows.OutputColumnCollection;
+            IDTSOutputColumn outputColumn = outputColumnCollection.New();
+            outputColumn.Name = MessageStrings.KeyValueColumnName;
+            outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, 1252);
+            outputColumn.Description = MessageStrings.KeyValueColumnDescription;
+            outputColumn = outputColumnCollection.New();
+            outputColumn.Name = MessageStrings.NumberOfRowsColumnName;
+            outputColumn.SetDataTypeProperties(DataType.DT_I8, 0, 0, 0, 0);
+            outputColumn.Description = MessageStrings.NumberOfRowsColumnDescription;
+            outputColumn = outputColumnCollection.New();
+            outputColumn.Name = MessageStrings.KeyValueStatusColumnName;
+            outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, 1252);
+            outputColumn.Description = MessageStrings.KeyValueStatusColumnDescription;
+        }
     }
 }

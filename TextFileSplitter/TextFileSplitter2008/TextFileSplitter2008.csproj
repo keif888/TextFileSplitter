@@ -70,9 +70,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\TextFileSplitter2012\ArgumentVerifier.cs">
-      <Link>ArgumentVerifier.cs</Link>
-    </Compile>
     <Compile Include="..\TextFileSplitter2012\ManageColumns.cs">
       <Link>ManageColumns.cs</Link>
     </Compile>
@@ -81,6 +78,9 @@
     </Compile>
     <Compile Include="..\TextFileSplitter2012\MessageStrings.cs">
       <Link>MessageStrings.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\SplitOutput.cs">
+      <Link>SplitOutput.cs</Link>
     </Compile>
     <Compile Include="..\TextFileSplitter2012\SSISOutput.cs">
       <Link>SSISOutput.cs</Link>

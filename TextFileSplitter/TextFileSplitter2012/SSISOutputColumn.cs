@@ -70,7 +70,10 @@ namespace Martin.SQLServer.Dts
             {
                 _isDerived = false;
             }
-            _outputBufferID = bufferManager.FindColumnByLineageID(bufferID, outputColumn.LineageID);
+            if (bufferManager != null)
+            {
+                _outputBufferID = bufferManager.FindColumnByLineageID(bufferID, outputColumn.LineageID);
+            }
         }
 
         private Dictionary<String, SSISProperty> _customPropertyCollection;

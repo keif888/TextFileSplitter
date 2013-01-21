@@ -94,13 +94,26 @@ namespace Martin.SQLServer.Dts
         public const string TreatEmptyStringsAsNullPropDescription = "If a string is empty then return it as a Null?";
         public const string MasterRecordIDPropDescription = "Stores the Lineage ID of the output that contains the Master Record for this Child Record.";
         public const string DotNetFormatStringPropDescription = "Stores the Dot Net Format String to describe this data conversion from String.  eg. yyyy/MM/dd";
+        public const string KeyValueColumnDescription = "The key value that was used to determine what output this row went to.";
+        public const string NumberOfRowsColumnDescription = "The number of rows that were sent down this associated output.";
+        public const string KeyValueStatusColumnDescription = "The status that this output held when being processed.";
+        #endregion
+
+        #region Key Value Status Values
+        public const string ConnectedAndProcessed = "Connected and Processed";
+        public const string Disconnected = "Disconnected";
+        public const string NotRecognised = "Not configured";
         #endregion
 
         #region Input/Output Names
-        public const string KeyRecordOutputName = "TestFileSplitter KeyRecords Output";
-        public const string PassthroughOutputName = "TestFileSplitter PassThrough Output";
-        public const string ErrorOutputName = "TestFileSplitter Error Output";
+        public const string KeyRecordOutputName = "TextFileSplitter KeyRecords Output";
+        public const string PassthroughOutputName = "TextFileSplitter PassThrough Output";
+        public const string ErrorOutputName = "TextFileSplitter Error Output";
+        public const string RowCountOutputName = "TextFileSplitter RowCount Output";
         public const string FileConnectionName = "FileConnection";
+        public const string KeyValueColumnName = "KeyValue";
+        public const string NumberOfRowsColumnName = "NumberOfRows";
+        public const string KeyValueStatusColumnName = "KeyValueStatus";
         #endregion
 
         #region Messages
@@ -133,6 +146,8 @@ namespace Martin.SQLServer.Dts
         public const string ThereCanOnlyBeOneRowTypeColumn = "There can only be one RowType column in the PassThrough output.";
         public const string CannotSetMasterRecordID = "The Master Record ID can only be set on ChildRecords or ChildMasterRecords.";
         public const string ThereCanOnlyBeOneRowDataColumn = "There can only be one RowData column in the PassThrough output.";
+        public const string InvalidNumberOfRowsOutput = "There MUST be One and Only One RowsProcessed output!";
+        public const string RowCountOutputInvalid = "The RowsProcessed Output is invalid!";
         #endregion
 
         #region Validation Strings

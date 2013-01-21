@@ -18,6 +18,7 @@ namespace Martin.SQLServer.Dts
             , MasterRecord
             , ChildMasterRecord
             , ChildRecord
+            , RowsProcessed
         }
 
         public enum usageOfColumnEnum
