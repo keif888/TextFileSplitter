@@ -31,6 +31,14 @@
         <File Id="FileHelperDLLGac" Name="$(var.FileHelpers.TargetFileName)" Source="$(var.FileHelpers.TargetPath)" Assembly=".net" KeyPath="yes"/>
       </Component>
 
+      <Component Id="SQL2012GAC" Guid="03F16F6D-7013-4EAB-995C-BC3059659DC3">
+        <File Id="SQL2012DLLGAC" Name="$(var.TextFileSplitter2012.TargetFileName)" Source="$(var.TextFileSplitter2012.TargetPath)" Assembly=".net" KeyPath="yes"/>
+      </Component>
+
+      <Component Id="SQL2008GAC" Guid="C2A15C13-01DE-4BC7-B9D8-7B3AA6F5F367">
+        <File Id="SQL2008DLLGAC" Name="$(var.TextFileSplitter2008.TargetFileName)" Source="$(var.TextFileSplitter2008.TargetPath)" Assembly=".net" KeyPath="yes"/>
+      </Component>
+
       <Directory Id="SSIS32_2012" Name="SSIS32_2012">
         <Directory Id="SQL2012x32Pipeline" Name="PipelineComponents">
           <Component Id="SQL2012x32DLL" Guid="11CAEB1C-E1A7-4D7C-BC33-C3E003D1D6F6" Win64="no">
@@ -54,12 +62,16 @@
           <ComponentRef Id="SQL2012x32DLL"/>
           <Condition Level="1">SSIS32_2012</Condition>
         </Feature>
+        <ComponentRef Id="SQL2012GAC" />
+        <Condition Level="1">SSIS32_2012</Condition>
       </Feature>
-      <Feature Id="SQL2008" Level="10" Title="SQL 2008">
+      <Feature Id="SQL2008" Level="1" Title="SQL 2008">
         <Feature Id="SQL2008x32" Level="1" Title="x86">
           <ComponentRef Id="SQL2008x32DLL"/>
           <Condition Level="1">SSIS32_2008</Condition>
         </Feature>
+        <ComponentRef Id="SQL2008GAC" />
+        <Condition Level="1">SSIS32_2008</Condition>
       </Feature>
       <Feature Id="FileHelper" Level="1" Title="FileHelper DLL (required)">
         <ComponentRef Id="FileHelperLibrary"/>
