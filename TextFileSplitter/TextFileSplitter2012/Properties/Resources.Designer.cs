@@ -61,6 +61,15 @@ namespace Martin.SQLServer.Dts.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Something is wrong here, as not all the editing services are available..
+        /// </summary>
+        internal static string NotAllEditingServicesAvailable {
+            get {
+                return ResourceManager.GetString("NotAllEditingServicesAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon TextFileSplitter {

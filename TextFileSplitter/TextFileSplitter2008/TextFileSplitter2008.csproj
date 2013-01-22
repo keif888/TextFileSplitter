@@ -70,6 +70,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\TextFileSplitter2012\DataFlowComponentUI.cs">
+      <Link>DataFlowComponentUI.cs</Link>
+    </Compile>
     <Compile Include="..\TextFileSplitter2012\ManageColumns.cs">
       <Link>ManageColumns.cs</Link>
     </Compile>
@@ -78,6 +81,12 @@
     </Compile>
     <Compile Include="..\TextFileSplitter2012\MessageStrings.cs">
       <Link>MessageStrings.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\Properties\Resources.Designer.cs">
+      <Link>Properties\Resources.Designer.cs</Link>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="..\TextFileSplitter2012\SplitOutput.cs">
       <Link>SplitOutput.cs</Link>
@@ -94,6 +103,16 @@
     <Compile Include="..\TextFileSplitter2012\TextFileSplitter.cs">
       <Link>TextFileSplitter.cs</Link>
     </Compile>
+    <Compile Include="..\TextFileSplitter2012\TextFileSplitterForm.cs">
+      <Link>TextFileSplitterForm.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\TextFileSplitterForm.designer.cs">
+      <Link>TextFileSplitterForm.designer.cs</Link>
+      <DependentUpon>TextFileSplitterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\TextFileSplitterUI.cs">
+      <Link>TextFileSplitterUI.cs</Link>
+    </Compile>
     <Compile Include="..\TextFileSplitter2012\Utilities.cs">
       <Link>Utilities.cs</Link>
     </Compile>
@@ -109,6 +128,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\TextFileSplitter2012\Properties\Resources.resx">
+      <Link>Properties\Resources.resx</Link>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\TextFileSplitter2012\Resources\TextFileSplitter.ico">
       <Link>Resources\TextFileSplitter.ico</Link>
     </EmbeddedResource>

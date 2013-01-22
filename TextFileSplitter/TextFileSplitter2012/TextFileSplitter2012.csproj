@@ -83,6 +83,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataFlowComponentUI.cs" />
     <Compile Include="ManageColumns.cs" />
     <Compile Include="ManageProperties.cs" />
     <Compile Include="MessageStrings.cs" />
@@ -97,11 +98,21 @@
     <Compile Include="SSISOutputColumn.cs" />
     <Compile Include="SSISProperty.cs" />
     <Compile Include="TextFileSplitter.cs" />
+    <Compile Include="TextFileSplitterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TextFileSplitterForm.Designer.cs">
+      <DependentUpon>TextFileSplitterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TextFileSplitterUI.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Attributions.txt" />
     <EmbeddedResource Include="Resources\TextFileSplitter.ico" />
+    <EmbeddedResource Include="TextFileSplitterForm.resx">
+      <DependentUpon>TextFileSplitterForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="License.rtf" />
     <None Include="TextFileSplitter.snk" />
   </ItemGroup>
