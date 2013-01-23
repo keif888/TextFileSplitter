@@ -75,6 +75,9 @@
     <Compile Include="..\TextFileSplitter2012\DataFlowComponentUI.cs">
       <Link>DataFlowComponentUI.cs</Link>
     </Compile>
+    <Compile Include="..\TextFileSplitter2012\DrawingControl.cs">
+      <Link>DrawingControl.cs</Link>
+    </Compile>
     <Compile Include="..\TextFileSplitter2012\ManageColumns.cs">
       <Link>ManageColumns.cs</Link>
     </Compile>

@@ -84,6 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataFlowComponentUI.cs" />
+    <Compile Include="DrawingControl.cs" />
     <Compile Include="ManageColumns.cs" />
     <Compile Include="ManageProperties.cs" />
     <Compile Include="MessageStrings.cs" />

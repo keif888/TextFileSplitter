@@ -37,10 +37,10 @@ namespace Martin.SQLServer.Dts
         , Description = "Extract many outputs from a single Text File"
         , IconResource = "Martin.SQLServer.Dts.Resources.TextFileSplitter.ico"
 #if SQL2012
-       , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterUI, TextFileSplitter2012, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+       , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2012, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
 #endif
 #if SQL2008
-       , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterUI, TextFileSplitter2008, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+       , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2008, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
 #endif
         , ComponentType = ComponentType.SourceAdapter)]
     public class TextFileSplitter : PipelineComponent

@@ -70,9 +70,10 @@
             this.clmPTScale = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tpOutputs = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.dgvOutputColumns = new System.Windows.Forms.DataGridView();
             this.clmOCColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmOCUsage = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.clmOCdotNetFormatString = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmOCCodePage = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmOCDataType = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.clmOCLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -83,6 +84,8 @@
             this.btnRemoveColumn = new System.Windows.Forms.Button();
             this.dgvOutputPreview = new System.Windows.Forms.DataGridView();
             this.panel7 = new System.Windows.Forms.Panel();
+            this.label11 = new System.Windows.Forms.Label();
+            this.cbOutputType = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
             this.tbRowTypeValue = new System.Windows.Forms.TextBox();
             this.tbOutputName = new System.Windows.Forms.TextBox();
@@ -99,9 +102,9 @@
             this.btnAddOutput = new System.Windows.Forms.Button();
             this.btnRemoveOutput = new System.Windows.Forms.Button();
             this.tpAbout = new System.Windows.Forms.TabPage();
-            this.ttSplitter = new System.Windows.Forms.ToolTip(this.components);
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.ttSplitter = new System.Windows.Forms.ToolTip(this.components);
             this.panel1.SuspendLayout();
             this.tcMain.SuspendLayout();
             this.tpConnection.SuspendLayout();
@@ -118,7 +121,7 @@
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvOutputColumns)).BeginInit();
             this.panel8.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvOutputPreview)).BeginInit();
             this.panel7.SuspendLayout();
@@ -551,7 +554,7 @@
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.dataGridView1);
+            this.splitContainer1.Panel1.Controls.Add(this.dgvOutputColumns);
             this.splitContainer1.Panel1.Controls.Add(this.panel8);
             // 
             // splitContainer1.Panel2
@@ -561,24 +564,25 @@
             this.splitContainer1.SplitterDistance = 150;
             this.splitContainer1.TabIndex = 2;
             // 
-            // dataGridView1
+            // dgvOutputColumns
             // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AllowUserToDeleteRows = false;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dgvOutputColumns.AllowUserToAddRows = false;
+            this.dgvOutputColumns.AllowUserToDeleteRows = false;
+            this.dgvOutputColumns.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvOutputColumns.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.clmOCColumnName,
             this.clmOCUsage,
+            this.clmOCdotNetFormatString,
             this.clmOCCodePage,
             this.clmOCDataType,
             this.clmOCLength,
             this.clmOCPrecision,
             this.clmOCScale});
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.Location = new System.Drawing.Point(0, 0);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(461, 120);
-            this.dataGridView1.TabIndex = 3;
+            this.dgvOutputColumns.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvOutputColumns.Location = new System.Drawing.Point(0, 0);
+            this.dgvOutputColumns.Name = "dgvOutputColumns";
+            this.dgvOutputColumns.Size = new System.Drawing.Size(461, 120);
+            this.dgvOutputColumns.TabIndex = 3;
             // 
             // clmOCColumnName
             // 
@@ -589,6 +593,11 @@
             // 
             this.clmOCUsage.HeaderText = "Usage";
             this.clmOCUsage.Name = "clmOCUsage";
+            // 
+            // clmOCdotNetFormatString
+            // 
+            this.clmOCdotNetFormatString.HeaderText = "Format String";
+            this.clmOCdotNetFormatString.Name = "clmOCdotNetFormatString";
             // 
             // clmOCCodePage
             // 
@@ -657,6 +666,8 @@
             // 
             // panel7
             // 
+            this.panel7.Controls.Add(this.label11);
+            this.panel7.Controls.Add(this.cbOutputType);
             this.panel7.Controls.Add(this.label10);
             this.panel7.Controls.Add(this.tbRowTypeValue);
             this.panel7.Controls.Add(this.tbOutputName);
@@ -670,6 +681,23 @@
             this.panel7.Name = "panel7";
             this.panel7.Size = new System.Drawing.Size(461, 85);
             this.panel7.TabIndex = 1;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(255, 8);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(31, 13);
+            this.label11.TabIndex = 27;
+            this.label11.Text = "Type";
+            // 
+            // cbOutputType
+            // 
+            this.cbOutputType.FormattingEnabled = true;
+            this.cbOutputType.Location = new System.Drawing.Point(337, 3);
+            this.cbOutputType.Name = "cbOutputType";
+            this.cbOutputType.Size = new System.Drawing.Size(121, 21);
+            this.cbOutputType.TabIndex = 26;
             // 
             // label10
             // 
@@ -773,6 +801,7 @@
             this.lbOutputs.Name = "lbOutputs";
             this.lbOutputs.Size = new System.Drawing.Size(167, 291);
             this.lbOutputs.TabIndex = 4;
+            this.lbOutputs.SelectedIndexChanged += new System.EventHandler(this.lbOutputs_SelectedIndexChanged);
             // 
             // panel6
             // 
@@ -832,15 +861,6 @@
             this.tpAbout.Text = "About";
             this.tpAbout.UseVisualStyleBackColor = true;
             // 
-            // pictureBox2
-            // 
-            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
-            this.pictureBox2.Location = new System.Drawing.Point(450, 6);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(176, 154);
-            this.pictureBox2.TabIndex = 13;
-            this.pictureBox2.TabStop = false;
-            // 
             // richTextBox1
             // 
             this.richTextBox1.Location = new System.Drawing.Point(8, 6);
@@ -850,6 +870,15 @@
             this.richTextBox1.TabIndex = 14;
             this.richTextBox1.Text = "This component was written by Keith Martin.\nIt utilises a third party .Net Librar" +
     "y FileHelpers.\nSee http://filehelpers.sourceforge.net/ for details.";
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.Location = new System.Drawing.Point(450, 6);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(176, 154);
+            this.pictureBox2.TabIndex = 13;
+            this.pictureBox2.TabStop = false;
             // 
             // TextFileSplitterForm
             // 
@@ -863,6 +892,7 @@
             this.MinimumSize = new System.Drawing.Size(658, 476);
             this.Name = "TextFileSplitterForm";
             this.Text = "Text File Splitter Source";
+            this.Load += new System.EventHandler(this.TextFileSplitterForm_Load);
             this.panel1.ResumeLayout(false);
             this.tcMain.ResumeLayout(false);
             this.tpConnection.ResumeLayout(false);
@@ -881,7 +911,7 @@
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvOutputColumns)).EndInit();
             this.panel8.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvOutputPreview)).EndInit();
             this.panel7.ResumeLayout(false);
@@ -959,17 +989,20 @@
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.Button btnGenerateOutputs;
         private System.Windows.Forms.Panel panel5;
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView dgvOutputColumns;
+        private System.Windows.Forms.TabPage tpAbout;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCColumnName;
         private System.Windows.Forms.DataGridViewComboBoxColumn clmOCUsage;
+        private System.Windows.Forms.DataGridViewTextBoxColumn clmOCdotNetFormatString;
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCCodePage;
         private System.Windows.Forms.DataGridViewComboBoxColumn clmOCDataType;
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCLength;
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCPrecision;
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCScale;
-        private System.Windows.Forms.TabPage tpAbout;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.RichTextBox richTextBox1;
-        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.ComboBox cbOutputType;
     }
 }
