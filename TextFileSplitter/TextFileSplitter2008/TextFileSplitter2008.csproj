@@ -64,6 +64,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -105,6 +107,7 @@
     </Compile>
     <Compile Include="..\TextFileSplitter2012\TextFileSplitterForm.cs">
       <Link>TextFileSplitterForm.cs</Link>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="..\TextFileSplitter2012\TextFileSplitterForm.designer.cs">
       <Link>TextFileSplitterForm.designer.cs</Link>
@@ -132,15 +135,18 @@
       <Link>Properties\Resources.resx</Link>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\TextFileSplitter2012\Resources\TextFileSplitter.ico">
-      <Link>Resources\TextFileSplitter.ico</Link>
+    <EmbeddedResource Include="..\TextFileSplitter2012\TextFileSplitterForm.resx">
+      <Link>TextFileSplitterForm.resx</Link>
+      <DependentUpon>TextFileSplitterForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\TextFileSplitter2012\Attributions.txt">
       <Link>Attributions.txt</Link>
     </Content>
+    <EmbeddedResource Include="Resources\TextFileSplitter.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

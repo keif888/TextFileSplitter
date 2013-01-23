@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextFileSplitterForm));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnOK = new System.Windows.Forms.Button();
@@ -38,6 +39,7 @@
             this.tpConnection = new System.Windows.Forms.TabPage();
             this.dgvConnectionPreview = new System.Windows.Forms.DataGridView();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label5 = new System.Windows.Forms.Label();
             this.tbNumberOfRecordsToPreview = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
@@ -51,16 +53,14 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnPreview = new System.Windows.Forms.Button();
             this.tpPassThrough = new System.Windows.Forms.TabPage();
-            this.tpOutputs = new System.Windows.Forms.TabPage();
-            this.ttSplitter = new System.Windows.Forms.ToolTip(this.components);
-            this.dgvPassThrough = new System.Windows.Forms.DataGridView();
+            this.dgvPassThroughPreview = new System.Windows.Forms.DataGridView();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
+            this.cbPTErrorDisposition = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.tbPTNumberOfRecordsToPreview = new System.Windows.Forms.NumericUpDown();
             this.btnPTPreview = new System.Windows.Forms.Button();
-            this.dgvPassThroughPreview = new System.Windows.Forms.DataGridView();
-            this.cbPTErrorDisposition = new System.Windows.Forms.ComboBox();
-            this.label7 = new System.Windows.Forms.Label();
+            this.dgvPassThrough = new System.Windows.Forms.DataGridView();
             this.clmPTColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmPTUsageOfColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.clmPTCodePage = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -68,27 +68,8 @@
             this.clmPTLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmPTPrecision = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmPTScale = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.panel4 = new System.Windows.Forms.Panel();
-            this.btnAddOutput = new System.Windows.Forms.Button();
-            this.btnRemoveOutput = new System.Windows.Forms.Button();
-            this.btnGenerateOutputs = new System.Windows.Forms.Button();
-            this.panel5 = new System.Windows.Forms.Panel();
-            this.panel6 = new System.Windows.Forms.Panel();
-            this.lbOutputs = new System.Windows.Forms.ListBox();
-            this.panel7 = new System.Windows.Forms.Panel();
-            this.label8 = new System.Windows.Forms.Label();
-            this.cbOutputDisposition = new System.Windows.Forms.ComboBox();
-            this.tbOutputNumberOfRecordsToPreview = new System.Windows.Forms.NumericUpDown();
-            this.btnOutputPreview = new System.Windows.Forms.Button();
-            this.label9 = new System.Windows.Forms.Label();
-            this.tbOutputName = new System.Windows.Forms.TextBox();
-            this.tbRowTypeValue = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
+            this.tpOutputs = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.dgvOutputPreview = new System.Windows.Forms.DataGridView();
-            this.panel8 = new System.Windows.Forms.Panel();
-            this.btnAddColumn = new System.Windows.Forms.Button();
-            this.btnRemoveColumn = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.clmOCColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmOCUsage = new System.Windows.Forms.DataGridViewComboBoxColumn();
@@ -97,31 +78,56 @@
             this.clmOCLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmOCPrecision = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.clmOCScale = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.panel8 = new System.Windows.Forms.Panel();
+            this.btnAddColumn = new System.Windows.Forms.Button();
+            this.btnRemoveColumn = new System.Windows.Forms.Button();
+            this.dgvOutputPreview = new System.Windows.Forms.DataGridView();
+            this.panel7 = new System.Windows.Forms.Panel();
+            this.label10 = new System.Windows.Forms.Label();
+            this.tbRowTypeValue = new System.Windows.Forms.TextBox();
+            this.tbOutputName = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.cbOutputDisposition = new System.Windows.Forms.ComboBox();
+            this.tbOutputNumberOfRecordsToPreview = new System.Windows.Forms.NumericUpDown();
+            this.btnOutputPreview = new System.Windows.Forms.Button();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.lbOutputs = new System.Windows.Forms.ListBox();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.btnGenerateOutputs = new System.Windows.Forms.Button();
+            this.panel5 = new System.Windows.Forms.Panel();
+            this.btnAddOutput = new System.Windows.Forms.Button();
+            this.btnRemoveOutput = new System.Windows.Forms.Button();
             this.tpAbout = new System.Windows.Forms.TabPage();
+            this.ttSplitter = new System.Windows.Forms.ToolTip(this.components);
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.panel1.SuspendLayout();
             this.tcMain.SuspendLayout();
             this.tpConnection.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvConnectionPreview)).BeginInit();
             this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbNumberOfRecordsToPreview)).BeginInit();
             this.tpPassThrough.SuspendLayout();
-            this.tpOutputs.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvPassThrough)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPassThroughPreview)).BeginInit();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbPTNumberOfRecordsToPreview)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvPassThroughPreview)).BeginInit();
-            this.panel4.SuspendLayout();
-            this.panel5.SuspendLayout();
-            this.panel6.SuspendLayout();
-            this.panel7.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbOutputNumberOfRecordsToPreview)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPassThrough)).BeginInit();
+            this.tpOutputs.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvOutputPreview)).BeginInit();
-            this.panel8.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.panel8.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvOutputPreview)).BeginInit();
+            this.panel7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbOutputNumberOfRecordsToPreview)).BeginInit();
+            this.panel4.SuspendLayout();
+            this.panel6.SuspendLayout();
+            this.panel5.SuspendLayout();
+            this.tpAbout.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -212,6 +218,7 @@
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.pictureBox1);
             this.panel2.Controls.Add(this.label5);
             this.panel2.Controls.Add(this.tbNumberOfRecordsToPreview);
             this.panel2.Controls.Add(this.label4);
@@ -229,6 +236,16 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(628, 154);
             this.panel2.TabIndex = 0;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Location = new System.Drawing.Point(467, 4);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(132, 111);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.pictureBox1.TabIndex = 12;
+            this.pictureBox1.TabStop = false;
             // 
             // label5
             // 
@@ -373,37 +390,17 @@
             this.tpPassThrough.Text = "Pass Through";
             this.tpPassThrough.UseVisualStyleBackColor = true;
             // 
-            // tpOutputs
+            // dgvPassThroughPreview
             // 
-            this.tpOutputs.Controls.Add(this.splitContainer1);
-            this.tpOutputs.Controls.Add(this.panel7);
-            this.tpOutputs.Controls.Add(this.panel4);
-            this.tpOutputs.Location = new System.Drawing.Point(4, 22);
-            this.tpOutputs.Name = "tpOutputs";
-            this.tpOutputs.Padding = new System.Windows.Forms.Padding(3);
-            this.tpOutputs.Size = new System.Drawing.Size(634, 357);
-            this.tpOutputs.TabIndex = 2;
-            this.tpOutputs.Text = "Outputs";
-            this.tpOutputs.UseVisualStyleBackColor = true;
-            // 
-            // dgvPassThrough
-            // 
-            this.dgvPassThrough.AllowUserToAddRows = false;
-            this.dgvPassThrough.AllowUserToDeleteRows = false;
-            this.dgvPassThrough.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvPassThrough.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.clmPTColumnName,
-            this.clmPTUsageOfColumn,
-            this.clmPTCodePage,
-            this.clmPTDataType,
-            this.clmPTLength,
-            this.clmPTPrecision,
-            this.clmPTScale});
-            this.dgvPassThrough.Dock = System.Windows.Forms.DockStyle.Top;
-            this.dgvPassThrough.Location = new System.Drawing.Point(3, 3);
-            this.dgvPassThrough.Name = "dgvPassThrough";
-            this.dgvPassThrough.Size = new System.Drawing.Size(628, 150);
-            this.dgvPassThrough.TabIndex = 0;
+            this.dgvPassThroughPreview.AllowUserToAddRows = false;
+            this.dgvPassThroughPreview.AllowUserToDeleteRows = false;
+            this.dgvPassThroughPreview.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvPassThroughPreview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvPassThroughPreview.Location = new System.Drawing.Point(3, 185);
+            this.dgvPassThroughPreview.Name = "dgvPassThroughPreview";
+            this.dgvPassThroughPreview.ReadOnly = true;
+            this.dgvPassThroughPreview.Size = new System.Drawing.Size(628, 169);
+            this.dgvPassThroughPreview.TabIndex = 2;
             // 
             // panel3
             // 
@@ -417,6 +414,23 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(628, 32);
             this.panel3.TabIndex = 1;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(6, 8);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(83, 13);
+            this.label7.TabIndex = 16;
+            this.label7.Text = "Error Disposition";
+            // 
+            // cbPTErrorDisposition
+            // 
+            this.cbPTErrorDisposition.FormattingEnabled = true;
+            this.cbPTErrorDisposition.Location = new System.Drawing.Point(95, 5);
+            this.cbPTErrorDisposition.Name = "cbPTErrorDisposition";
+            this.cbPTErrorDisposition.Size = new System.Drawing.Size(175, 21);
+            this.cbPTErrorDisposition.TabIndex = 15;
             // 
             // label6
             // 
@@ -461,34 +475,24 @@
         "view below.");
             this.btnPTPreview.UseVisualStyleBackColor = true;
             // 
-            // dgvPassThroughPreview
+            // dgvPassThrough
             // 
-            this.dgvPassThroughPreview.AllowUserToAddRows = false;
-            this.dgvPassThroughPreview.AllowUserToDeleteRows = false;
-            this.dgvPassThroughPreview.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvPassThroughPreview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvPassThroughPreview.Location = new System.Drawing.Point(3, 185);
-            this.dgvPassThroughPreview.Name = "dgvPassThroughPreview";
-            this.dgvPassThroughPreview.ReadOnly = true;
-            this.dgvPassThroughPreview.Size = new System.Drawing.Size(628, 169);
-            this.dgvPassThroughPreview.TabIndex = 2;
-            // 
-            // cbPTErrorDisposition
-            // 
-            this.cbPTErrorDisposition.FormattingEnabled = true;
-            this.cbPTErrorDisposition.Location = new System.Drawing.Point(95, 5);
-            this.cbPTErrorDisposition.Name = "cbPTErrorDisposition";
-            this.cbPTErrorDisposition.Size = new System.Drawing.Size(175, 21);
-            this.cbPTErrorDisposition.TabIndex = 15;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 8);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(83, 13);
-            this.label7.TabIndex = 16;
-            this.label7.Text = "Error Disposition";
+            this.dgvPassThrough.AllowUserToAddRows = false;
+            this.dgvPassThrough.AllowUserToDeleteRows = false;
+            this.dgvPassThrough.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvPassThrough.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.clmPTColumnName,
+            this.clmPTUsageOfColumn,
+            this.clmPTCodePage,
+            this.clmPTDataType,
+            this.clmPTLength,
+            this.clmPTPrecision,
+            this.clmPTScale});
+            this.dgvPassThrough.Dock = System.Windows.Forms.DockStyle.Top;
+            this.dgvPassThrough.Location = new System.Drawing.Point(3, 3);
+            this.dgvPassThrough.Name = "dgvPassThrough";
+            this.dgvPassThrough.Size = new System.Drawing.Size(628, 150);
+            this.dgvPassThrough.TabIndex = 0;
             // 
             // clmPTColumnName
             // 
@@ -525,170 +529,18 @@
             this.clmPTScale.HeaderText = "Scale";
             this.clmPTScale.Name = "clmPTScale";
             // 
-            // panel4
+            // tpOutputs
             // 
-            this.panel4.Controls.Add(this.lbOutputs);
-            this.panel4.Controls.Add(this.panel6);
-            this.panel4.Controls.Add(this.panel5);
-            this.panel4.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panel4.Location = new System.Drawing.Point(3, 3);
-            this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(167, 351);
-            this.panel4.TabIndex = 0;
-            // 
-            // btnAddOutput
-            // 
-            this.btnAddOutput.Location = new System.Drawing.Point(3, 3);
-            this.btnAddOutput.Name = "btnAddOutput";
-            this.btnAddOutput.Size = new System.Drawing.Size(75, 23);
-            this.btnAddOutput.TabIndex = 0;
-            this.btnAddOutput.Text = "Add";
-            this.btnAddOutput.UseVisualStyleBackColor = true;
-            // 
-            // btnRemoveOutput
-            // 
-            this.btnRemoveOutput.Location = new System.Drawing.Point(84, 3);
-            this.btnRemoveOutput.Name = "btnRemoveOutput";
-            this.btnRemoveOutput.Size = new System.Drawing.Size(75, 23);
-            this.btnRemoveOutput.TabIndex = 1;
-            this.btnRemoveOutput.Text = "Remove";
-            this.btnRemoveOutput.UseVisualStyleBackColor = true;
-            // 
-            // btnGenerateOutputs
-            // 
-            this.btnGenerateOutputs.Location = new System.Drawing.Point(3, 3);
-            this.btnGenerateOutputs.Name = "btnGenerateOutputs";
-            this.btnGenerateOutputs.Size = new System.Drawing.Size(156, 23);
-            this.btnGenerateOutputs.TabIndex = 2;
-            this.btnGenerateOutputs.Text = "Generate Outputs";
-            this.btnGenerateOutputs.UseVisualStyleBackColor = true;
-            // 
-            // panel5
-            // 
-            this.panel5.Controls.Add(this.btnAddOutput);
-            this.panel5.Controls.Add(this.btnRemoveOutput);
-            this.panel5.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel5.Location = new System.Drawing.Point(0, 321);
-            this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(167, 30);
-            this.panel5.TabIndex = 1;
-            // 
-            // panel6
-            // 
-            this.panel6.Controls.Add(this.btnGenerateOutputs);
-            this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel6.Location = new System.Drawing.Point(0, 0);
-            this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(167, 30);
-            this.panel6.TabIndex = 3;
-            // 
-            // lbOutputs
-            // 
-            this.lbOutputs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lbOutputs.FormattingEnabled = true;
-            this.lbOutputs.Location = new System.Drawing.Point(0, 30);
-            this.lbOutputs.Name = "lbOutputs";
-            this.lbOutputs.Size = new System.Drawing.Size(167, 291);
-            this.lbOutputs.TabIndex = 4;
-            // 
-            // panel7
-            // 
-            this.panel7.Controls.Add(this.label10);
-            this.panel7.Controls.Add(this.tbRowTypeValue);
-            this.panel7.Controls.Add(this.tbOutputName);
-            this.panel7.Controls.Add(this.label9);
-            this.panel7.Controls.Add(this.label8);
-            this.panel7.Controls.Add(this.cbOutputDisposition);
-            this.panel7.Controls.Add(this.tbOutputNumberOfRecordsToPreview);
-            this.panel7.Controls.Add(this.btnOutputPreview);
-            this.panel7.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel7.Location = new System.Drawing.Point(170, 3);
-            this.panel7.Name = "panel7";
-            this.panel7.Size = new System.Drawing.Size(461, 85);
-            this.panel7.TabIndex = 1;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 59);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(83, 13);
-            this.label8.TabIndex = 21;
-            this.label8.Text = "Error Disposition";
-            // 
-            // cbOutputDisposition
-            // 
-            this.cbOutputDisposition.FormattingEnabled = true;
-            this.cbOutputDisposition.Location = new System.Drawing.Point(92, 56);
-            this.cbOutputDisposition.Name = "cbOutputDisposition";
-            this.cbOutputDisposition.Size = new System.Drawing.Size(157, 21);
-            this.cbOutputDisposition.TabIndex = 20;
-            // 
-            // tbOutputNumberOfRecordsToPreview
-            // 
-            this.tbOutputNumberOfRecordsToPreview.Location = new System.Drawing.Point(255, 56);
-            this.tbOutputNumberOfRecordsToPreview.Maximum = new decimal(new int[] {
-            10000,
-            0,
-            0,
-            0});
-            this.tbOutputNumberOfRecordsToPreview.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.tbOutputNumberOfRecordsToPreview.Name = "tbOutputNumberOfRecordsToPreview";
-            this.tbOutputNumberOfRecordsToPreview.Size = new System.Drawing.Size(120, 20);
-            this.tbOutputNumberOfRecordsToPreview.TabIndex = 18;
-            this.ttSplitter.SetToolTip(this.tbOutputNumberOfRecordsToPreview, "Select the number of records that will be read into the preview grid.");
-            this.tbOutputNumberOfRecordsToPreview.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            // 
-            // btnOutputPreview
-            // 
-            this.btnOutputPreview.Location = new System.Drawing.Point(381, 53);
-            this.btnOutputPreview.Name = "btnOutputPreview";
-            this.btnOutputPreview.Size = new System.Drawing.Size(75, 23);
-            this.btnOutputPreview.TabIndex = 17;
-            this.btnOutputPreview.Text = "Preview";
-            this.ttSplitter.SetToolTip(this.btnOutputPreview, "Click this to read the data from the Connection Manager and display it in the Pre" +
-        "view below.");
-            this.btnOutputPreview.UseVisualStyleBackColor = true;
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(8, 8);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(70, 13);
-            this.label9.TabIndex = 22;
-            this.label9.Text = "Output Name";
-            // 
-            // tbOutputName
-            // 
-            this.tbOutputName.Location = new System.Drawing.Point(92, 3);
-            this.tbOutputName.Name = "tbOutputName";
-            this.tbOutputName.Size = new System.Drawing.Size(157, 20);
-            this.tbOutputName.TabIndex = 23;
-            // 
-            // tbRowTypeValue
-            // 
-            this.tbRowTypeValue.Location = new System.Drawing.Point(92, 30);
-            this.tbRowTypeValue.Name = "tbRowTypeValue";
-            this.tbRowTypeValue.Size = new System.Drawing.Size(157, 20);
-            this.tbRowTypeValue.TabIndex = 24;
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(8, 33);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(76, 13);
-            this.label10.TabIndex = 25;
-            this.label10.Text = "Selector Value";
+            this.tpOutputs.Controls.Add(this.splitContainer1);
+            this.tpOutputs.Controls.Add(this.panel7);
+            this.tpOutputs.Controls.Add(this.panel4);
+            this.tpOutputs.Location = new System.Drawing.Point(4, 22);
+            this.tpOutputs.Name = "tpOutputs";
+            this.tpOutputs.Padding = new System.Windows.Forms.Padding(3);
+            this.tpOutputs.Size = new System.Drawing.Size(634, 357);
+            this.tpOutputs.TabIndex = 2;
+            this.tpOutputs.Text = "Outputs";
+            this.tpOutputs.UseVisualStyleBackColor = true;
             // 
             // splitContainer1
             // 
@@ -708,46 +560,6 @@
             this.splitContainer1.Size = new System.Drawing.Size(461, 266);
             this.splitContainer1.SplitterDistance = 150;
             this.splitContainer1.TabIndex = 2;
-            // 
-            // dgvOutputPreview
-            // 
-            this.dgvOutputPreview.AllowUserToAddRows = false;
-            this.dgvOutputPreview.AllowUserToDeleteRows = false;
-            this.dgvOutputPreview.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvOutputPreview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvOutputPreview.Location = new System.Drawing.Point(0, 0);
-            this.dgvOutputPreview.Name = "dgvOutputPreview";
-            this.dgvOutputPreview.ReadOnly = true;
-            this.dgvOutputPreview.Size = new System.Drawing.Size(461, 112);
-            this.dgvOutputPreview.TabIndex = 0;
-            // 
-            // panel8
-            // 
-            this.panel8.Controls.Add(this.btnAddColumn);
-            this.panel8.Controls.Add(this.btnRemoveColumn);
-            this.panel8.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel8.Location = new System.Drawing.Point(0, 120);
-            this.panel8.Name = "panel8";
-            this.panel8.Size = new System.Drawing.Size(461, 30);
-            this.panel8.TabIndex = 2;
-            // 
-            // btnAddColumn
-            // 
-            this.btnAddColumn.Location = new System.Drawing.Point(3, 3);
-            this.btnAddColumn.Name = "btnAddColumn";
-            this.btnAddColumn.Size = new System.Drawing.Size(75, 23);
-            this.btnAddColumn.TabIndex = 0;
-            this.btnAddColumn.Text = "Add";
-            this.btnAddColumn.UseVisualStyleBackColor = true;
-            // 
-            // btnRemoveColumn
-            // 
-            this.btnRemoveColumn.Location = new System.Drawing.Point(84, 3);
-            this.btnRemoveColumn.Name = "btnRemoveColumn";
-            this.btnRemoveColumn.Size = new System.Drawing.Size(75, 23);
-            this.btnRemoveColumn.TabIndex = 1;
-            this.btnRemoveColumn.Text = "Remove";
-            this.btnRemoveColumn.UseVisualStyleBackColor = true;
             // 
             // dataGridView1
             // 
@@ -803,8 +615,215 @@
             this.clmOCScale.HeaderText = "Scale";
             this.clmOCScale.Name = "clmOCScale";
             // 
+            // panel8
+            // 
+            this.panel8.Controls.Add(this.btnAddColumn);
+            this.panel8.Controls.Add(this.btnRemoveColumn);
+            this.panel8.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel8.Location = new System.Drawing.Point(0, 120);
+            this.panel8.Name = "panel8";
+            this.panel8.Size = new System.Drawing.Size(461, 30);
+            this.panel8.TabIndex = 2;
+            // 
+            // btnAddColumn
+            // 
+            this.btnAddColumn.Location = new System.Drawing.Point(3, 3);
+            this.btnAddColumn.Name = "btnAddColumn";
+            this.btnAddColumn.Size = new System.Drawing.Size(75, 23);
+            this.btnAddColumn.TabIndex = 0;
+            this.btnAddColumn.Text = "Add";
+            this.btnAddColumn.UseVisualStyleBackColor = true;
+            // 
+            // btnRemoveColumn
+            // 
+            this.btnRemoveColumn.Location = new System.Drawing.Point(84, 3);
+            this.btnRemoveColumn.Name = "btnRemoveColumn";
+            this.btnRemoveColumn.Size = new System.Drawing.Size(75, 23);
+            this.btnRemoveColumn.TabIndex = 1;
+            this.btnRemoveColumn.Text = "Remove";
+            this.btnRemoveColumn.UseVisualStyleBackColor = true;
+            // 
+            // dgvOutputPreview
+            // 
+            this.dgvOutputPreview.AllowUserToAddRows = false;
+            this.dgvOutputPreview.AllowUserToDeleteRows = false;
+            this.dgvOutputPreview.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvOutputPreview.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvOutputPreview.Location = new System.Drawing.Point(0, 0);
+            this.dgvOutputPreview.Name = "dgvOutputPreview";
+            this.dgvOutputPreview.ReadOnly = true;
+            this.dgvOutputPreview.Size = new System.Drawing.Size(461, 112);
+            this.dgvOutputPreview.TabIndex = 0;
+            // 
+            // panel7
+            // 
+            this.panel7.Controls.Add(this.label10);
+            this.panel7.Controls.Add(this.tbRowTypeValue);
+            this.panel7.Controls.Add(this.tbOutputName);
+            this.panel7.Controls.Add(this.label9);
+            this.panel7.Controls.Add(this.label8);
+            this.panel7.Controls.Add(this.cbOutputDisposition);
+            this.panel7.Controls.Add(this.tbOutputNumberOfRecordsToPreview);
+            this.panel7.Controls.Add(this.btnOutputPreview);
+            this.panel7.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel7.Location = new System.Drawing.Point(170, 3);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(461, 85);
+            this.panel7.TabIndex = 1;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(8, 33);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(76, 13);
+            this.label10.TabIndex = 25;
+            this.label10.Text = "Selector Value";
+            // 
+            // tbRowTypeValue
+            // 
+            this.tbRowTypeValue.Location = new System.Drawing.Point(92, 30);
+            this.tbRowTypeValue.Name = "tbRowTypeValue";
+            this.tbRowTypeValue.Size = new System.Drawing.Size(157, 20);
+            this.tbRowTypeValue.TabIndex = 24;
+            // 
+            // tbOutputName
+            // 
+            this.tbOutputName.Location = new System.Drawing.Point(92, 3);
+            this.tbOutputName.Name = "tbOutputName";
+            this.tbOutputName.Size = new System.Drawing.Size(157, 20);
+            this.tbOutputName.TabIndex = 23;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(8, 8);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(70, 13);
+            this.label9.TabIndex = 22;
+            this.label9.Text = "Output Name";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(6, 59);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(83, 13);
+            this.label8.TabIndex = 21;
+            this.label8.Text = "Error Disposition";
+            // 
+            // cbOutputDisposition
+            // 
+            this.cbOutputDisposition.FormattingEnabled = true;
+            this.cbOutputDisposition.Location = new System.Drawing.Point(92, 56);
+            this.cbOutputDisposition.Name = "cbOutputDisposition";
+            this.cbOutputDisposition.Size = new System.Drawing.Size(157, 21);
+            this.cbOutputDisposition.TabIndex = 20;
+            // 
+            // tbOutputNumberOfRecordsToPreview
+            // 
+            this.tbOutputNumberOfRecordsToPreview.Location = new System.Drawing.Point(255, 56);
+            this.tbOutputNumberOfRecordsToPreview.Maximum = new decimal(new int[] {
+            10000,
+            0,
+            0,
+            0});
+            this.tbOutputNumberOfRecordsToPreview.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.tbOutputNumberOfRecordsToPreview.Name = "tbOutputNumberOfRecordsToPreview";
+            this.tbOutputNumberOfRecordsToPreview.Size = new System.Drawing.Size(120, 20);
+            this.tbOutputNumberOfRecordsToPreview.TabIndex = 18;
+            this.ttSplitter.SetToolTip(this.tbOutputNumberOfRecordsToPreview, "Select the number of records that will be read into the preview grid.");
+            this.tbOutputNumberOfRecordsToPreview.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            // 
+            // btnOutputPreview
+            // 
+            this.btnOutputPreview.Location = new System.Drawing.Point(381, 53);
+            this.btnOutputPreview.Name = "btnOutputPreview";
+            this.btnOutputPreview.Size = new System.Drawing.Size(75, 23);
+            this.btnOutputPreview.TabIndex = 17;
+            this.btnOutputPreview.Text = "Preview";
+            this.ttSplitter.SetToolTip(this.btnOutputPreview, "Click this to read the data from the Connection Manager and display it in the Pre" +
+        "view below.");
+            this.btnOutputPreview.UseVisualStyleBackColor = true;
+            // 
+            // panel4
+            // 
+            this.panel4.Controls.Add(this.lbOutputs);
+            this.panel4.Controls.Add(this.panel6);
+            this.panel4.Controls.Add(this.panel5);
+            this.panel4.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panel4.Location = new System.Drawing.Point(3, 3);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(167, 351);
+            this.panel4.TabIndex = 0;
+            // 
+            // lbOutputs
+            // 
+            this.lbOutputs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lbOutputs.FormattingEnabled = true;
+            this.lbOutputs.Location = new System.Drawing.Point(0, 30);
+            this.lbOutputs.Name = "lbOutputs";
+            this.lbOutputs.Size = new System.Drawing.Size(167, 291);
+            this.lbOutputs.TabIndex = 4;
+            // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.btnGenerateOutputs);
+            this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel6.Location = new System.Drawing.Point(0, 0);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(167, 30);
+            this.panel6.TabIndex = 3;
+            // 
+            // btnGenerateOutputs
+            // 
+            this.btnGenerateOutputs.Location = new System.Drawing.Point(3, 3);
+            this.btnGenerateOutputs.Name = "btnGenerateOutputs";
+            this.btnGenerateOutputs.Size = new System.Drawing.Size(156, 23);
+            this.btnGenerateOutputs.TabIndex = 2;
+            this.btnGenerateOutputs.Text = "Generate Outputs";
+            this.btnGenerateOutputs.UseVisualStyleBackColor = true;
+            // 
+            // panel5
+            // 
+            this.panel5.Controls.Add(this.btnAddOutput);
+            this.panel5.Controls.Add(this.btnRemoveOutput);
+            this.panel5.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel5.Location = new System.Drawing.Point(0, 321);
+            this.panel5.Name = "panel5";
+            this.panel5.Size = new System.Drawing.Size(167, 30);
+            this.panel5.TabIndex = 1;
+            // 
+            // btnAddOutput
+            // 
+            this.btnAddOutput.Location = new System.Drawing.Point(3, 3);
+            this.btnAddOutput.Name = "btnAddOutput";
+            this.btnAddOutput.Size = new System.Drawing.Size(75, 23);
+            this.btnAddOutput.TabIndex = 0;
+            this.btnAddOutput.Text = "Add";
+            this.btnAddOutput.UseVisualStyleBackColor = true;
+            // 
+            // btnRemoveOutput
+            // 
+            this.btnRemoveOutput.Location = new System.Drawing.Point(84, 3);
+            this.btnRemoveOutput.Name = "btnRemoveOutput";
+            this.btnRemoveOutput.Size = new System.Drawing.Size(75, 23);
+            this.btnRemoveOutput.TabIndex = 1;
+            this.btnRemoveOutput.Text = "Remove";
+            this.btnRemoveOutput.UseVisualStyleBackColor = true;
+            // 
             // tpAbout
             // 
+            this.tpAbout.Controls.Add(this.richTextBox1);
+            this.tpAbout.Controls.Add(this.pictureBox2);
             this.tpAbout.Location = new System.Drawing.Point(4, 22);
             this.tpAbout.Name = "tpAbout";
             this.tpAbout.Padding = new System.Windows.Forms.Padding(3);
@@ -812,6 +831,25 @@
             this.tpAbout.TabIndex = 3;
             this.tpAbout.Text = "About";
             this.tpAbout.UseVisualStyleBackColor = true;
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
+            this.pictureBox2.Location = new System.Drawing.Point(450, 6);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(176, 154);
+            this.pictureBox2.TabIndex = 13;
+            this.pictureBox2.TabStop = false;
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Location = new System.Drawing.Point(8, 6);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.ReadOnly = true;
+            this.richTextBox1.Size = new System.Drawing.Size(436, 345);
+            this.richTextBox1.TabIndex = 14;
+            this.richTextBox1.Text = "This component was written by Keith Martin.\nIt utilises a third party .Net Librar" +
+    "y FileHelpers.\nSee http://filehelpers.sourceforge.net/ for details.";
             // 
             // TextFileSplitterForm
             // 
@@ -821,6 +859,7 @@
             this.Controls.Add(this.tcMain);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.statusStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(658, 476);
             this.Name = "TextFileSplitterForm";
             this.Text = "Text File Splitter Source";
@@ -830,27 +869,29 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvConnectionPreview)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbNumberOfRecordsToPreview)).EndInit();
             this.tpPassThrough.ResumeLayout(false);
-            this.tpOutputs.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvPassThrough)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPassThroughPreview)).EndInit();
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbPTNumberOfRecordsToPreview)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvPassThroughPreview)).EndInit();
-            this.panel4.ResumeLayout(false);
-            this.panel5.ResumeLayout(false);
-            this.panel6.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPassThrough)).EndInit();
+            this.tpOutputs.ResumeLayout(false);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.panel8.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvOutputPreview)).EndInit();
             this.panel7.ResumeLayout(false);
             this.panel7.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tbOutputNumberOfRecordsToPreview)).EndInit();
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvOutputPreview)).EndInit();
-            this.panel8.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.panel4.ResumeLayout(false);
+            this.panel6.ResumeLayout(false);
+            this.panel5.ResumeLayout(false);
+            this.tpAbout.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -927,5 +968,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCPrecision;
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCScale;
         private System.Windows.Forms.TabPage tpAbout;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.PictureBox pictureBox2;
     }
 }
