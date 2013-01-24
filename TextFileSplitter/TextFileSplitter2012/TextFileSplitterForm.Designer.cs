@@ -118,7 +118,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbPTNumberOfRecordsToPreview)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPassThrough)).BeginInit();
             this.tpOutputs.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -308,6 +307,7 @@
             this.tbTextDelimiter.Size = new System.Drawing.Size(237, 20);
             this.tbTextDelimiter.TabIndex = 7;
             this.ttSplitter.SetToolTip(this.tbTextDelimiter, "Enter the text delimiter that is used in the data records");
+            this.tbTextDelimiter.TextChanged += new System.EventHandler(this.tbTextDelimiter_TextChanged);
             // 
             // cbTreatNulls
             // 
@@ -321,6 +321,7 @@
             this.cbTreatNulls.Text = "Treat Empty String as Null?";
             this.ttSplitter.SetToolTip(this.cbTreatNulls, "Should empty strings be turned into Nulls?");
             this.cbTreatNulls.UseVisualStyleBackColor = true;
+            this.cbTreatNulls.CheckedChanged += new System.EventHandler(this.cbTreatNulls_CheckedChanged);
             // 
             // tbColumnDelimiter
             // 
@@ -329,6 +330,7 @@
             this.tbColumnDelimiter.Size = new System.Drawing.Size(237, 20);
             this.tbColumnDelimiter.TabIndex = 5;
             this.ttSplitter.SetToolTip(this.tbColumnDelimiter, "Enter the column delimiter for the data records");
+            this.tbColumnDelimiter.TextChanged += new System.EventHandler(this.tbColumnDelimiter_TextChanged);
             // 
             // cbDelimitedText
             // 
@@ -342,6 +344,7 @@
             this.cbDelimitedText.Text = "Delimited Text?";
             this.ttSplitter.SetToolTip(this.cbDelimitedText, "Are the data records delimited?");
             this.cbDelimitedText.UseVisualStyleBackColor = true;
+            this.cbDelimitedText.CheckedChanged += new System.EventHandler(this.cbDelimitedText_CheckedChanged);
             // 
             // label2
             // 
@@ -360,6 +363,7 @@
             this.cbConnectionManager.Size = new System.Drawing.Size(237, 21);
             this.cbConnectionManager.TabIndex = 2;
             this.ttSplitter.SetToolTip(this.cbConnectionManager, "Select the Connection Manager to use.");
+            this.cbConnectionManager.SelectedIndexChanged += new System.EventHandler(this.cbConnectionManager_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -380,6 +384,7 @@
             this.ttSplitter.SetToolTip(this.btnPreview, "Click this to read the data from the Connection Manager and display it in the Pre" +
         "view below.");
             this.btnPreview.UseVisualStyleBackColor = true;
+            this.btnPreview.Click += new System.EventHandler(this.btnPreview_Click);
             // 
             // tpPassThrough
             // 
@@ -912,7 +917,6 @@
             this.tpOutputs.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvOutputColumns)).EndInit();
             this.panel8.ResumeLayout(false);

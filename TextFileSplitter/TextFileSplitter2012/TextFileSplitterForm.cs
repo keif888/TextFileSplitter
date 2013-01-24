@@ -2,6 +2,7 @@
 using Microsoft.SqlServer.Dts.Pipeline.Design;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
+using Microsoft.SqlServer.Dts.Runtime.Design;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
 using System;
 using System.Collections.Generic;
@@ -12,13 +13,15 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using FileHelpers.Dynamic;
+using FileHelpers;
 
 namespace Martin.SQLServer.Dts
 {
     public partial class TextFileSplitterForm : Form, IDtsComponentUI
     {
 
-        private IDTSComponentMetaData100 componentMetaData;
+        private IDTSComponentMetaData100 _componentMetaData;
         private IDTSDesigntimeComponent100 designtimeComponent;
         private IServiceProvider serviceProvider;
         private IErrorCollectionService errorCollector;
@@ -35,7 +38,7 @@ namespace Martin.SQLServer.Dts
 
         void IDtsComponentUI.Initialize(IDTSComponentMetaData100 dtsComponentMetadata, IServiceProvider serviceProvider)
         {
-            this.componentMetaData = dtsComponentMetadata;
+            this._componentMetaData = dtsComponentMetadata;
             this.serviceProvider = serviceProvider;
 
             Debug.Assert(this.serviceProvider != null, "The service provider was null!");
@@ -59,9 +62,9 @@ namespace Martin.SQLServer.Dts
 
             try
             {
-                Debug.Assert(this.componentMetaData != null, "Original Component Metadata is not OK.");
+                Debug.Assert(this._componentMetaData != null, "Original Component Metadata is not OK.");
 
-                this.designtimeComponent = this.componentMetaData.Instantiate();
+                this.designtimeComponent = this._componentMetaData.Instantiate();
 
                 Debug.Assert(this.designtimeComponent != null, "Design-time component object is not OK.");
 
@@ -187,21 +190,22 @@ namespace Martin.SQLServer.Dts
 
             this.cbConnectionManager.Items.Add("New Connection");
 
-            if (this.componentMetaData.RuntimeConnectionCollection.Count == 1)
+            if (this._componentMetaData.RuntimeConnectionCollection.Count == 1)
             {
-                string cmID = this.componentMetaData.RuntimeConnectionCollection[0].ConnectionManagerID;
+                string cmID = this._componentMetaData.RuntimeConnectionCollection[0].ConnectionManagerID;
                 if (this.connections.Contains(cmID))
                 {
                     this.cbConnectionManager.SelectedItem = this.connections[cmID].Name;
+                    this.cbConnectionManager.Enabled = false;
                 }
             }
 
-            this.tbColumnDelimiter.Text = (String)ManageProperties.GetPropertyValue(this.componentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
-            this.cbDelimitedText.Checked = (Boolean)ManageProperties.GetPropertyValue(this.componentMetaData.CustomPropertyCollection, ManageProperties.isTextDelmited);
-            this.tbTextDelimiter.Text = (String)ManageProperties.GetPropertyValue(this.componentMetaData.CustomPropertyCollection, ManageProperties.textDelmiter);
-            this.cbTreatNulls.Checked = (Boolean)ManageProperties.GetPropertyValue(this.componentMetaData.CustomPropertyCollection, ManageProperties.treatEmptyStringsAsNull);
+            this.tbColumnDelimiter.Text = (String)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
+            this.cbDelimitedText.Checked = (Boolean)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.isTextDelmited);
+            this.tbTextDelimiter.Text = (String)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.textDelmiter);
+            this.cbTreatNulls.Checked = (Boolean)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.treatEmptyStringsAsNull);
 
-            foreach (IDTSOutput100 output in this.componentMetaData.OutputCollection)
+            foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
             {
                 switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
                 {
@@ -299,7 +303,7 @@ namespace Martin.SQLServer.Dts
             tbOutputName.Text = String.Empty;
             tbRowTypeValue.Text = String.Empty;
 
-            foreach (IDTSOutput100 output in this.componentMetaData.OutputCollection)
+            foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
             {
                 if (output.Name == (String)lbOutputs.SelectedItem)
                 {
@@ -399,5 +403,204 @@ namespace Martin.SQLServer.Dts
 
             e.Cancel = true;
         }
+
+        #region Connection Tab Events
+
+        private void cbConnectionManager_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Special case: the <New...> item on the combo box causes us to try to create a new connection manager.
+            if ((string)cbConnectionManager.SelectedItem == "New Connection")
+            {
+                // Fetch the IDtsConnectionService.  It provides facilities to present the user with 
+                // a new connection dialog, so they don't need to exit the (modal) UI to create one.
+                IDtsConnectionService connService =
+                    (IDtsConnectionService)serviceProvider.GetService(typeof(IDtsConnectionService));
+                System.Collections.ArrayList created = connService.CreateConnection("FLATFILE");
+
+                // CreateConnection() returns back a list of connections that were created -- go ahead
+                // and update our list with those new items.
+                foreach (ConnectionManager cm in created)
+                {
+                    cbConnectionManager.Items.Insert(0, cm.Name);
+                }
+
+                // If we created an item, we select it in the combo box, otherwise, clear the selection entirely.
+                if (created.Count > 0)
+                {
+                    cbConnectionManager.SelectedIndex = 0;
+                }
+                else
+                {
+                    cbConnectionManager.SelectedIndex = -1;
+                }
+            }
+
+
+
+            // No matter what, we set the current connection manager to the chosen item if it's real.
+            if (connections.Contains(cbConnectionManager.SelectedItem))
+            {
+                cbConnectionManager.Enabled = false;
+                if (this._componentMetaData.RuntimeConnectionCollection[0].ConnectionManagerID != connections[cbConnectionManager.SelectedItem].ID)
+                {
+
+                    this._componentMetaData.RuntimeConnectionCollection[0].ConnectionManager = DtsConvert.GetExtendedInterface(connections[cbConnectionManager.SelectedItem]);
+                    // Depreciated //    DtsConvert.ToConnectionManager90(connections[cbConnectionManager.SelectedItem]);
+
+                    this._componentMetaData.RuntimeConnectionCollection[0].ConnectionManagerID =
+                        connections[cbConnectionManager.SelectedItem].ID;
+
+                    ConnectionManager cm = connections[cbConnectionManager.SelectedItem];
+                    IDTSConnectionManagerFlatFile100 connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile100;
+                    if (!String.IsNullOrEmpty(cm.ConnectionString))
+                    {
+                        IDTSOutput100 passthroughOutput = null;
+                        foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
+                        {
+                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
+                            {
+                                passthroughOutput = output;
+                                break;
+                            }
+                        }
+
+                        if (passthroughOutput != null)
+                        {
+                            if (passthroughOutput.OutputColumnCollection.Count == 0)
+                            {
+                                foreach (IDTSConnectionManagerFlatFileColumn100 FFcolumn in connectionFlatFile.Columns)
+                                {
+                                    IDTSOutputColumn100 outColumn = passthroughOutput.OutputColumnCollection.New();
+                                    ManageColumns.SetOutputColumnDefaults(outColumn, connectionFlatFile.CodePage);
+                                    ManageProperties.AddOutputColumnProperties(outColumn.CustomPropertyCollection);
+                                    outColumn.Name = ((IDTSName100)FFcolumn).Name;
+                                    outColumn.SetDataTypeProperties(FFcolumn.DataType, FFcolumn.MaximumWidth, FFcolumn.DataPrecision, FFcolumn.DataScale, connectionFlatFile.CodePage);
+                                    IDTSExternalMetadataColumn100 eColumn = this._componentMetaData.OutputCollection[0].ExternalMetadataColumnCollection.New();
+                                    eColumn.Name = outColumn.Name;
+                                    eColumn.DataType = outColumn.DataType;
+                                    eColumn.Precision = outColumn.Precision;
+                                    eColumn.Scale = outColumn.Scale;
+                                    eColumn.Length = outColumn.Length;
+                                    outColumn.ExternalMetadataColumnID = eColumn.ID;
+                                }
+                            }
+                            this.cbPTErrorDisposition.SelectedItem = passthroughOutput.ErrorRowDisposition;
+                            dgvPassThrough.Rows.Clear();
+                            foreach (IDTSOutputColumn100 outputColumn in passthroughOutput.OutputColumnCollection)
+                            {
+                                int rowNumber = dgvPassThrough.Rows.Add(1);
+                                dgvPassThrough.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
+                                dgvPassThrough.Rows[rowNumber].Cells[0].ReadOnly = true;
+
+                                DataGridViewComboBoxCell usageList = dgvPassThrough.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
+                                //usageList.DataSource = System.Enum.GetValues(typeof(Utilities.usageOfColumnEnum));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.RowData));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.RowType));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough));
+                                usageList.Value = Enum.GetName(typeof(Utilities.usageOfColumnEnum), (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn));
+
+                                dgvPassThrough.Rows[rowNumber].Cells[2].Value = outputColumn.CodePage;
+                                dgvPassThrough.Rows[rowNumber].Cells[2].ReadOnly = true;
+
+                                DataGridViewComboBoxCell dataType = dgvPassThrough.Rows[rowNumber].Cells[3] as DataGridViewComboBoxCell;
+                                dataType.DataSource = System.Enum.GetValues(typeof(DataType));
+                                dataType.Value = outputColumn.DataType;
+                                dataType.ReadOnly = true;
+
+                                dgvPassThrough.Rows[rowNumber].Cells[4].Value = outputColumn.Length;
+                                dgvPassThrough.Rows[rowNumber].Cells[4].ReadOnly = true;
+
+                                dgvPassThrough.Rows[rowNumber].Cells[5].Value = outputColumn.Precision;
+                                dgvPassThrough.Rows[rowNumber].Cells[5].ReadOnly = true;
+
+                                dgvPassThrough.Rows[rowNumber].Cells[6].Value = outputColumn.Scale;
+                                dgvPassThrough.Rows[rowNumber].Cells[6].ReadOnly = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void tbColumnDelimiter_TextChanged(object sender, EventArgs e)
+        {
+            ManageProperties.SetPropertyValue(_componentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter, tbColumnDelimiter.Text);
+        }
+
+        private void cbDelimitedText_CheckedChanged(object sender, EventArgs e)
+        {
+            ManageProperties.SetPropertyValue(_componentMetaData.CustomPropertyCollection, ManageProperties.isTextDelmited, cbDelimitedText.Checked);
+        }
+
+        private void tbTextDelimiter_TextChanged(object sender, EventArgs e)
+        {
+            ManageProperties.SetPropertyValue(_componentMetaData.CustomPropertyCollection, ManageProperties.textDelmiter, tbTextDelimiter.Text);
+        }
+
+        private void cbTreatNulls_CheckedChanged(object sender, EventArgs e)
+        {
+            ManageProperties.SetPropertyValue(_componentMetaData.CustomPropertyCollection, ManageProperties.treatEmptyStringsAsNull, cbTreatNulls.Checked);
+        }
+
+        private void btnPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DrawingControl.SuspendDrawing(dgvConnectionPreview);
+                dgvConnectionPreview.Columns.Clear();
+                dgvConnectionPreview.Rows.Clear();
+                IDTSConnectionManagerFlatFile100 connectionFlatFile = connections[cbConnectionManager.SelectedItem].InnerObject as IDTSConnectionManagerFlatFile100;
+                string FileName = connections[cbConnectionManager.SelectedItem].ConnectionString;
+                IDTSOutput100 passThoughIDTSOutput = null;
+
+                foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                {
+                    if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
+                    {
+                        passThoughIDTSOutput = output;
+                        break;
+                    }
+                }
+
+                SSISOutput passThroughOutput = new SSISOutput(passThoughIDTSOutput, null);
+                bool firstRowColumnNames = connectionFlatFile.ColumnNamesInFirstDataRow;
+                String passThroughClassString = Utilities.DynamicClassStringFromOutput(passThroughOutput, firstRowColumnNames, connectionFlatFile.Columns[connectionFlatFile.Columns.Count - 1].ColumnDelimiter, connectionFlatFile.Columns[0].ColumnDelimiter);
+                Type passThroughType = ClassBuilder.ClassFromString(passThroughClassString);
+                foreach (SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
+                {
+                    ssisColumn.FileHelperField = passThroughType.GetField(ssisColumn.Name);
+                    dgvConnectionPreview.Columns.Add(ssisColumn.Name, ssisColumn.Name);
+                }
+                System.Reflection.FieldInfo[] fieldList = passThroughType.GetFields();
+                FileHelperAsyncEngine engine = new FileHelperAsyncEngine(passThroughType);
+                engine.BeginReadFile(FileName);
+
+                int RowCount = 0;
+
+                while (engine.ReadNext() != null)
+                {
+                    int RowNumber = dgvConnectionPreview.Rows.Add(engine.LastRecordValues);
+                    //foreach (SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
+                    //{
+                    //    dgvConnectionPreview.Rows[RowNumber].Cells[ssisColumn.Name].Value = (String)ssisColumn.FileHelperField.GetValue(engine.LastRecord);
+                    //}
+                    if (RowCount++ > tbNumberOfRecordsToPreview.Value)
+                    {
+                        break;
+                    }
+                }
+                engine.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Something went Really Wrong!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                DrawingControl.ResumeDrawing(dgvConnectionPreview);
+            }
+        }
+
+        #endregion
     }
 }

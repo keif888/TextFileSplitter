@@ -7,7 +7,7 @@ using Microsoft.SqlServer.Dts.Runtime.Wrapper;
 
 namespace Martin.SQLServer.Dts
 {
-    internal class SSISOutputColumn
+    public class SSISOutputColumn
     {
         //public SSISOutputColumn()
         //{

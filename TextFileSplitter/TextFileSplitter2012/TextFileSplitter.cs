@@ -1588,10 +1588,10 @@ namespace Martin.SQLServer.Dts
             return workString.Replace("\n", @"\n").Replace("\a", @"\a").Replace("\b", @"\b").Replace("\f", @"\f").Replace("\r", @"\r").Replace("\t", @"\t").Replace("\v", @"\v").Replace("\'", @"\'");
         }
 
-        private String DynamicClassStringFromOutput(SSISOutput output, Boolean firstRowColumnNames, String rowTerminator, String columnDelimiter)
+        public String DynamicClassStringFromOutput(SSISOutput output, Boolean firstRowColumnNames, String rowTerminator, String columnDelimiter)
         {
             String classString = string.Empty;
-            classString += "[DelimitedRecord(\"" + ReplaceEscapes(columnDelimter) + "\")]\r\n";
+            classString += "[DelimitedRecord(\"" + ReplaceEscapes(columnDelimiter) + "\")]\r\n";
             if (firstRowColumnNames)
             {
                 classString += "[IgnoreFirst(1)]\r\n";

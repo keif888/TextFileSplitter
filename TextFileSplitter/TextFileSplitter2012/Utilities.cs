@@ -1,4 +1,5 @@
 ﻿using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+using Microsoft.SqlServer.Dts.Runtime.Wrapper;
 using System;
 using System.IO;
 using System.Text;
@@ -109,6 +110,130 @@ namespace Martin.SQLServer.Dts
             {
                 return DTSValidationStatus.VS_ISBROKEN;
             }
+        }
+
+        public static String ReplaceEscapes(String stringToCleanse)
+        {
+            String workString = stringToCleanse.Replace("\\", @"\");
+            return workString.Replace("\n", @"\n").Replace("\a", @"\a").Replace("\b", @"\b").Replace("\f", @"\f").Replace("\r", @"\r").Replace("\t", @"\t").Replace("\v", @"\v").Replace("\'", @"\'");
+        }
+
+        public static String DynamicClassStringFromOutput(SSISOutput output, Boolean firstRowColumnNames, String rowTerminator, String columnDelimiter)
+        {
+            String classString = string.Empty;
+            classString += "[DelimitedRecord(\"" + ReplaceEscapes(columnDelimiter) + "\")]\r\n";
+            if (firstRowColumnNames)
+            {
+                classString += "[IgnoreFirst(1)]\r\n";
+            }
+            classString += "public sealed class " + output.Name + "\r\n";
+            classString += "{\r\n";
+            for (int i = 0; i < output.OutputColumnCollection.Count; i++)
+            {
+                SSISOutputColumn outputColumn = output.OutputColumnCollection[i];
+                if (!outputColumn.IsDerived)
+                {
+                    String conversionString = (String)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString);
+                    if ((i + 1 == output.OutputColumnCollection.Count) && (!String.IsNullOrEmpty(rowTerminator)))
+                    {
+                        classString += "[FieldDelimiterAttribute(\"" + ReplaceEscapes(rowTerminator) + "\")]\r\n";
+                    }
+                    switch (outputColumn.SSISDataType)
+                    {
+                        case DataType.DT_BOOL:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Boolean, \"" + conversionString + "\")]\r\n";
+                            classString += "public Boolean? ";
+                            break;
+                        case DataType.DT_DATE:
+                        case DataType.DT_DBDATE:
+                        case DataType.DT_DBTIME:
+                        case DataType.DT_DBTIME2:
+                        case DataType.DT_DBTIMESTAMP:
+                        case DataType.DT_DBTIMESTAMP2:
+                        case DataType.DT_DBTIMESTAMPOFFSET:
+                        case DataType.DT_FILETIME:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Date, \"" + conversionString + "\")]\r\n";
+                            classString += "public DateTime? ";
+                            break;
+                        case DataType.DT_CY:
+                        case DataType.DT_DECIMAL:
+                        case DataType.DT_NUMERIC:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Decimal, \"" + conversionString + "\")]\r\n";
+                            classString += "public Decimal? ";
+                            break;
+                        case DataType.DT_I1:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Byte, \"" + conversionString + "\")]\r\n";
+                            classString += "public Byte? ";
+                            break;
+                        case DataType.DT_I2:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Int16, \"" + conversionString + "\")]\r\n";
+                            classString += "public Int16? ";
+                            break;
+                        case DataType.DT_I4:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Int32, \"" + conversionString + "\")]\r\n";
+                            classString += "public Int32? ";
+                            break;
+                        case DataType.DT_I8:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Int64, \"" + conversionString + "\")]\r\n";
+                            classString += "public Int64? ";
+                            break;
+                        case DataType.DT_R4:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Single, \"" + conversionString + "\")]\r\n";
+                            classString += "public Single? ";
+                            break;
+                        case DataType.DT_R8:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Dpuble, \"" + conversionString + "\")]\r\n";
+                            classString += "public Double? ";
+                            break;
+                        case DataType.DT_UI1:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.SByte, \"" + conversionString + "\")]\r\n";
+                            classString += "public SByte? ";
+                            break;
+                        case DataType.DT_UI2:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.UInt16, \"" + conversionString + "\")]\r\n";
+                            classString += "public UInt16? ";
+                            break;
+                        case DataType.DT_UI4:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.UInt32, \"" + conversionString + "\")]\r\n";
+                            classString += "public UInt32? ";
+                            break;
+                        case DataType.DT_UI8:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.UInt64, \"" + conversionString + "\")]\r\n";
+                            classString += "public UInt64? ";
+                            break;
+                        case DataType.DT_GUID:
+                            if (!String.IsNullOrEmpty(conversionString))
+                                classString += "[FieldConverter(ConverterKind.Guid, \"" + conversionString + "\")]\r\n";
+                            classString += "public Guid? ";
+                            break;
+                        case DataType.DT_STR:
+                        case DataType.DT_TEXT:
+                        case DataType.DT_NTEXT:
+                        case DataType.DT_WSTR:
+                            classString += "public String ";
+                            break;
+                        default:
+                            classString += "public String ";
+                            break;
+                    }
+                    classString += outputColumn.Name + ";\r\n";
+                }
+            }
+            classString += "}\r\n";
+            return classString;
         }
     }
 }

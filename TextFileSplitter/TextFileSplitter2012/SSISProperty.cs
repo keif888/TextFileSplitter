@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Martin.SQLServer.Dts
 {
-    internal class SSISProperty
+    public class SSISProperty
     {
         public SSISProperty()
         {

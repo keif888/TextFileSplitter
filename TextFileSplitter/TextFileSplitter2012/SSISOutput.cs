@@ -46,7 +46,7 @@ using IDTSBufferManager = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSBufferMan
 
 namespace Martin.SQLServer.Dts
 {
-    internal class SSISOutput
+    public class SSISOutput
     {
         public SSISOutput()
         {
