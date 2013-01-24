@@ -76,6 +76,12 @@ namespace Martin.SQLServer.Dts
         {
             return string.Format(ChildColumnInvalidPattern, outputName, columnName);
         }
+
+        public const string ErrorOutputHasInvalidColumnPattern = "The Error Output has an Invalid Column {0}.";
+        public static string ErrorOutputHasInvalidColumn(string columName)
+        {
+            return String.Format(ErrorOutputHasInvalidColumnPattern, columName);
+        }
         #endregion
 
         #region Name Descriptions

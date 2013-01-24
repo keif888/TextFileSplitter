@@ -30,46 +30,58 @@ namespace Martin.SQLServer.Dts
                 newProperty.Value = outputColumn.CustomPropertyCollection[j].Value;
                 _customPropertyCollection.Add(newProperty.Name, newProperty);
             }
-            
-            switch ((Utilities.usageOfColumnEnum)_customPropertyCollection[ManageProperties.usageOfColumn].Value)
-            {
-                case Utilities.usageOfColumnEnum.RowType:
-                    _isMasterOrKey = false;
-                    _isRowData = false;
-                    _isRowType = true;
-                    break;
-                case Utilities.usageOfColumnEnum.Passthrough:
-                case Utilities.usageOfColumnEnum.Ignore:
-                    _isMasterOrKey = false;
-                    _isRowData = false;
-                    _isRowType = false;
-                    break;
-                case Utilities.usageOfColumnEnum.Key:
-                case Utilities.usageOfColumnEnum.MasterValue:
-                    _isMasterOrKey = true;
-                    _isRowData = false;
-                    _isRowType = false;
-                    break;
-                case Utilities.usageOfColumnEnum.RowData:
-                    _isMasterOrKey = false;
-                    _isRowData = true;
-                    _isRowType = false;
-                    break;
-                default:
-                    _isMasterOrKey = false;
-                    _isRowData = false;
-                    _isRowType = false;
-                    break;
-            }
 
-            if ((int)_customPropertyCollection[ManageProperties.keyOutputColumnID].Value > 0)
+            if (_customPropertyCollection.Count > 0)
             {
-                _isDerived = true;
+                switch ((Utilities.usageOfColumnEnum)_customPropertyCollection[ManageProperties.usageOfColumn].Value)
+                {
+                    case Utilities.usageOfColumnEnum.RowType:
+                        _isMasterOrKey = false;
+                        _isRowData = false;
+                        _isRowType = true;
+                        break;
+                    case Utilities.usageOfColumnEnum.Passthrough:
+                    case Utilities.usageOfColumnEnum.Ignore:
+                        _isMasterOrKey = false;
+                        _isRowData = false;
+                        _isRowType = false;
+                        break;
+                    case Utilities.usageOfColumnEnum.Key:
+                    case Utilities.usageOfColumnEnum.MasterValue:
+                        _isMasterOrKey = true;
+                        _isRowData = false;
+                        _isRowType = false;
+                        break;
+                    case Utilities.usageOfColumnEnum.RowData:
+                        _isMasterOrKey = false;
+                        _isRowData = true;
+                        _isRowType = false;
+                        break;
+                    default:
+                        _isMasterOrKey = false;
+                        _isRowData = false;
+                        _isRowType = false;
+                        break;
+                }
+
+                if ((int)_customPropertyCollection[ManageProperties.keyOutputColumnID].Value > 0)
+                {
+                    _isDerived = true;
+                }
+                else
+                {
+                    _isDerived = false;
+                }
+            
             }
             else
             {
+                _isMasterOrKey = false;
+                _isRowData = false;
+                _isRowType = false;
                 _isDerived = false;
             }
+
             if (bufferManager != null)
             {
                 _outputBufferID = bufferManager.FindColumnByLineageID(bufferID, outputColumn.LineageID);
