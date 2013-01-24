@@ -210,39 +210,6 @@ namespace Martin.SQLServer.Dts
                     case Utilities.typeOfOutputEnum.KeyRecords:
                         int selectedItem = lbOutputs.Items.Add(output.Name);
                         lbOutputs.SelectedIndex = selectedItem;
-                        tbOutputName.Text = output.Name;
-                        tbRowTypeValue.Text = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
-                        cbOutputDisposition.SelectedItem = output.ErrorRowDisposition;
-                        cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput));
-
-                        // This is how to get the value back out!
-                        // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
-
-                        foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
-                        {
-                            int rowNumber = dgvOutputColumns.Rows.Add(1);
-                            dgvOutputColumns.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
-
-                            DataGridViewComboBoxCell usageList = dgvOutputColumns.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key));
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough));
-                            usageList.Value = Enum.GetName(typeof(Utilities.usageOfColumnEnum), (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn));
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[2].Value = (String)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString);
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[3].Value = outputColumn.CodePage;
-
-                            DataGridViewComboBoxCell dataType = dgvOutputColumns.Rows[rowNumber].Cells[4] as DataGridViewComboBoxCell;
-                            dataType.DataSource = System.Enum.GetValues(typeof(DataType));
-                            dataType.Value = outputColumn.DataType;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[5].Value = outputColumn.Length;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
-                        }
-
                         break;
                     case Utilities.typeOfOutputEnum.DataRecords:
                         lbOutputs.Items.Add(output.Name);
@@ -363,6 +330,7 @@ namespace Martin.SQLServer.Dts
 
                             DataGridViewComboBoxCell dataType = dgvOutputColumns.Rows[rowNumber].Cells[4] as DataGridViewComboBoxCell;
                             dataType.DataSource = System.Enum.GetValues(typeof(DataType));
+                            dataType.ValueType = typeof(DataType);
                             dataType.Value = outputColumn.DataType;
 
                             dgvOutputColumns.Rows[rowNumber].Cells[5].Value = outputColumn.Length;
@@ -401,6 +369,7 @@ namespace Martin.SQLServer.Dts
 
                             DataGridViewComboBoxCell dataType = dgvOutputColumns.Rows[rowNumber].Cells[4] as DataGridViewComboBoxCell;
                             dataType.DataSource = System.Enum.GetValues(typeof(DataType));
+                            dataType.ValueType = typeof(DataType);
                             dataType.Value = outputColumn.DataType;
 
                             dgvOutputColumns.Rows[rowNumber].Cells[5].Value = outputColumn.Length;
@@ -421,6 +390,14 @@ namespace Martin.SQLServer.Dts
             }
             dgvOutputColumns.ResumeLayout();
             DrawingControl.ResumeDrawing(dgvOutputColumns);
+        }
+
+        private void dgvOutputColumns_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            // For some reason we are getting a failure on the Data Type column.
+            // No Idea why..
+
+            e.Cancel = true;
         }
     }
 }

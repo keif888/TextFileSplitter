@@ -118,6 +118,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbPTNumberOfRecordsToPreview)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPassThrough)).BeginInit();
             this.tpOutputs.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -583,6 +584,7 @@
             this.dgvOutputColumns.Name = "dgvOutputColumns";
             this.dgvOutputColumns.Size = new System.Drawing.Size(461, 120);
             this.dgvOutputColumns.TabIndex = 3;
+            this.dgvOutputColumns.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvOutputColumns_DataError);
             // 
             // clmOCColumnName
             // 
@@ -910,6 +912,7 @@
             this.tpOutputs.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvOutputColumns)).EndInit();
             this.panel8.ResumeLayout(false);
