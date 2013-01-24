@@ -1119,6 +1119,7 @@ namespace Martin.SQLServer.Dts
             Boolean pbCancel = false;
             Int64 recordsRead = 0;
             Boolean rowCountConnected = false;
+            Boolean keyRecordFailure = false;
 
             columnDelimter = (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
 
@@ -1280,8 +1281,25 @@ namespace Martin.SQLServer.Dts
                         FileHelperEngine currentEngine = currentSplitOutput.Engine;
                         List<Object> parseResults = currentEngine.ReadStringAsList(RowDataValue);
                         SSISOutput currentOutput = currentSplitOutput.DataOutput;
+                        Utilities.typeOfOutputEnum typeOfOutput = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                        if (typeOfOutput == Utilities.typeOfOutputEnum.KeyRecords)
+                        {
+                            keyRecordFailure = false;
+                        }
                         if (currentEngine.ErrorManager.HasErrors)
                         {
+                            if (typeOfOutput == Utilities.typeOfOutputEnum.KeyRecords)
+                            {
+                                keyRecordFailure = true;
+                                // Zap all the Key Values as we were unable to parse them.
+                                foreach (SSISOutputColumn outputColumn in currentOutput.OutputColumnCollection)
+                                {
+                                    if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                    {
+                                        keyMasterValues[outputColumn.LineageID] = null;
+                                    }
+                                }
+                            }
                             switch (currentOutput.ErrorRowDisposition)
                             {
                                 case DTSRowDisposition.RD_FailComponent:
@@ -1327,32 +1345,64 @@ namespace Martin.SQLServer.Dts
                         }
                         else
                         {
-                            foreach (Object result in parseResults)
+                            if (keyRecordFailure)
                             {
-                                currentBuffer.AddRow();
-                                foreach (SSISOutputColumn currentOutputColumn in currentOutput.OutputColumnCollection)
+                                foreach (Object result in parseResults)
                                 {
-                                    Boolean errorFound = false;
-                                    try
+                                    switch (currentOutput.ErrorRowDisposition)
                                     {
-                                        Object currentValue = null;
-                                        if (currentOutputColumn.IsDerived)
+                                        case DTSRowDisposition.RD_FailComponent:
+                                            this.ComponentMetaData.FireError(999, this.ComponentMetaData.Name, String.Format("Key Record Failed Before Record {0}.", recordsRead), string.Empty, 0, out pbCancel);
+                                            throw new COMException(String.Format("Key Record Failed on or around input file line {0}.", recordsRead), E_FAIL);
+                                        case DTSRowDisposition.RD_IgnoreFailure:
+                                            this.ComponentMetaData.FireInformation(999, this.ComponentMetaData.Name, String.Format("Key Record Failed Before Record {0}.", recordsRead), string.Empty, 0, ref pbFireAgain);
+                                            break;
+                                        case DTSRowDisposition.RD_NotUsed:
+                                            break;
+                                        case DTSRowDisposition.RD_RedirectRow:
+                                            errorBuffer.AddRow();
+                                            errorBuffer[2] = TruncateStringTo4000(String.Format("Key Record Failed Before Record {0}.", recordsRead));
+                                            errorBuffer[4] = TruncateStringTo4000(RowDataValue);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    currentSplitOutput.IncrementRowCount();
+                                }
+                            }
+                            else
+                            {
+                                foreach (Object result in parseResults)
+                                {
+                                    currentBuffer.AddRow();
+                                    foreach (SSISOutputColumn currentOutputColumn in currentOutput.OutputColumnCollection)
+                                    {
+                                        Boolean errorFound = false;
+                                        try
                                         {
-                                            if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                            Object currentValue = null;
+                                            if (currentOutputColumn.IsDerived)
                                             {
-                                                currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            currentValue = currentOutputColumn.FileHelperField.GetValue(result);
-                                            if (currentValue != null)
-                                            {
-                                                if (currentValue is String)
+                                                if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                 {
-                                                    if (String.IsNullOrEmpty((String)currentValue))
+                                                    currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                currentValue = currentOutputColumn.FileHelperField.GetValue(result);
+                                                if (currentValue != null)
+                                                {
+                                                    if (currentValue is String)
                                                     {
-                                                        if (!treatNulls)
+                                                        if (String.IsNullOrEmpty((String)currentValue))
+                                                        {
+                                                            if (!treatNulls)
+                                                            {
+                                                                currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                            }
+                                                        }
+                                                        else
                                                         {
                                                             currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
                                                         }
@@ -1362,56 +1412,52 @@ namespace Martin.SQLServer.Dts
                                                         currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
                                                     }
                                                 }
-                                                else
+                                                if (currentOutputColumn.IsMasterOrKey)
                                                 {
-                                                    currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                    keyMasterValues[currentOutputColumn.LineageID] = currentValue;
                                                 }
                                             }
-                                            if (currentOutputColumn.IsMasterOrKey)
-                                            {
-                                                keyMasterValues[currentOutputColumn.LineageID] = currentValue;
-                                            }
                                         }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        switch (currentOutput.ErrorRowDisposition)
+                                        catch (Exception ex)
                                         {
-                                            case DTSRowDisposition.RD_FailComponent:
-                                                this.ComponentMetaData.FireError(999, this.ComponentMetaData.Name, String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name), string.Empty, 0, out pbCancel);
-                                                throw new COMException(String.Format("Parsing Exception raised on or around input file line {0}.", recordsRead), E_FAIL);
-                                            case DTSRowDisposition.RD_IgnoreFailure:
-                                                this.ComponentMetaData.FireInformation(999, this.ComponentMetaData.Name, String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name), string.Empty, 0, ref pbFireAgain);
-                                                break;
-                                            case DTSRowDisposition.RD_NotUsed:
-                                                break;
-                                            case DTSRowDisposition.RD_RedirectRow:
-                                                errorBuffer.AddRow();
-                                                errorBuffer[2] = TruncateStringTo4000(String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name));
-                                                errorBuffer[3] = TruncateStringTo4000(currentOutputColumn.FileHelperField.GetValue(result).ToString());
-                                                errorBuffer[4] = TruncateStringTo4000(RowDataValue);
-                                                Object currentValue = null;
-                                                foreach (SSISOutputColumn errorOutputColumn in errorOutput.OutputColumnCollection)
-                                                {
-                                                    if (errorOutputColumn.CustomPropertyCollection.Count > 0)
+                                            switch (currentOutput.ErrorRowDisposition)
+                                            {
+                                                case DTSRowDisposition.RD_FailComponent:
+                                                    this.ComponentMetaData.FireError(999, this.ComponentMetaData.Name, String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name), string.Empty, 0, out pbCancel);
+                                                    throw new COMException(String.Format("Parsing Exception raised on or around input file line {0}.", recordsRead), E_FAIL);
+                                                case DTSRowDisposition.RD_IgnoreFailure:
+                                                    this.ComponentMetaData.FireInformation(999, this.ComponentMetaData.Name, String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name), string.Empty, 0, ref pbFireAgain);
+                                                    break;
+                                                case DTSRowDisposition.RD_NotUsed:
+                                                    break;
+                                                case DTSRowDisposition.RD_RedirectRow:
+                                                    errorBuffer.AddRow();
+                                                    errorBuffer[2] = TruncateStringTo4000(String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name));
+                                                    errorBuffer[3] = TruncateStringTo4000(currentOutputColumn.FileHelperField.GetValue(result).ToString());
+                                                    errorBuffer[4] = TruncateStringTo4000(RowDataValue);
+                                                    Object currentValue = null;
+                                                    foreach (SSISOutputColumn errorOutputColumn in errorOutput.OutputColumnCollection)
                                                     {
-                                                        if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                                        if (errorOutputColumn.CustomPropertyCollection.Count > 0)
                                                         {
-                                                            errorBuffer[errorOutputColumn.OutputBufferID] = currentValue;
+                                                            if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                                            {
+                                                                errorBuffer[errorOutputColumn.OutputBufferID] = currentValue;
+                                                            }
                                                         }
                                                     }
-                                                }
-                                                currentBuffer.RemoveRow();
-                                                errorFound = true;
-                                                break;
-                                            default:
-                                                break;
+                                                    currentBuffer.RemoveRow();
+                                                    errorFound = true;
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
                                         }
+                                        if (errorFound)
+                                            break;
                                     }
-                                    if (errorFound)
-                                        break;
+                                    currentSplitOutput.IncrementRowCount();
                                 }
-                                currentSplitOutput.IncrementRowCount();
                             }
                         }
                     }
