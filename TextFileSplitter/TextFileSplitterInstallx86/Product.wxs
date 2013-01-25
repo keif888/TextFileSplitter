@@ -1,14 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="72868B68-5F47-416F-BAA1-6887685A92A7" Name="Text File Splitter x86" Language="1033" Version="1.0.0.0" Manufacturer="Keith Martin" UpgradeCode="944FC76C-F623-480F-A10D-A1994713BF87">
-    <Package InstallerVersion="300" Compressed="yes" InstallScope="perMachine" />
+  <?define ProductVersion = "1.0.1.0"?>
+  <?define UpgradeCode = "944FC76C-F623-480F-A10D-A1994713BF87"?>
+  <?define Manufacturer = "Keith Martin"?>
+  <?define PackageCode = "*"?>
+
+  <Product Id="*"
+           Name="Text File Splitter x86"
+           Language="1033"
+           Version="$(var.ProductVersion)"
+           Manufacturer="$(var.Manufacturer)"
+           UpgradeCode="$(var.UpgradeCode)">
+
+    <Package Id="$(var.PackageCode)"
+             Description="Text File Splitter SSIS Source Component"
+             Comments="Installs the dll's required for this component to work."
+             InstallerVersion="300"
+             Manufacturer="$(var.Manufacturer)"
+             Compressed="yes"
+             InstallScope="perMachine" />
+
+    <Media Id="1" Cabinet="TextFileSplitter.cab" EmbedCab="yes" />
+
+    <MajorUpgrade 
+      Schedule="afterInstallInitialize"
+      DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."/>
 
     <UIRef Id="WixUI_FeatureTree"/>
     <WixVariable Id="WixUILicenseRtf" Value="$(var.TextFileSplitter2012.ProjectDir)\License.rtf" />
-
-
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-    <Media Id="1" Cabinet="TextFileSplitter.cab" EmbedCab="yes" />
 
     <Property Id="SSIS32_2012">
       <RegistrySearch Type="directory" Id="SSIS32_2012" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath" Win64="no"/>
