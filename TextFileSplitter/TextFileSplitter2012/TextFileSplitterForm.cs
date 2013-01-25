@@ -71,8 +71,14 @@ namespace Martin.SQLServer.Dts
                 // Cache variables and connections.
                 this.variables = variables;
                 this.connections = connections;
-
-                return this.ShowDialog(parentWindow) == DialogResult.OK;
+                if (this.ShowDialog(parentWindow) == DialogResult.OK)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             catch (Exception ex)
             {
@@ -172,99 +178,106 @@ namespace Martin.SQLServer.Dts
 
         private void TextFileSplitterForm_Load(object sender, EventArgs e)
         {
-            cbOutputDisposition.DataSource = System.Enum.GetValues(typeof(DTSRowDisposition));
-            cbPTErrorDisposition.DataSource = System.Enum.GetValues(typeof(DTSRowDisposition));
-            cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.KeyRecords));
-            cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.DataRecords));
-            cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.MasterRecord));
-            cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.ChildMasterRecord));
-            cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.ChildRecord));
-
-            foreach (ConnectionManager cm in this.connections)
+            try
             {
-                if (isDelimitedFileConnection(cm))
+                cbOutputDisposition.DataSource = System.Enum.GetValues(typeof(DTSRowDisposition));
+                cbPTErrorDisposition.DataSource = System.Enum.GetValues(typeof(DTSRowDisposition));
+                cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.KeyRecords));
+                cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.DataRecords));
+                cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.MasterRecord));
+                cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.ChildMasterRecord));
+                cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.ChildRecord));
+
+                foreach (ConnectionManager cm in this.connections)
                 {
-                    this.cbConnectionManager.Items.Add(cm.Name);
+                    if (isDelimitedFileConnection(cm))
+                    {
+                        this.cbConnectionManager.Items.Add(cm.Name);
+                    }
+                }
+
+                this.cbConnectionManager.Items.Add("New Connection");
+
+                if (this._componentMetaData.RuntimeConnectionCollection.Count == 1)
+                {
+                    string cmID = this._componentMetaData.RuntimeConnectionCollection[0].ConnectionManagerID;
+                    if (this.connections.Contains(cmID))
+                    {
+                        this.cbConnectionManager.SelectedItem = this.connections[cmID].Name;
+                        this.cbConnectionManager.Enabled = false;
+                    }
+                }
+
+                this.tbColumnDelimiter.Text = (String)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
+                this.cbDelimitedText.Checked = (Boolean)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.isTextDelmited);
+                this.tbTextDelimiter.Text = (String)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.textDelmiter);
+                this.cbTreatNulls.Checked = (Boolean)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.treatEmptyStringsAsNull);
+
+                foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
+                {
+                    switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                    {
+                        case Utilities.typeOfOutputEnum.ErrorRecords:
+                            break;
+                        case Utilities.typeOfOutputEnum.KeyRecords:
+                            int selectedItem = lbOutputs.Items.Add(output.Name);
+                            lbOutputs.SelectedIndex = selectedItem;
+                            break;
+                        case Utilities.typeOfOutputEnum.DataRecords:
+                            lbOutputs.Items.Add(output.Name);
+                            break;
+                        case Utilities.typeOfOutputEnum.PassThrough:
+                            this.cbPTErrorDisposition.SelectedItem = output.ErrorRowDisposition;
+                            foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                            {
+                                int rowNumber = dgvPassThrough.Rows.Add(1);
+                                dgvPassThrough.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
+                                dgvPassThrough.Rows[rowNumber].Cells[0].ReadOnly = true;
+
+                                DataGridViewComboBoxCell usageList = dgvPassThrough.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
+                                //usageList.DataSource = System.Enum.GetValues(typeof(Utilities.usageOfColumnEnum));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.RowData));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.RowType));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough));
+                                usageList.Value = Enum.GetName(typeof(Utilities.usageOfColumnEnum), (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn));
+
+                                dgvPassThrough.Rows[rowNumber].Cells[2].Value = outputColumn.CodePage;
+                                dgvPassThrough.Rows[rowNumber].Cells[2].ReadOnly = true;
+
+                                DataGridViewComboBoxCell dataType = dgvPassThrough.Rows[rowNumber].Cells[3] as DataGridViewComboBoxCell;
+                                dataType.DataSource = System.Enum.GetValues(typeof(DataType));
+                                dataType.Value = outputColumn.DataType;
+                                dataType.ReadOnly = true;
+
+                                dgvPassThrough.Rows[rowNumber].Cells[4].Value = outputColumn.Length;
+                                dgvPassThrough.Rows[rowNumber].Cells[4].ReadOnly = true;
+
+                                dgvPassThrough.Rows[rowNumber].Cells[5].Value = outputColumn.Precision;
+                                dgvPassThrough.Rows[rowNumber].Cells[5].ReadOnly = true;
+
+                                dgvPassThrough.Rows[rowNumber].Cells[6].Value = outputColumn.Scale;
+                                dgvPassThrough.Rows[rowNumber].Cells[6].ReadOnly = true;
+                            }
+                            break;
+                        case Utilities.typeOfOutputEnum.MasterRecord:
+                            lbOutputs.Items.Add(output.Name);
+                            break;
+                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                            lbOutputs.Items.Add(output.Name);
+                            break;
+                        case Utilities.typeOfOutputEnum.ChildRecord:
+                            lbOutputs.Items.Add(output.Name);
+                            break;
+                        case Utilities.typeOfOutputEnum.RowsProcessed:
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
-
-            this.cbConnectionManager.Items.Add("New Connection");
-
-            if (this._componentMetaData.RuntimeConnectionCollection.Count == 1)
+            catch (Exception ex)
             {
-                string cmID = this._componentMetaData.RuntimeConnectionCollection[0].ConnectionManagerID;
-                if (this.connections.Contains(cmID))
-                {
-                    this.cbConnectionManager.SelectedItem = this.connections[cmID].Name;
-                    this.cbConnectionManager.Enabled = false;
-                }
-            }
-
-            this.tbColumnDelimiter.Text = (String)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
-            this.cbDelimitedText.Checked = (Boolean)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.isTextDelmited);
-            this.tbTextDelimiter.Text = (String)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.textDelmiter);
-            this.cbTreatNulls.Checked = (Boolean)ManageProperties.GetPropertyValue(this._componentMetaData.CustomPropertyCollection, ManageProperties.treatEmptyStringsAsNull);
-
-            foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
-            {
-                switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
-                {
-                    case Utilities.typeOfOutputEnum.ErrorRecords:
-                        break;
-                    case Utilities.typeOfOutputEnum.KeyRecords:
-                        int selectedItem = lbOutputs.Items.Add(output.Name);
-                        lbOutputs.SelectedIndex = selectedItem;
-                        break;
-                    case Utilities.typeOfOutputEnum.DataRecords:
-                        lbOutputs.Items.Add(output.Name);
-                        break;
-                    case Utilities.typeOfOutputEnum.PassThrough:
-                        this.cbPTErrorDisposition.SelectedItem = output.ErrorRowDisposition;
-                        foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
-                        {
-                            int rowNumber = dgvPassThrough.Rows.Add(1);
-                            dgvPassThrough.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
-                            dgvPassThrough.Rows[rowNumber].Cells[0].ReadOnly = true;
-
-                            DataGridViewComboBoxCell usageList = dgvPassThrough.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
-                            //usageList.DataSource = System.Enum.GetValues(typeof(Utilities.usageOfColumnEnum));
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.RowData));
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.RowType));
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough));
-                            usageList.Value = Enum.GetName(typeof(Utilities.usageOfColumnEnum),(Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn));
-
-                            dgvPassThrough.Rows[rowNumber].Cells[2].Value = outputColumn.CodePage;
-                            dgvPassThrough.Rows[rowNumber].Cells[2].ReadOnly = true;
-
-                            DataGridViewComboBoxCell dataType = dgvPassThrough.Rows[rowNumber].Cells[3] as DataGridViewComboBoxCell;
-                            dataType.DataSource = System.Enum.GetValues(typeof(DataType));
-                            dataType.Value = outputColumn.DataType;
-                            dataType.ReadOnly = true;
-
-                            dgvPassThrough.Rows[rowNumber].Cells[4].Value = outputColumn.Length;
-                            dgvPassThrough.Rows[rowNumber].Cells[4].ReadOnly = true;
-
-                            dgvPassThrough.Rows[rowNumber].Cells[5].Value = outputColumn.Precision;
-                            dgvPassThrough.Rows[rowNumber].Cells[5].ReadOnly = true;
-
-                            dgvPassThrough.Rows[rowNumber].Cells[6].Value = outputColumn.Scale;
-                            dgvPassThrough.Rows[rowNumber].Cells[6].ReadOnly = true;
-                        }
-                        break;
-                    case Utilities.typeOfOutputEnum.MasterRecord:
-                        lbOutputs.Items.Add(output.Name);
-                        break;
-                    case Utilities.typeOfOutputEnum.ChildMasterRecord:
-                        lbOutputs.Items.Add(output.Name);
-                        break;
-                    case Utilities.typeOfOutputEnum.ChildRecord:
-                        lbOutputs.Items.Add(output.Name);
-                        break;
-                    case Utilities.typeOfOutputEnum.RowsProcessed:
-                        break;
-                    default:
-                        break;
-                }
+                MessageBox.Show(String.Format("{0}\r\n{1}",ex.Message, ex.StackTrace), "Something went Really Wrong!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -283,13 +296,19 @@ namespace Martin.SQLServer.Dts
 
         private bool isDelimitedFileConnection(ConnectionManager cm)
         {
-            ConnectionManagerFlatFile cmFlatFile = cm.InnerObject as ConnectionManagerFlatFile;
-            if (cmFlatFile != null)
+            if (cm != null)
             {
-                IDTSConnectionManagerFlatFile100 connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile100;
-                if (connectionFlatFile.Format.Contains("Delimited"))
+                ConnectionManagerFlatFile cmFlatFile = cm.InnerObject as ConnectionManagerFlatFile;
+                if (cmFlatFile != null)
                 {
-                    return true;
+                    IDTSConnectionManagerFlatFile100 connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile100;
+                    if (connectionFlatFile != null)
+                    {
+                        if (connectionFlatFile.Format.Contains("Delimited"))
+                        {
+                            return true;
+                        }
+                    }
                 }
             }
             return false;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductVersion = "1.0.1.0"?>
+  <?define ProductVersion = "1.0.4.0"?>
   <?define UpgradeCode = "944FC76C-F623-480F-A10D-A1994713BF87"?>
   <?define Manufacturer = "Keith Martin"?>
   <?define PackageCode = "*"?>
@@ -29,12 +29,20 @@
     <UIRef Id="WixUI_FeatureTree"/>
     <WixVariable Id="WixUILicenseRtf" Value="$(var.TextFileSplitter2012.ProjectDir)\License.rtf" />
 
+    <Property Id="SSIS32_2012_PATH">
+      <RegistrySearch Type="directory" Id="SSIS32_2012_PATH" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath" Win64="no"/>
+    </Property>
+    <Property Id="SSIS32_2008_PATH">
+      <RegistrySearch Type="directory" Id="SSIS32_2008_PATH" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\100\SSIS\Setup\DTSPath" Win64="no"/>
+    </Property>
+
     <Property Id="SSIS32_2012">
-      <RegistrySearch Type="directory" Id="SSIS32_2012" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\110\SSIS\Setup\DTSPath" Win64="no"/>
+      <RegistrySearch Type="raw" Id="SSIS32_2012" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\110\DTS\Setup" Name="ProductID" Win64="no"/>
     </Property>
     <Property Id="SSIS32_2008">
-      <RegistrySearch Type="directory" Id="SSIS32_2008" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\100\SSIS\Setup\DTSPath" Win64="no"/>
+      <RegistrySearch Type="raw" Id="SSIS32_2008" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\100\DTS\Setup" Name="ProductID" Win64="no"/>
     </Property>
+
 
     <!-- We need to find either or both a 32 or 64 bit install of SSIS 2008 or 2012. -->
     <Condition Message="SQL Server Integration Services is not installed on this computer.  Please install SQL Server Integration Services before running this installer.">
@@ -79,18 +87,18 @@
       <Feature Id="SQL2012" Level="1" Title="SQL 2012">
         <Feature Id="SQL2012x32" Level="1" Title="x86">
           <ComponentRef Id="SQL2012x32DLL"/>
-          <Condition Level="1">SSIS32_2012</Condition>
+          <Condition Level="0">NOT SSIS32_2012</Condition>
         </Feature>
         <ComponentRef Id="SQL2012GAC" />
-        <Condition Level="1">SSIS32_2012</Condition>
+        <Condition Level="0">NOT SSIS32_2012</Condition>
       </Feature>
       <Feature Id="SQL2008" Level="1" Title="SQL 2008">
         <Feature Id="SQL2008x32" Level="1" Title="x86">
           <ComponentRef Id="SQL2008x32DLL"/>
-          <Condition Level="1">SSIS32_2008</Condition>
+          <Condition Level="0">NOT SSIS32_2008</Condition>
         </Feature>
         <ComponentRef Id="SQL2008GAC" />
-        <Condition Level="1">SSIS32_2008</Condition>
+        <Condition Level="0">NOT SSIS32_2008</Condition>
       </Feature>
       <Feature Id="FileHelper" Level="1" Title="FileHelper DLL (required)">
         <ComponentRef Id="FileHelperLibrary"/>
