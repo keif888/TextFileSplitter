@@ -110,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Attributions.txt" />
+    <Content Include="TextFileSplitter.xml" />
     <EmbeddedResource Include="Resources\TextFileSplitter.ico" />
     <EmbeddedResource Include="TextFileSplitterForm.resx">
       <DependentUpon>TextFileSplitterForm.cs</DependentUpon>

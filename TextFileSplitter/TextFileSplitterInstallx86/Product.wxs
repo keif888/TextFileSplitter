@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductVersion = "1.0.4.0"?>
+  <?define ProductVersion = "1.0.5.0"?>
   <?define UpgradeCode = "944FC76C-F623-480F-A10D-A1994713BF87"?>
   <?define Manufacturer = "Keith Martin"?>
   <?define PackageCode = "*"?>
@@ -72,6 +72,11 @@
             <File Id="SQL2012x32DLLFile" Name="$(var.TextFileSplitter2012.TargetFileName)" Source="$(var.TextFileSplitter2012.TargetPath)" />
           </Component>
         </Directory>
+        <Directory Id="SQL2012x32Upgrade" Name="UpgradeMappings">
+          <Component Id="SQL2012x32UpgradeMapping" Guid="00B931D6-C589-4C81-8D4F-9B4B38A31B78" Win64="no">
+            <File Id="SQL2012x32UpgradeFile" Name="TextFileSplitter.xml" Source="$(var.TextFileSplitter2012.ProjectDir)\TextFileSplitter.xml" Checksum="yes"/>
+          </Component>
+        </Directory>
       </Directory>
 
       <Directory Id="SSIS32_2008" Name="SSIS32_2008">
@@ -87,6 +92,7 @@
       <Feature Id="SQL2012" Level="1" Title="SQL 2012">
         <Feature Id="SQL2012x32" Level="1" Title="x86">
           <ComponentRef Id="SQL2012x32DLL"/>
+          <ComponentRef Id="SQL2012x32UpgradeMapping"/>
           <Condition Level="0">NOT SSIS32_2012</Condition>
         </Feature>
         <ComponentRef Id="SQL2012GAC" />
