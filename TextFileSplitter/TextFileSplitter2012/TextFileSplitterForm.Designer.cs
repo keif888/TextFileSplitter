@@ -440,6 +440,7 @@
             this.cbPTErrorDisposition.Name = "cbPTErrorDisposition";
             this.cbPTErrorDisposition.Size = new System.Drawing.Size(175, 21);
             this.cbPTErrorDisposition.TabIndex = 15;
+            this.cbPTErrorDisposition.SelectedIndexChanged += new System.EventHandler(this.cbPTErrorDisposition_SelectedIndexChanged);
             // 
             // label6
             // 
@@ -483,6 +484,7 @@
             this.ttSplitter.SetToolTip(this.btnPTPreview, "Click this to read the data from the Connection Manager and display it in the Pre" +
         "view below.");
             this.btnPTPreview.UseVisualStyleBackColor = true;
+            this.btnPTPreview.Click += new System.EventHandler(this.btnPTPreview_Click);
             // 
             // dgvPassThrough
             // 
@@ -502,6 +504,7 @@
             this.dgvPassThrough.Name = "dgvPassThrough";
             this.dgvPassThrough.Size = new System.Drawing.Size(628, 150);
             this.dgvPassThrough.TabIndex = 0;
+            this.dgvPassThrough.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvPassThrough_CellValueChanged);
             // 
             // clmPTColumnName
             // 

@@ -28,10 +28,13 @@ namespace Martin.SQLServer.Dts
         private Connections connections;
         private Variables variables;
         private Microsoft.SqlServer.Dts.Runtime.Design.IDtsConnectionService connService;
+        private Boolean _isLoading;
 
         public TextFileSplitterForm()
         {
+            _isLoading = true;
             InitializeComponent();
+            _isLoading = false;
         }
 
         #region IDtsComponentUI Members
@@ -180,6 +183,7 @@ namespace Martin.SQLServer.Dts
         {
             try
             {
+                _isLoading = true;
                 cbOutputDisposition.DataSource = System.Enum.GetValues(typeof(DTSRowDisposition));
                 cbPTErrorDisposition.DataSource = System.Enum.GetValues(typeof(DTSRowDisposition));
                 cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.KeyRecords));
@@ -277,151 +281,17 @@ namespace Martin.SQLServer.Dts
             }
             catch (Exception ex)
             {
-                MessageBox.Show(String.Format("{0}\r\n{1}",ex.Message, ex.StackTrace), "Something went Really Wrong!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(String.Format("{0}\r\n{1}", ex.Message, ex.StackTrace), "Something went Really Wrong!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-
-        private Utilities.typeOfOutputEnum ConvertFromString(String comboBoxValue)
-        {
-            foreach (var value in Enum.GetValues(typeof(Utilities.typeOfOutputEnum)))
+            finally
             {
-                if (comboBoxValue == Enum.GetName(typeof(Utilities.typeOfOutputEnum), value))
-                {
-                    return (Utilities.typeOfOutputEnum)value;
-                }
+                _isLoading = false;
             }
-            return Utilities.typeOfOutputEnum.DataRecords;
         }
 
-        private bool isDelimitedFileConnection(ConnectionManager cm)
-        {
-            if (cm != null)
-            {
-                ConnectionManagerFlatFile cmFlatFile = cm.InnerObject as ConnectionManagerFlatFile;
-                if (cmFlatFile != null)
-                {
-                    IDTSConnectionManagerFlatFile100 connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile100;
-                    if (connectionFlatFile != null)
-                    {
-                        if (connectionFlatFile.Format.Contains("Delimited"))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
 
-        private void lbOutputs_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            DrawingControl.SuspendDrawing(dgvOutputColumns);
-            dgvOutputColumns.SuspendLayout();
-            dgvOutputColumns.Rows.Clear();
-            tbOutputName.Text = String.Empty;
-            tbRowTypeValue.Text = String.Empty;
 
-            foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
-            {
-                if (output.Name == (String)lbOutputs.SelectedItem)
-                {
-                    switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
-                    {
-                        case Utilities.typeOfOutputEnum.KeyRecords:
-                        tbOutputName.Text = output.Name;
-                        tbRowTypeValue.Text = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
-                        cbOutputDisposition.SelectedItem = output.ErrorRowDisposition;
-                        cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput));
 
-                        // This is how to get the value back out!
-                        // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
-
-                        foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
-                        {
-                            int rowNumber = dgvOutputColumns.Rows.Add(1);
-                            dgvOutputColumns.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
-
-                            DataGridViewComboBoxCell usageList = dgvOutputColumns.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key));
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough));
-                            usageList.Value = Enum.GetName(typeof(Utilities.usageOfColumnEnum), (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn));
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[2].Value = (String)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString);
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[3].Value = outputColumn.CodePage;
-
-                            DataGridViewComboBoxCell dataType = dgvOutputColumns.Rows[rowNumber].Cells[4] as DataGridViewComboBoxCell;
-                            dataType.DataSource = System.Enum.GetValues(typeof(DataType));
-                            dataType.ValueType = typeof(DataType);
-                            dataType.Value = outputColumn.DataType;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[5].Value = outputColumn.Length;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
-                        }                            
-                        break;
-                        case Utilities.typeOfOutputEnum.DataRecords:
-                        case Utilities.typeOfOutputEnum.MasterRecord:
-                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
-                        case Utilities.typeOfOutputEnum.ChildRecord:
-                        tbOutputName.Text = output.Name;
-                        tbRowTypeValue.Text = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
-                        cbOutputDisposition.SelectedItem = output.ErrorRowDisposition;
-                        cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput));
-
-                        // This is how to get the value back out!
-                        // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
-
-                        foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
-                        {
-                            int rowNumber = dgvOutputColumns.Rows.Add(1);
-                            dgvOutputColumns.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
-
-                            DataGridViewComboBoxCell usageList = dgvOutputColumns.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key));
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough));
-                            usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.MasterValue));
-                            usageList.Value = Enum.GetName(typeof(Utilities.usageOfColumnEnum), (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn));
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[2].Value = (String)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString);
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[3].Value = outputColumn.CodePage;
-
-                            DataGridViewComboBoxCell dataType = dgvOutputColumns.Rows[rowNumber].Cells[4] as DataGridViewComboBoxCell;
-                            dataType.DataSource = System.Enum.GetValues(typeof(DataType));
-                            dataType.ValueType = typeof(DataType);
-                            dataType.Value = outputColumn.DataType;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[5].Value = outputColumn.Length;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
-
-                            dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
-                        }                            
-                            break;
-                        case Utilities.typeOfOutputEnum.ErrorRecords:
-                        case Utilities.typeOfOutputEnum.PassThrough:
-                        case Utilities.typeOfOutputEnum.RowsProcessed:
-                        default:
-                            break;
-                    }
-                    break;
-                }
-            }
-            dgvOutputColumns.ResumeLayout();
-            DrawingControl.ResumeDrawing(dgvOutputColumns);
-        }
-
-        private void dgvOutputColumns_DataError(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            // For some reason we are getting a failure on the Data Type column.
-            // No Idea why..
-
-            e.Cancel = true;
-        }
 
         #region Connection Tab Events
 
@@ -621,5 +491,271 @@ namespace Martin.SQLServer.Dts
         }
 
         #endregion
+
+        #region Pass Through Tab Events
+        private void btnPTPreview_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DrawingControl.SuspendDrawing(dgvPassThroughPreview);
+                dgvPassThroughPreview.Columns.Clear();
+                dgvPassThroughPreview.Rows.Clear();
+                IDTSConnectionManagerFlatFile100 connectionFlatFile = connections[cbConnectionManager.SelectedItem].InnerObject as IDTSConnectionManagerFlatFile100;
+                string FileName = connections[cbConnectionManager.SelectedItem].ConnectionString;
+                IDTSOutput100 passThoughIDTSOutput = null;
+
+                foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                {
+                    if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
+                    {
+                        passThoughIDTSOutput = output;
+                        break;
+                    }
+                }
+
+                SSISOutput passThroughOutput = new SSISOutput(passThoughIDTSOutput, null);
+                bool firstRowColumnNames = connectionFlatFile.ColumnNamesInFirstDataRow;
+                String passThroughClassString = Utilities.DynamicClassStringFromOutput(passThroughOutput, firstRowColumnNames, connectionFlatFile.Columns[connectionFlatFile.Columns.Count - 1].ColumnDelimiter, connectionFlatFile.Columns[0].ColumnDelimiter);
+                Type passThroughType = ClassBuilder.ClassFromString(passThroughClassString);
+                foreach (SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
+                {
+                    ssisColumn.FileHelperField = passThroughType.GetField(ssisColumn.Name);
+                    dgvPassThroughPreview.Columns.Add(ssisColumn.Name, ssisColumn.Name);
+                }
+                System.Reflection.FieldInfo[] fieldList = passThroughType.GetFields();
+                FileHelperAsyncEngine engine = new FileHelperAsyncEngine(passThroughType);
+                engine.BeginReadFile(FileName);
+
+                int RowCount = 0;
+
+                while (engine.ReadNext() != null)
+                {
+                    int RowNumber = dgvPassThroughPreview.Rows.Add(engine.LastRecordValues);
+                    //foreach (SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
+                    //{
+                    //    dgvConnectionPreview.Rows[RowNumber].Cells[ssisColumn.Name].Value = (String)ssisColumn.FileHelperField.GetValue(engine.LastRecord);
+                    //}
+                    if (RowCount++ > tbPTNumberOfRecordsToPreview.Value)
+                    {
+                        break;
+                    }
+                }
+                engine.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Something went Really Wrong!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                DrawingControl.ResumeDrawing(dgvPassThroughPreview);
+            }
+        }
+
+        private void dgvPassThrough_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (!_isLoading)
+            {
+                if (e.ColumnIndex == 1)
+                {
+                    IDTSOutput100 passThoughIDTSOutput = null;
+
+                    foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                    {
+                        if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
+                        {
+                            passThoughIDTSOutput = output;
+                            break;
+                        }
+                    }
+
+                    foreach (IDTSOutputColumn100 outputColumn in passThoughIDTSOutput.OutputColumnCollection)
+                    {
+                        if (outputColumn.Name == (String)dgvPassThrough.Rows[e.RowIndex].Cells[0].Value)
+                        {
+                            ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, ConvertFromStringToUsageOfColumn((String)dgvPassThrough.Rows[e.RowIndex].Cells[e.ColumnIndex].Value));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void cbPTErrorDisposition_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!_isLoading)
+            {
+                foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                {
+                    if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.PassThrough)
+                    {
+                        output.ErrorRowDisposition = (DTSRowDisposition)cbPTErrorDisposition.SelectedItem;
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        #endregion
+
+        #region Helpers
+
+        private Utilities.typeOfOutputEnum ConvertFromString(String comboBoxValue)
+        {
+            foreach (var value in Enum.GetValues(typeof(Utilities.typeOfOutputEnum)))
+            {
+                if (comboBoxValue == Enum.GetName(typeof(Utilities.typeOfOutputEnum), value))
+                {
+                    return (Utilities.typeOfOutputEnum)value;
+                }
+            }
+            return Utilities.typeOfOutputEnum.DataRecords;
+        }
+
+        private Utilities.usageOfColumnEnum ConvertFromStringToUsageOfColumn(String comboBoxValue)
+        {
+            foreach (var value in Enum.GetValues(typeof(Utilities.usageOfColumnEnum)))
+            {
+                if (comboBoxValue == Enum.GetName(typeof(Utilities.usageOfColumnEnum), value))
+                {
+                    return (Utilities.usageOfColumnEnum)value;
+                }
+            }
+            return Utilities.usageOfColumnEnum.Passthrough;
+        }
+
+        private bool isDelimitedFileConnection(ConnectionManager cm)
+        {
+            if (cm != null)
+            {
+                ConnectionManagerFlatFile cmFlatFile = cm.InnerObject as ConnectionManagerFlatFile;
+                if (cmFlatFile != null)
+                {
+                    IDTSConnectionManagerFlatFile100 connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile100;
+                    if (connectionFlatFile != null)
+                    {
+                        if (connectionFlatFile.Format.Contains("Delimited"))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        #endregion
+
+        #region Outputs Tab Events
+        private void lbOutputs_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DrawingControl.SuspendDrawing(dgvOutputColumns);
+            dgvOutputColumns.SuspendLayout();
+            dgvOutputColumns.Rows.Clear();
+            tbOutputName.Text = String.Empty;
+            tbRowTypeValue.Text = String.Empty;
+
+            foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
+            {
+                if (output.Name == (String)lbOutputs.SelectedItem)
+                {
+                    switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                    {
+                        case Utilities.typeOfOutputEnum.KeyRecords:
+                            tbOutputName.Text = output.Name;
+                            tbRowTypeValue.Text = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
+                            cbOutputDisposition.SelectedItem = output.ErrorRowDisposition;
+                            cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput));
+
+                            // This is how to get the value back out!
+                            // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
+
+                            foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                            {
+                                int rowNumber = dgvOutputColumns.Rows.Add(1);
+                                dgvOutputColumns.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
+
+                                DataGridViewComboBoxCell usageList = dgvOutputColumns.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough));
+                                usageList.Value = Enum.GetName(typeof(Utilities.usageOfColumnEnum), (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn));
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[2].Value = (String)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString);
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[3].Value = outputColumn.CodePage;
+
+                                DataGridViewComboBoxCell dataType = dgvOutputColumns.Rows[rowNumber].Cells[4] as DataGridViewComboBoxCell;
+                                dataType.DataSource = System.Enum.GetValues(typeof(DataType));
+                                dataType.ValueType = typeof(DataType);
+                                dataType.Value = outputColumn.DataType;
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[5].Value = outputColumn.Length;
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
+                            }
+                            break;
+                        case Utilities.typeOfOutputEnum.DataRecords:
+                        case Utilities.typeOfOutputEnum.MasterRecord:
+                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                        case Utilities.typeOfOutputEnum.ChildRecord:
+                            tbOutputName.Text = output.Name;
+                            tbRowTypeValue.Text = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
+                            cbOutputDisposition.SelectedItem = output.ErrorRowDisposition;
+                            cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput));
+
+                            // This is how to get the value back out!
+                            // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
+
+                            foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                            {
+                                int rowNumber = dgvOutputColumns.Rows.Add(1);
+                                dgvOutputColumns.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
+
+                                DataGridViewComboBoxCell usageList = dgvOutputColumns.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough));
+                                usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.MasterValue));
+                                usageList.Value = Enum.GetName(typeof(Utilities.usageOfColumnEnum), (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn));
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[2].Value = (String)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString);
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[3].Value = outputColumn.CodePage;
+
+                                DataGridViewComboBoxCell dataType = dgvOutputColumns.Rows[rowNumber].Cells[4] as DataGridViewComboBoxCell;
+                                dataType.DataSource = System.Enum.GetValues(typeof(DataType));
+                                dataType.ValueType = typeof(DataType);
+                                dataType.Value = outputColumn.DataType;
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[5].Value = outputColumn.Length;
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
+                            }
+                            break;
+                        case Utilities.typeOfOutputEnum.ErrorRecords:
+                        case Utilities.typeOfOutputEnum.PassThrough:
+                        case Utilities.typeOfOutputEnum.RowsProcessed:
+                        default:
+                            break;
+                    }
+                    break;
+                }
+            }
+            dgvOutputColumns.ResumeLayout();
+            DrawingControl.ResumeDrawing(dgvOutputColumns);
+        }
+
+        private void dgvOutputColumns_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            // For some reason we are getting a failure on the Data Type column.
+            // No Idea why..
+
+            e.Cancel = true;
+        }
+        #endregion
+
     }
 }
