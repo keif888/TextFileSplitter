@@ -645,6 +645,206 @@ namespace Martin.SQLServer.Dts
             }
             return false;
         }
+
+        private void SetDataTypeDefaults(DataGridViewRow row)
+        {
+            DataGridViewComboBoxCell dataType = row.Cells[4] as DataGridViewComboBoxCell;
+            switch ((DataType)dataType.Value)
+            {
+                case DataType.DT_BOOL:
+                case DataType.DT_BYREF_BOOL:
+                case DataType.DT_BYREF_CY:
+                case DataType.DT_BYREF_DATE:
+                case DataType.DT_BYREF_DBDATE:
+                case DataType.DT_BYREF_DBTIME:
+                case DataType.DT_BYREF_FILETIME:
+                case DataType.DT_BYREF_GUID:
+                case DataType.DT_BYREF_I1:
+                case DataType.DT_BYREF_I2:
+                case DataType.DT_BYREF_I4:
+                case DataType.DT_BYREF_I8:
+                case DataType.DT_BYREF_R4:
+                case DataType.DT_BYREF_R8:
+                case DataType.DT_BYREF_UI1:
+                case DataType.DT_BYREF_UI2:
+                case DataType.DT_BYREF_UI4:
+                case DataType.DT_BYREF_UI8:
+                case DataType.DT_CY:
+                case DataType.DT_DATE:
+                case DataType.DT_DBDATE:
+                case DataType.DT_DBTIME:
+                case DataType.DT_EMPTY:
+                case DataType.DT_FILETIME:
+                case DataType.DT_GUID:
+                case DataType.DT_I1:
+                case DataType.DT_I2:
+                case DataType.DT_I4:
+                case DataType.DT_I8:
+                case DataType.DT_NULL:
+                case DataType.DT_R4:
+                case DataType.DT_R8:
+                case DataType.DT_UI1:
+                case DataType.DT_UI2:
+                case DataType.DT_UI4:
+                case DataType.DT_UI8:
+                    row.Cells[3].Value = 0; // CodePage
+                    row.Cells[5].Value = 0;  // Length
+                    row.Cells[6].Value = 0;  // Precision
+                    row.Cells[7].Value = 0;  // Scale
+                    break;
+                case DataType.DT_BYREF_DBTIMESTAMP:
+                case DataType.DT_DBTIMESTAMP:
+                    row.Cells[3].Value = 0;  // CodePage
+                    row.Cells[5].Value = 0;  // Length
+                    row.Cells[6].Value = 0;  // Precision
+                    row.Cells[7].Value = 3;  // Scale
+                    break;
+                case DataType.DT_BYREF_DBTIME2:
+                case DataType.DT_BYREF_DBTIMESTAMP2:
+                case DataType.DT_BYREF_DBTIMESTAMPOFFSET:
+                case DataType.DT_DBTIME2:
+                case DataType.DT_DBTIMESTAMP2:
+                case DataType.DT_DBTIMESTAMPOFFSET:
+                    row.Cells[3].Value = 0;  // CodePage
+                    row.Cells[5].Value = 0;  // Length
+                    row.Cells[6].Value = 0;  // Precision
+                    row.Cells[7].Value = 7;  // Scale
+                    break;
+                case DataType.DT_BYREF_DECIMAL:
+                case DataType.DT_BYREF_NUMERIC:
+                case DataType.DT_DECIMAL:
+                case DataType.DT_NUMERIC:
+                    row.Cells[3].Value = 0; // CodePage
+                    row.Cells[5].Value = 0; // Length
+                    row.Cells[6].Value = 18; // Precision
+                    row.Cells[7].Value = 2; // Scale
+                    break;
+                case DataType.DT_BYTES:
+                case DataType.DT_IMAGE:
+                case DataType.DT_NTEXT:
+                case DataType.DT_WSTR:
+                    row.Cells[3].Value = 0; // CodePage
+                    row.Cells[5].Value = 255; // Length
+                    row.Cells[6].Value = 0; // Precision
+                    row.Cells[7].Value = 0; // Scale
+                    break;
+                case DataType.DT_STR:
+                case DataType.DT_TEXT:
+                    row.Cells[3].Value = 1252; // CodePage
+                    row.Cells[5].Value = 255; // Length
+                    row.Cells[6].Value = 0; // Precision
+                    row.Cells[7].Value = 0; // Scale
+                    break;
+                default:
+                    row.Cells[3].Value = 0; // CodePage
+                    row.Cells[5].Value = 0; // Length
+                    row.Cells[6].Value = 0; // Precision
+                    row.Cells[7].Value = 0; // Scale
+                    break;
+            }
+        }
+
+        private void SetOutputColumnsReadWrite(DataGridViewRow row)
+        {
+            row.Cells[3].ReadOnly = false; // CodePage
+            row.Cells[5].ReadOnly = false; // Length
+            row.Cells[6].ReadOnly = false; // Precision
+            row.Cells[7].ReadOnly = false; // Scale
+        }
+
+        private void SetOutputColumnsReadOnly(DataGridViewRow row)
+        {
+            DataGridViewComboBoxCell dataType = row.Cells[4] as DataGridViewComboBoxCell;
+            switch ((DataType)dataType.Value)
+            {
+                case DataType.DT_BOOL:
+                case DataType.DT_BYREF_BOOL:
+                case DataType.DT_BYREF_CY:
+                case DataType.DT_BYREF_DATE:
+                case DataType.DT_BYREF_DBDATE:
+                case DataType.DT_BYREF_DBTIME:
+                case DataType.DT_BYREF_FILETIME:
+                case DataType.DT_BYREF_GUID:
+                case DataType.DT_BYREF_I1:
+                case DataType.DT_BYREF_I2:
+                case DataType.DT_BYREF_I4:
+                case DataType.DT_BYREF_I8:
+                case DataType.DT_BYREF_R4:
+                case DataType.DT_BYREF_R8:
+                case DataType.DT_BYREF_UI1:
+                case DataType.DT_BYREF_UI2:
+                case DataType.DT_BYREF_UI4:
+                case DataType.DT_BYREF_UI8:
+                case DataType.DT_CY:
+                case DataType.DT_DATE:
+                case DataType.DT_DBDATE:
+                case DataType.DT_DBTIME:
+                case DataType.DT_EMPTY:
+                case DataType.DT_FILETIME:
+                case DataType.DT_GUID:
+                case DataType.DT_I1:
+                case DataType.DT_I2:
+                case DataType.DT_I4:
+                case DataType.DT_I8:
+                case DataType.DT_NULL:
+                case DataType.DT_R4:
+                case DataType.DT_R8:
+                case DataType.DT_UI1:
+                case DataType.DT_UI2:
+                case DataType.DT_UI4:
+                case DataType.DT_UI8:
+                    row.Cells[3].ReadOnly = true; // CodePage
+                    row.Cells[5].ReadOnly = true; // Length
+                    row.Cells[6].ReadOnly = true; // Precision
+                    row.Cells[7].ReadOnly = true; // Scale
+                    break;
+                case DataType.DT_BYREF_DBTIME2:
+                case DataType.DT_BYREF_DBTIMESTAMP:
+                case DataType.DT_BYREF_DBTIMESTAMP2:
+                case DataType.DT_BYREF_DBTIMESTAMPOFFSET:
+                case DataType.DT_DBTIME2:
+                case DataType.DT_DBTIMESTAMP:
+                case DataType.DT_DBTIMESTAMP2:
+                case DataType.DT_DBTIMESTAMPOFFSET:
+                    row.Cells[3].ReadOnly = true; // CodePage
+                    row.Cells[5].ReadOnly = true; // Length
+                    row.Cells[6].ReadOnly = true; // Precision
+                    row.Cells[7].ReadOnly = false; // Scale
+                    break;
+                case DataType.DT_BYREF_DECIMAL:
+                case DataType.DT_BYREF_NUMERIC:
+                case DataType.DT_DECIMAL:
+                case DataType.DT_NUMERIC:
+                    row.Cells[3].ReadOnly = true; // CodePage
+                    row.Cells[5].ReadOnly = true; // Length
+                    row.Cells[6].ReadOnly = false; // Precision
+                    row.Cells[7].ReadOnly = false; // Scale
+                    break;
+                case DataType.DT_BYTES:
+                case DataType.DT_IMAGE:
+                case DataType.DT_NTEXT:
+                case DataType.DT_WSTR:
+                    row.Cells[3].ReadOnly = true; // CodePage
+                    row.Cells[5].ReadOnly = false; // Length
+                    row.Cells[6].ReadOnly = true; // Precision
+                    row.Cells[7].ReadOnly = true; // Scale
+                    break;
+                case DataType.DT_STR:
+                case DataType.DT_TEXT:
+                    row.Cells[3].ReadOnly = false; // CodePage
+                    row.Cells[5].ReadOnly = false; // Length
+                    row.Cells[6].ReadOnly = true; // Precision
+                    row.Cells[7].ReadOnly = true; // Scale
+                    break;
+                default:
+                    row.Cells[3].ReadOnly = true; // CodePage
+                    row.Cells[5].ReadOnly = true; // Length
+                    row.Cells[6].ReadOnly = true; // Precision
+                    row.Cells[7].ReadOnly = true; // Scale
+                    break;
+            }
+        }
+
         #endregion
 
         #region Outputs Tab Events
@@ -697,6 +897,7 @@ namespace Martin.SQLServer.Dts
                                 dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
 
                                 dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
+                                SetOutputColumnsReadOnly(dgvOutputColumns.Rows[rowNumber]);
                             }
                             break;
                         case Utilities.typeOfOutputEnum.DataRecords:
@@ -768,6 +969,7 @@ namespace Martin.SQLServer.Dts
                                 dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
 
                                 dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
+                                SetOutputColumnsReadOnly(dgvOutputColumns.Rows[rowNumber]);
                             }
                             break;
                         case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -784,6 +986,7 @@ namespace Martin.SQLServer.Dts
             DrawingControl.ResumeDrawing(dgvOutputColumns);
         }
 
+        
         private void dgvOutputColumns_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
             // For some reason we are getting a failure on the Data Type column.
@@ -885,6 +1088,7 @@ namespace Martin.SQLServer.Dts
                     {
                         IDTSOutput100 newOutput = designtimeComponent.InsertOutput(DTSInsertPlacement.IP_AFTER, lastOutput);
                         newOutput.Name = typeValue;
+                        lastOutput = newOutput.ID;
                         ManageProperties.SetPropertyValue(newOutput.CustomPropertyCollection, ManageProperties.rowTypeValue, typeValue);
 
                         validOutputs.Add(typeValue, newOutput);
@@ -895,15 +1099,19 @@ namespace Martin.SQLServer.Dts
                     }
                     else
                     {
-                        sampleDatas[typeValue].Add(valueValue);
+                        if (sampleDatas[typeValue].Count < tbOutputNumberOfRecordsToPreview.Value)
+                        {
+                            sampleDatas[typeValue].Add(valueValue);
+                        }
                     }
-                    if (RowCount++ > tbOutputNumberOfRecordsToPreview.Value)
+                    if (++RowCount >= tbGenerateOutputsNumber.Value)
                     {
                         break;
                     }
                 }
                 engine.Close();
                 SmartFormatDetector dataDetector = new SmartFormatDetector();
+                dataDetector.MaxSampleLines = (int)tbOutputNumberOfRecordsToPreview.Value;
                 if (tbColumnDelimiter.Text == ",")
                     dataDetector.FormatHint = FormatHint.DelimitedByComma;
                 else if (tbColumnDelimiter.Text == "\t")
@@ -962,6 +1170,10 @@ namespace Martin.SQLServer.Dts
                 int outputColumnID = (int)dgvOutputColumns.Rows[e.RowIndex].Cells[0].Tag;
                 IDTSOutput100 output = _componentMetaData.OutputCollection.GetObjectByID(outputID);
                 IDTSOutputColumn100 outputColumn = output.OutputColumnCollection.GetObjectByID(outputColumnID);
+                int Length = 0;
+                int Scale = 0;
+                int Precision = 0;
+                int CodePage = 0;
                 try
                 {
                     switch (e.ColumnIndex)
@@ -976,16 +1188,28 @@ namespace Martin.SQLServer.Dts
                         case 2: // Format String
                             designtimeComponent.SetOutputColumnProperty(outputID, outputColumnID, ManageProperties.dotNetFormatString, (String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
                             break;
-                        case 3: // Code Page
-                            //designtimeComponent.SetOutputColumnDataTypeProperties(outputID, outputColumnID, DataType, lLength, lPrecision, lScale, lCodePage);
-                            break;
                         case 4: // Data Type
+                            if (outputColumn.DataType != (DataType)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value)
+                            {
+                                SetOutputColumnsReadWrite(dgvOutputColumns.Rows[e.RowIndex]);
+                                SetDataTypeDefaults(dgvOutputColumns.Rows[e.RowIndex]);
+                                Length = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[5].Value.ToString());
+                                Scale = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[6].Value.ToString());
+                                Precision = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[7].Value.ToString());
+                                CodePage = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[3].Value.ToString());
+                                SetOutputColumnsReadOnly(dgvOutputColumns.Rows[e.RowIndex]);
+                                designtimeComponent.SetOutputColumnDataTypeProperties(outputID, outputColumnID, (DataType)dgvOutputColumns.Rows[e.RowIndex].Cells[4].Value, Length, Scale, Precision, CodePage);
+                            }
                             break;
+                        case 3: // Code Page
                         case 5: // Length
-                            break;
                         case 6: // Precision
-                            break;
                         case 7: // Scale
+                                Length = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[5].Value.ToString());
+                                Scale = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[6].Value.ToString());
+                                Precision = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[7].Value.ToString());
+                                CodePage = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[3].Value.ToString());
+                                designtimeComponent.SetOutputColumnDataTypeProperties(outputID, outputColumnID, (DataType)dgvOutputColumns.Rows[e.RowIndex].Cells[4].Value, Length, Scale, Precision, CodePage);
                             break;
                         default:
                             break;
@@ -1079,6 +1303,7 @@ namespace Martin.SQLServer.Dts
                                 }
                             }
                         }
+                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                     }
                 }
             }
@@ -1125,6 +1350,24 @@ namespace Martin.SQLServer.Dts
                         MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                     }
+                }
+            }
+        }
+
+        private void cbOutputDisposition_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!_isLoading)
+            {
+                try
+                {
+                    int outputID = (int)dgvOutputColumns.Rows[0].Tag;
+                    IDTSOutput100 output = _componentMetaData.OutputCollection.GetObjectByID(outputID);
+                    output.ErrorRowDisposition = (DTSRowDisposition)cbOutputDisposition.SelectedItem;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                 }
             }
         }

@@ -107,6 +107,7 @@
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.ttSplitter = new System.Windows.Forms.ToolTip(this.components);
             this.label12 = new System.Windows.Forms.Label();
+            this.tbGenerateOutputsNumber = new System.Windows.Forms.NumericUpDown();
             this.panel1.SuspendLayout();
             this.tcMain.SuspendLayout();
             this.tpConnection.SuspendLayout();
@@ -133,6 +134,7 @@
             this.panel5.SuspendLayout();
             this.tpAbout.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbGenerateOutputsNumber)).BeginInit();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -773,12 +775,13 @@
             this.cbOutputDisposition.Name = "cbOutputDisposition";
             this.cbOutputDisposition.Size = new System.Drawing.Size(157, 21);
             this.cbOutputDisposition.TabIndex = 20;
+            this.cbOutputDisposition.SelectedIndexChanged += new System.EventHandler(this.cbOutputDisposition_SelectedIndexChanged);
             // 
             // tbOutputNumberOfRecordsToPreview
             // 
             this.tbOutputNumberOfRecordsToPreview.Location = new System.Drawing.Point(255, 56);
             this.tbOutputNumberOfRecordsToPreview.Maximum = new decimal(new int[] {
-            10000000,
+            10000,
             0,
             0,
             0});
@@ -792,7 +795,7 @@
             this.tbOutputNumberOfRecordsToPreview.TabIndex = 18;
             this.ttSplitter.SetToolTip(this.tbOutputNumberOfRecordsToPreview, "Select the number of records that will be read into the preview grid.");
             this.tbOutputNumberOfRecordsToPreview.Value = new decimal(new int[] {
-            1000,
+            100,
             0,
             0,
             0});
@@ -823,19 +826,20 @@
             // 
             this.lbOutputs.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lbOutputs.FormattingEnabled = true;
-            this.lbOutputs.Location = new System.Drawing.Point(0, 30);
+            this.lbOutputs.Location = new System.Drawing.Point(0, 50);
             this.lbOutputs.Name = "lbOutputs";
-            this.lbOutputs.Size = new System.Drawing.Size(167, 291);
+            this.lbOutputs.Size = new System.Drawing.Size(167, 271);
             this.lbOutputs.TabIndex = 4;
             this.lbOutputs.SelectedIndexChanged += new System.EventHandler(this.lbOutputs_SelectedIndexChanged);
             // 
             // panel6
             // 
+            this.panel6.Controls.Add(this.tbGenerateOutputsNumber);
             this.panel6.Controls.Add(this.btnGenerateOutputs);
             this.panel6.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel6.Location = new System.Drawing.Point(0, 0);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(167, 30);
+            this.panel6.Size = new System.Drawing.Size(167, 50);
             this.panel6.TabIndex = 3;
             // 
             // btnGenerateOutputs
@@ -916,6 +920,29 @@
             this.label12.TabIndex = 29;
             this.label12.Text = "Master";
             // 
+            // tbGenerateOutputsNumber
+            // 
+            this.tbGenerateOutputsNumber.Location = new System.Drawing.Point(5, 27);
+            this.tbGenerateOutputsNumber.Maximum = new decimal(new int[] {
+            10000000,
+            0,
+            0,
+            0});
+            this.tbGenerateOutputsNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.tbGenerateOutputsNumber.Name = "tbGenerateOutputsNumber";
+            this.tbGenerateOutputsNumber.Size = new System.Drawing.Size(154, 20);
+            this.tbGenerateOutputsNumber.TabIndex = 19;
+            this.ttSplitter.SetToolTip(this.tbGenerateOutputsNumber, "Select the number of records that will be read into the preview grid.");
+            this.tbGenerateOutputsNumber.Value = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            // 
             // TextFileSplitterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -958,6 +985,7 @@
             this.panel5.ResumeLayout(false);
             this.tpAbout.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbGenerateOutputsNumber)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1042,5 +1070,6 @@
         private System.Windows.Forms.ComboBox cbOutputType;
         private System.Windows.Forms.TextBox tbMaster;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.NumericUpDown tbGenerateOutputsNumber;
     }
 }
