@@ -710,6 +710,36 @@ namespace Martin.SQLServer.Dts
 
                             // This is how to get the value back out!
                             // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
+                            if (ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) != null)
+                            {
+                                int MasterID = (int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID);
+                                if (MasterID > 0)
+                                {
+                                    try
+                                    {
+                                        IDTSOutput100 masterOutput = _componentMetaData.OutputCollection.GetObjectByID(MasterID);
+                                        if (masterOutput != null)
+                                        {
+                                            tbMaster.Text = masterOutput.Name;
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Something Bad, so reset the type and values!!!
+                                        tbMaster.Text = String.Empty;
+                                        designtimeComponent.SetOutputProperty(output.ID, ManageProperties.masterRecordID, -1);
+                                        designtimeComponent.SetOutputProperty(output.ID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
+                                    }
+                                }
+                                else
+                                {
+                                    tbMaster.Text = String.Empty;
+                                }
+                            }
+                            else
+                            {
+                                tbMaster.Text = String.Empty;
+                            }
 
                             foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
                             {
@@ -938,6 +968,7 @@ namespace Martin.SQLServer.Dts
                     {
                         case 0: // Column Name
                             outputColumn.Name = (String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                            lbOutputs.SelectedItem = (String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
                             break;
                         case 1: // Usage
                             designtimeComponent.SetOutputColumnProperty(outputID, outputColumnID, ManageProperties.usageOfColumn, ConvertFromStringToUsageOfColumn((String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value));
@@ -968,8 +999,136 @@ namespace Martin.SQLServer.Dts
             }
         }
 
-        #endregion
+        private void cbOutputType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!_isLoading)
+            {
+                if (dgvOutputColumns.Rows.Count > 0)
+                {
+                    int outputID = (int)dgvOutputColumns.Rows[0].Tag;
+                    try
+                    {
+                        designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, ConvertFromString((String)cbOutputType.SelectedItem));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                        return;
+                    }
+                    if ((ConvertFromString((String)cbOutputType.SelectedItem) == Utilities.typeOfOutputEnum.ChildRecord)
+                      || (ConvertFromString((String)cbOutputType.SelectedItem) == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                    {
+                        List<String> masterNameList = new List<string>();
+                        foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                        {
+                            Utilities.typeOfOutputEnum outputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                            if ((outputType == Utilities.typeOfOutputEnum.MasterRecord) || (outputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                            {
+                                masterNameList.Add(output.Name);
+                            }
+                        }
+                        if (masterNameList.Count == 1)
+                        {
+                            tbMaster.Text = masterNameList[0];
+                        }
+                        else
+                        {
+                            if (masterNameList.Count > 1)
+                            {
+                                MasterSelection masterDialog = new MasterSelection();
+                                masterDialog.initMasterList(masterNameList);
+                                if (masterDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                                {
+                                    tbMaster.Text = masterDialog.SelectedMaster;
+                                }
+                                else
+                                {
+                                    designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
+                                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
+                                lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                                return;
+                            }
+                        }
+                        foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                        {
+                            Utilities.typeOfOutputEnum outputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                            if ((outputType == Utilities.typeOfOutputEnum.MasterRecord) || (outputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                            {
+                                if (output.Name == tbMaster.Text)
+                                {
+                                    try
+                                    {
+                                        designtimeComponent.SetOutputProperty(outputID, ManageProperties.masterRecordID, output.ID);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        tbMaster.Text = String.Empty;
+                                        designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
+                                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                                        return;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
+        private void tbOutputName_Leave(object sender, EventArgs e)
+        {
+            if (!_isLoading)
+            {
+                if (dgvOutputColumns.Rows.Count > 0)
+                {
+                    try
+                    {
+                        int outputID = (int)dgvOutputColumns.Rows[0].Tag;
+                        IDTSOutput100 output = _componentMetaData.OutputCollection.GetObjectByID(outputID);
+                        if (output.Name != tbOutputName.Text)
+                        {
+                            output.Name = tbOutputName.Text;
+                            lbOutputs.Items[lbOutputs.SelectedIndex] = tbOutputName.Text;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                    }
+                }
+            }
+        }
+
+        private void tbRowTypeValue_TextChanged(object sender, EventArgs e)
+        {
+            if (!_isLoading)
+            {
+                if (dgvOutputColumns.Rows.Count > 0)
+                {
+                    try
+                    {
+                        int outputID = (int)dgvOutputColumns.Rows[0].Tag;
+                        designtimeComponent.SetOutputProperty(outputID, ManageProperties.rowTypeValue, tbRowTypeValue.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                    }
+                }
+            }
+        }
+        #endregion
 
 
     }

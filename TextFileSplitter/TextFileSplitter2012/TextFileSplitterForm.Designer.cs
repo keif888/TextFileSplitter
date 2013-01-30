@@ -84,6 +84,7 @@
             this.btnRemoveColumn = new System.Windows.Forms.Button();
             this.dgvOutputPreview = new System.Windows.Forms.DataGridView();
             this.panel7 = new System.Windows.Forms.Panel();
+            this.tbMaster = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.cbOutputType = new System.Windows.Forms.ComboBox();
             this.label10 = new System.Windows.Forms.Label();
@@ -105,6 +106,7 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.ttSplitter = new System.Windows.Forms.ToolTip(this.components);
+            this.label12 = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.tcMain.SuspendLayout();
             this.tpConnection.SuspendLayout();
@@ -677,6 +679,8 @@
             // 
             // panel7
             // 
+            this.panel7.Controls.Add(this.label12);
+            this.panel7.Controls.Add(this.tbMaster);
             this.panel7.Controls.Add(this.label11);
             this.panel7.Controls.Add(this.cbOutputType);
             this.panel7.Controls.Add(this.label10);
@@ -692,6 +696,14 @@
             this.panel7.Name = "panel7";
             this.panel7.Size = new System.Drawing.Size(461, 85);
             this.panel7.TabIndex = 1;
+            // 
+            // tbMaster
+            // 
+            this.tbMaster.Location = new System.Drawing.Point(337, 30);
+            this.tbMaster.Name = "tbMaster";
+            this.tbMaster.ReadOnly = true;
+            this.tbMaster.Size = new System.Drawing.Size(119, 20);
+            this.tbMaster.TabIndex = 28;
             // 
             // label11
             // 
@@ -709,6 +721,7 @@
             this.cbOutputType.Name = "cbOutputType";
             this.cbOutputType.Size = new System.Drawing.Size(121, 21);
             this.cbOutputType.TabIndex = 26;
+            this.cbOutputType.SelectedIndexChanged += new System.EventHandler(this.cbOutputType_SelectedIndexChanged);
             // 
             // label10
             // 
@@ -725,6 +738,7 @@
             this.tbRowTypeValue.Name = "tbRowTypeValue";
             this.tbRowTypeValue.Size = new System.Drawing.Size(157, 20);
             this.tbRowTypeValue.TabIndex = 24;
+            this.tbRowTypeValue.TextChanged += new System.EventHandler(this.tbRowTypeValue_TextChanged);
             // 
             // tbOutputName
             // 
@@ -732,6 +746,7 @@
             this.tbOutputName.Name = "tbOutputName";
             this.tbOutputName.Size = new System.Drawing.Size(157, 20);
             this.tbOutputName.TabIndex = 23;
+            this.tbOutputName.Leave += new System.EventHandler(this.tbOutputName_Leave);
             // 
             // label9
             // 
@@ -892,6 +907,15 @@
             this.pictureBox2.TabIndex = 13;
             this.pictureBox2.TabStop = false;
             // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(255, 33);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(39, 13);
+            this.label12.TabIndex = 29;
+            this.label12.Text = "Master";
+            // 
             // TextFileSplitterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1016,5 +1040,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCScale;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.ComboBox cbOutputType;
+        private System.Windows.Forms.TextBox tbMaster;
+        private System.Windows.Forms.Label label12;
     }
 }

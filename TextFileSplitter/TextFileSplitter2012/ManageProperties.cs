@@ -90,7 +90,7 @@ namespace Martin.SQLServer.Dts
             }
             else
             {
-                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
+                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, System.Enum.GetName(typeof(Utilities.typeOfOutputEnum), propertyValue)));
                 return DTSValidationStatus.VS_ISCORRUPT;
             }
         }
@@ -104,7 +104,7 @@ namespace Martin.SQLServer.Dts
             }
             else
             {
-                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
+                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), propertyValue)));
                 return DTSValidationStatus.VS_ISCORRUPT;
             }
         }

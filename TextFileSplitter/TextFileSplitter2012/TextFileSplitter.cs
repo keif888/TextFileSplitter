@@ -665,7 +665,7 @@ namespace Martin.SQLServer.Dts
                 {
                     IDTSOutput thisOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(outputID);
                     IDTSOutputColumn thisColumn = thisOutput.OutputColumnCollection.GetObjectByID(outputColumnID);
-                    Utilities.usageOfColumnEnum oldValue;
+                    Utilities.usageOfColumnEnum oldValue = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
                     switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -733,6 +733,11 @@ namespace Martin.SQLServer.Dts
                             break;
                         case Utilities.typeOfOutputEnum.DataRecords:
                         case Utilities.typeOfOutputEnum.ChildRecord:
+                            if ((oldValue == Utilities.usageOfColumnEnum.Key) || (oldValue == Utilities.usageOfColumnEnum.MasterValue))
+                            {
+                                throw new COMException(MessageStrings.InvalidPropertyValue(ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), propertyValue)));
+                            }
+
                             switch ((Utilities.usageOfColumnEnum) propertyValue)
 	                        {
                                 case Utilities.usageOfColumnEnum.RowType:
@@ -802,7 +807,6 @@ namespace Martin.SQLServer.Dts
                                     case Utilities.usageOfColumnEnum.Passthrough:
                                     case Utilities.usageOfColumnEnum.Ignore:
                                     case Utilities.usageOfColumnEnum.MasterValue:
-                                        oldValue = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
                                         if ((oldValue != (Utilities.usageOfColumnEnum)propertyValue) && (oldValue != Utilities.usageOfColumnEnum.MasterValue))
                                         {
                                             // Determine the correct position for this record in the output.
@@ -1005,7 +1009,15 @@ namespace Martin.SQLServer.Dts
                         case Utilities.typeOfOutputEnum.ChildMasterRecord:
                         case Utilities.typeOfOutputEnum.ChildRecord:
                             // Add the "MasterValue" columns into this record
-                            IDTSOutput masterOutput = this.ComponentMetaData.OutputCollection.FindObjectByID((int)propertyValue);
+                            IDTSOutput masterOutput = null;
+                            try
+                            {
+                                masterOutput = this.ComponentMetaData.OutputCollection.FindObjectByID((int)propertyValue);
+                            }
+                            catch
+                            {
+                                throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
+                            }
                             if (masterOutput == null)
                             {
                                 throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
@@ -1065,7 +1077,7 @@ namespace Martin.SQLServer.Dts
                                 case Utilities.typeOfOutputEnum.ErrorRecords:
                                 case Utilities.typeOfOutputEnum.KeyRecords:
                                 case Utilities.typeOfOutputEnum.PassThrough:
-                                    throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
+                                    throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, System.Enum.GetName(typeof(Utilities.typeOfOutputEnum), propertyValue)));
                                 case Utilities.typeOfOutputEnum.DataRecords:
                                 case Utilities.typeOfOutputEnum.MasterRecord:
                                 case Utilities.typeOfOutputEnum.ChildMasterRecord:

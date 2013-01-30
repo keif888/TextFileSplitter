@@ -84,6 +84,14 @@
     <Compile Include="..\TextFileSplitter2012\ManageProperties.cs">
       <Link>ManageProperties.cs</Link>
     </Compile>
+    <Compile Include="..\TextFileSplitter2012\MasterSelection.cs">
+      <Link>MasterSelection.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\MasterSelection.designer.cs">
+      <Link>MasterSelection.designer.cs</Link>
+      <DependentUpon>MasterSelection.cs</DependentUpon>
+    </Compile>
     <Compile Include="..\TextFileSplitter2012\MessageStrings.cs">
       <Link>MessageStrings.cs</Link>
     </Compile>
@@ -134,6 +142,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\TextFileSplitter2012\MasterSelection.resx">
+      <Link>MasterSelection.resx</Link>
+      <DependentUpon>MasterSelection.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\TextFileSplitter2012\Properties\Resources.resx">
       <Link>Properties\Resources.resx</Link>
       <Generator>ResXFileCodeGenerator</Generator>
