@@ -137,6 +137,10 @@ namespace Martin.SQLServer.Dts
         public const string ReadWriteNotSupported = "This component does not support READWRITE.";
         public const string KeyColumnDescription = "This is a propogated name because it was chosen as a key name";
         public const string CannotSetPropertyToKey = "You can only set Key on the Key Output";
+        public const string CannotSetPropertyToMasterValue = "You can only set MasterValue on a Master or ChildMaster Output";
+        public const string CannotSetPropertyToRowData = "You can only set RowData on the PassThrough Output";
+        public const string CannotSetPropertyToRowType = "You can only set RowType on the PassThrough Output";
+        public const string CannotSetPropertyToPassThrough = "You can't set PassThrough on this Output";
         public const string CannotSetProperty = "You are not allowed to change this property.";
         public const string CannotDeleteKeyOutput = "You can NOT delete the Key Output!";
         public const string CannotDeleteErrorOutput = "You can NOT delete the error output!";

@@ -21,6 +21,8 @@ namespace FileHelpers.Detection
         /// <summary>The file is likely to be of records delimited by a semicolon character</summary>
         DelimitedByComma,
         /// <summary>The file is likely to be of records delimited by a comma character</summary>
-        DelimitedBySemicolon
+        DelimitedBySemicolon,
+        /// <summary>The file is likely to be of records delimited by a tilde ~ character</summary>
+        DelimitedByTilde
     }
 }

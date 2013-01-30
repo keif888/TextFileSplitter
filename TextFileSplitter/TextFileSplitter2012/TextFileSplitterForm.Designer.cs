@@ -592,6 +592,7 @@
             this.dgvOutputColumns.Name = "dgvOutputColumns";
             this.dgvOutputColumns.Size = new System.Drawing.Size(461, 120);
             this.dgvOutputColumns.TabIndex = 3;
+            this.dgvOutputColumns.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvOutputColumns_CellValueChanged);
             this.dgvOutputColumns.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvOutputColumns_DataError);
             // 
             // clmOCColumnName
@@ -762,7 +763,7 @@
             // 
             this.tbOutputNumberOfRecordsToPreview.Location = new System.Drawing.Point(255, 56);
             this.tbOutputNumberOfRecordsToPreview.Maximum = new decimal(new int[] {
-            10000,
+            10000000,
             0,
             0,
             0});
@@ -776,7 +777,7 @@
             this.tbOutputNumberOfRecordsToPreview.TabIndex = 18;
             this.ttSplitter.SetToolTip(this.tbOutputNumberOfRecordsToPreview, "Select the number of records that will be read into the preview grid.");
             this.tbOutputNumberOfRecordsToPreview.Value = new decimal(new int[] {
-            100,
+            1000,
             0,
             0,
             0});
@@ -830,6 +831,7 @@
             this.btnGenerateOutputs.TabIndex = 2;
             this.btnGenerateOutputs.Text = "Generate Outputs";
             this.btnGenerateOutputs.UseVisualStyleBackColor = true;
+            this.btnGenerateOutputs.Click += new System.EventHandler(this.btnGenerateOutputs_Click);
             // 
             // panel5
             // 

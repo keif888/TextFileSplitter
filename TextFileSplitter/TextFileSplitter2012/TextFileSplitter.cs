@@ -614,11 +614,26 @@ namespace Martin.SQLServer.Dts
         {
             if (!this.ComponentMetaData.OutputCollection.GetObjectByID(outputID).IsErrorOut)
             {
-                IDTSOutputColumn col = base.InsertOutputColumnAt(outputID, outputColumnIndex, name, description);
-                ManageProperties.AddOutputColumnProperties(col.CustomPropertyCollection);
-                col.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
-                ManageColumns.SetOutputColumnDefaults(col, codePage);
-                return col;
+                Utilities.typeOfOutputEnum outputUsage = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(this.ComponentMetaData.OutputCollection.GetObjectByID(outputID).CustomPropertyCollection, ManageProperties.typeOfOutput);
+                switch (outputUsage)
+                {
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                    case Utilities.typeOfOutputEnum.RowsProcessed:
+                    case Utilities.typeOfOutputEnum.PassThrough:
+                        this.PostErrorAndThrow(MessageStrings.CantChangeErrorOutputProperties);
+                        return null;
+                    case Utilities.typeOfOutputEnum.KeyRecords:
+                    case Utilities.typeOfOutputEnum.DataRecords:
+                    case Utilities.typeOfOutputEnum.MasterRecord:
+                    case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                    case Utilities.typeOfOutputEnum.ChildRecord:
+                    default:
+                        IDTSOutputColumn col = base.InsertOutputColumnAt(outputID, outputColumnIndex, name, description);
+                        ManageProperties.AddOutputColumnProperties(col.CustomPropertyCollection);
+                        col.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
+                        ManageColumns.SetOutputColumnDefaults(col, codePage);
+                        return col;
+                }
             }
             else
             {
@@ -721,10 +736,13 @@ namespace Martin.SQLServer.Dts
                             switch ((Utilities.usageOfColumnEnum) propertyValue)
 	                        {
                                 case Utilities.usageOfColumnEnum.RowType:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToRowType, E_FAIL);
                                 case Utilities.usageOfColumnEnum.RowData:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToRowData, E_FAIL);
                                 case Utilities.usageOfColumnEnum.Key:
-                                case Utilities.usageOfColumnEnum.MasterValue:
                                     throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
+                                case Utilities.usageOfColumnEnum.MasterValue:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToMasterValue, E_FAIL);
                                 default:
                                     break;
 	                        }
@@ -760,10 +778,11 @@ namespace Martin.SQLServer.Dts
                                         throw new COMException(MessageStrings.ThereCanOnlyBeOneRowDataColumn, E_FAIL);
                                     }
                                     break;
-                                case Utilities.usageOfColumnEnum.Passthrough:
                                 case Utilities.usageOfColumnEnum.Key:
-                                case Utilities.usageOfColumnEnum.MasterValue:
                                     throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
+                                case Utilities.usageOfColumnEnum.MasterValue:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToMasterValue, E_FAIL);
+                                case Utilities.usageOfColumnEnum.Passthrough:
                                 case Utilities.usageOfColumnEnum.Ignore:
                                     break;
                                 default:
@@ -775,7 +794,9 @@ namespace Martin.SQLServer.Dts
                             switch ((Utilities.usageOfColumnEnum)propertyValue)
 	                            {
                                     case Utilities.usageOfColumnEnum.RowType:
+                                        throw new COMException(MessageStrings.CannotSetPropertyToRowType, E_FAIL);
                                     case Utilities.usageOfColumnEnum.RowData:
+                                        throw new COMException(MessageStrings.CannotSetPropertyToRowData, E_FAIL);
                                     case Utilities.usageOfColumnEnum.Key:
                                         throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
                                     case Utilities.usageOfColumnEnum.Passthrough:
@@ -798,7 +819,7 @@ namespace Martin.SQLServer.Dts
                                         //ToDo: Apply Value down the Chain!
                                         break;
                                     default:
-                                        throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
+                                        throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                                 }
                             break;
                         default:

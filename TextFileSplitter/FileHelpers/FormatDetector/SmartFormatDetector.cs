@@ -123,6 +123,9 @@ namespace FileHelpers.Detection
                 case FormatHint.DelimitedBySemicolon:
                     CreateDelimiterOptions(sampleData, res, ';');
                     break;
+                case FormatHint.DelimitedByTilde:
+                    CreateDelimiterOptions(sampleData, res, '~');
+                    break;
                 default:
                     throw new InvalidOperationException("Unsuported FormatHint value.");
             }
@@ -141,6 +144,63 @@ namespace FileHelpers.Detection
             return res.ToArray();
         }
 
+        /// <summary>
+        /// Tries to detect the possible formats of the string using the <see cref="FormatHint"/>
+        /// </summary>
+        /// <param name="stringData">The strings to be used as sample data</param>
+        /// <returns>The possible <see cref="RecordFormatInfo"/> of the file.</returns>
+        public RecordFormatInfo[] DetectStringFormat(IEnumerable<string> stringData)
+        {
+            var res = new List<RecordFormatInfo>();
+            var strings = new List<string>();
+            foreach (String data in stringData)
+            {
+                strings.Add(data);
+            }
+            var stringArray = new List<string[]>();
+            stringArray.Add(strings.ToArray());
+            string[][] sampleData = stringArray.ToArray();
+
+            switch (mFormatHint)
+            {
+                case FormatHint.Unknown:
+                    CreateMixedOptions(sampleData, res);
+                    break;
+                case FormatHint.FixedLength:
+                    CreateFixedLengthOptions(sampleData, res);
+                    break;
+                case FormatHint.Delimited:
+                    CreateDelimiterOptions(sampleData, res);
+                    break;
+                case FormatHint.DelimitedByTab:
+                    CreateDelimiterOptions(sampleData, res, '\t');
+                    break;
+                case FormatHint.DelimitedByComma:
+                    CreateDelimiterOptions(sampleData, res, ',');
+                    break;
+                case FormatHint.DelimitedBySemicolon:
+                    CreateDelimiterOptions(sampleData, res, ';');
+                    break;
+                case FormatHint.DelimitedByTilde:
+                    CreateDelimiterOptions(sampleData, res, '~');
+                    break;
+                default:
+                    throw new InvalidOperationException("Unsuported FormatHint value.");
+            }
+
+            foreach (var option in res)
+            {
+                DetectOptionals(option, sampleData);
+                DetectTypes(option, sampleData);
+                DetectQuoted(option, sampleData);
+            }
+
+            // Sort by confidence
+            res.Sort(delegate(RecordFormatInfo x, RecordFormatInfo y)
+            { return -1 * x.Confidence.CompareTo(y.Confidence); });
+
+            return res.ToArray();
+        }
 
         #endregion
 
@@ -381,9 +441,10 @@ namespace FileHelpers.Detection
                     format.mConfidence = (int)(format.Confidence * 0.7);
                     break;
 
-                case ',': // Help the , ; tab to be confident
+                case ',': // Help the , ; tab ~ to be confident
                 case ';': 
                 case '\t': 
+                case '~':
                     format.mConfidence = (int)Math.Min(100, format.Confidence * 1.15);
                     break;
 

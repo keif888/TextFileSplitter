@@ -15,6 +15,7 @@ using System.Text;
 using System.Windows.Forms;
 using FileHelpers.Dynamic;
 using FileHelpers;
+using FileHelpers.Detection;
 
 namespace Martin.SQLServer.Dts
 {
@@ -654,7 +655,7 @@ namespace Martin.SQLServer.Dts
             dgvOutputColumns.Rows.Clear();
             tbOutputName.Text = String.Empty;
             tbRowTypeValue.Text = String.Empty;
-
+            _isLoading = true;
             foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
             {
                 if (output.Name == (String)lbOutputs.SelectedItem)
@@ -673,7 +674,9 @@ namespace Martin.SQLServer.Dts
                             foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
                             {
                                 int rowNumber = dgvOutputColumns.Rows.Add(1);
+                                dgvOutputColumns.Rows[rowNumber].Tag = output.ID;
                                 dgvOutputColumns.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
+                                dgvOutputColumns.Rows[rowNumber].Cells[0].Tag = outputColumn.ID;
 
                                 DataGridViewComboBoxCell usageList = dgvOutputColumns.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
                                 usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key));
@@ -711,7 +714,9 @@ namespace Martin.SQLServer.Dts
                             foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
                             {
                                 int rowNumber = dgvOutputColumns.Rows.Add(1);
+                                dgvOutputColumns.Rows[rowNumber].Tag = output.ID;
                                 dgvOutputColumns.Rows[rowNumber].Cells[0].Value = outputColumn.Name;
+                                dgvOutputColumns.Rows[rowNumber].Cells[0].Tag = outputColumn.ID;
 
                                 DataGridViewComboBoxCell usageList = dgvOutputColumns.Rows[rowNumber].Cells[1] as DataGridViewComboBoxCell;
                                 usageList.Items.Add(Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key));
@@ -744,6 +749,7 @@ namespace Martin.SQLServer.Dts
                     break;
                 }
             }
+            _isLoading = false;
             dgvOutputColumns.ResumeLayout();
             DrawingControl.ResumeDrawing(dgvOutputColumns);
         }
@@ -755,7 +761,216 @@ namespace Martin.SQLServer.Dts
 
             e.Cancel = true;
         }
+
+        private void btnGenerateOutputs_Click(object sender, EventArgs e)
+        {
+            Dictionary<String, IDTSOutput100> validOutputs = new Dictionary<string, IDTSOutput100>();
+            Dictionary<String, List<String>> sampleDatas = new Dictionary<string, List<string>>();
+            Dictionary<String, Boolean> newOutputs = new Dictionary<string,bool>();
+            IDTSOutput100 keyOutput = null;
+            IDTSOutput100 passThoughIDTSOutput = null;
+            Boolean keyOutputConfigured = false;
+            int lastOutput = 0;
+            foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+            {
+                String typeValue = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
+                switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                {
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                        break;
+                    case Utilities.typeOfOutputEnum.PassThrough:
+                        passThoughIDTSOutput = output;
+                        break;
+                    case Utilities.typeOfOutputEnum.KeyRecords:
+                        keyOutput = output;
+                        validOutputs.Add(typeValue, output);
+                        sampleDatas.Add(typeValue, new List<string>());
+                        newOutputs.Add(typeValue, false);
+                        if ((output.OutputColumnCollection.Count > 0) && (!String.IsNullOrEmpty(typeValue)))
+                        {
+                            keyOutputConfigured = true;
+                        }
+                        break;
+                    case Utilities.typeOfOutputEnum.DataRecords:
+                    case Utilities.typeOfOutputEnum.MasterRecord:
+                    case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                    case Utilities.typeOfOutputEnum.ChildRecord:
+                        validOutputs.Add(typeValue, output);
+                        sampleDatas.Add(typeValue, new List<string>());
+                        newOutputs.Add(typeValue, false);
+                        break;
+                    case Utilities.typeOfOutputEnum.RowsProcessed:
+                        break;
+                    default:
+                        break;
+                }
+                lastOutput = output.ID;
+            }
+            if (!keyOutputConfigured)
+            {
+                MessageBox.Show("The Key Output has not been configured.\r\nPlease configure befure using tihs button..", "Not Ready", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return;
+            }
+            try
+            {
+                IDTSConnectionManagerFlatFile100 connectionFlatFile = connections[cbConnectionManager.SelectedItem].InnerObject as IDTSConnectionManagerFlatFile100;
+                string FileName = connections[cbConnectionManager.SelectedItem].ConnectionString;
+
+                SSISOutputColumn typeColumn = null;
+                SSISOutputColumn valueColumn = null;
+
+                SSISOutput passThroughOutput = new SSISOutput(passThoughIDTSOutput, null);
+                bool firstRowColumnNames = connectionFlatFile.ColumnNamesInFirstDataRow;
+                String passThroughClassString = Utilities.DynamicClassStringFromOutput(passThroughOutput, firstRowColumnNames, connectionFlatFile.Columns[connectionFlatFile.Columns.Count - 1].ColumnDelimiter, connectionFlatFile.Columns[0].ColumnDelimiter);
+                Type passThroughType = ClassBuilder.ClassFromString(passThroughClassString);
+                foreach (SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
+                {
+                    ssisColumn.FileHelperField = passThroughType.GetField(ssisColumn.Name);
+                    if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(ssisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.RowType)
+                    {
+                        typeColumn = ssisColumn;
+                    }
+                    else if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(ssisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.RowData)
+                    {
+                        valueColumn = ssisColumn;
+                    }
+                }
+                System.Reflection.FieldInfo[] fieldList = passThroughType.GetFields();
+                FileHelperAsyncEngine engine = new FileHelperAsyncEngine(passThroughType);
+                engine.BeginReadFile(FileName);
+
+                int RowCount = 0;
+
+                while (engine.ReadNext() != null)
+                {
+                    //int RowNumber = dgvPassThroughPreview.Rows.Add(engine.LastRecordValues);
+                    //foreach (SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
+                    //{
+                    //    dgvConnectionPreview.Rows[RowNumber].Cells[ssisColumn.Name].Value = (String)ssisColumn.FileHelperField.GetValue(engine.LastRecord);
+                    //}
+                    String typeValue = (String)typeColumn.FileHelperField.GetValue(engine.LastRecord);
+                    String valueValue = (String)valueColumn.FileHelperField.GetValue(engine.LastRecord);
+
+                    if (!validOutputs.ContainsKey(typeValue))
+                    {
+                        IDTSOutput100 newOutput = designtimeComponent.InsertOutput(DTSInsertPlacement.IP_AFTER, lastOutput);
+                        newOutput.Name = typeValue;
+                        ManageProperties.SetPropertyValue(newOutput.CustomPropertyCollection, ManageProperties.rowTypeValue, typeValue);
+
+                        validOutputs.Add(typeValue, newOutput);
+                        sampleDatas.Add(typeValue, new List<string>());
+                        sampleDatas[typeValue].Add(valueValue);
+                        newOutputs.Add(typeValue, true);
+                        lbOutputs.Items.Add(typeValue);
+                    }
+                    else
+                    {
+                        sampleDatas[typeValue].Add(valueValue);
+                    }
+                    if (RowCount++ > tbOutputNumberOfRecordsToPreview.Value)
+                    {
+                        break;
+                    }
+                }
+                engine.Close();
+                SmartFormatDetector dataDetector = new SmartFormatDetector();
+                if (tbColumnDelimiter.Text == ",")
+                    dataDetector.FormatHint = FormatHint.DelimitedByComma;
+                else if (tbColumnDelimiter.Text == "\t")
+                    dataDetector.FormatHint = FormatHint.DelimitedByTab;
+                else if (tbColumnDelimiter.Text == ";")
+                    dataDetector.FormatHint = FormatHint.DelimitedBySemicolon;
+                else if (tbColumnDelimiter.Text == "~")
+                    dataDetector.FormatHint = FormatHint.DelimitedByTilde;
+                else
+                    dataDetector.FormatHint = FormatHint.Delimited;
+
+                foreach (KeyValuePair<String, Boolean> valuePair in newOutputs)
+                {
+                    if (valuePair.Value)
+                    {
+                        // Ok, we have a NEW output!!!
+                        RecordFormatInfo[] delimitedColumns = dataDetector.DetectStringFormat(sampleDatas[valuePair.Key]);
+                        if (delimitedColumns.Length == 1)
+                        {
+                            if (delimitedColumns[0].ClassBuilderAsDelimited != null)
+                            {
+                                IDTSOutput100 currentOutput = validOutputs[valuePair.Key];
+                                int columnPosition = currentOutput.OutputColumnCollection.Count;
+                                // Something was found...
+                                foreach (DelimitedFieldBuilder field in delimitedColumns[0].ClassBuilderAsDelimited.Fields)
+                                {
+                                    IDTSOutputColumn100 newColumn = designtimeComponent.InsertOutputColumnAt(currentOutput.ID, columnPosition++, field.FieldName, String.Empty);
+                                }
+                            }
+                            else
+                            {
+                                MessageBox.Show(String.Format("Unable to understand data for output {0}.\r\nWas not detected as Delimited.\r\nPlease configure manually.", valuePair.Key), "Problems", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                        else if (delimitedColumns.Length > 0)
+                        {
+                            MessageBox.Show(String.Format("Unable to understand data for output {0}.\r\nPlease configure manually.", valuePair.Key), "Problems", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                }
+
+                //dataDetector.DetectStringFormat();
+                MessageBox.Show(String.Format("Parsed {0} rows to determine outputs.", RowCount), "Done");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Something went Really Wrong!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void dgvOutputColumns_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (!_isLoading)
+            {
+                int outputID = (int)dgvOutputColumns.Rows[e.RowIndex].Tag;
+                int outputColumnID = (int)dgvOutputColumns.Rows[e.RowIndex].Cells[0].Tag;
+                IDTSOutput100 output = _componentMetaData.OutputCollection.GetObjectByID(outputID);
+                IDTSOutputColumn100 outputColumn = output.OutputColumnCollection.GetObjectByID(outputColumnID);
+                try
+                {
+                    switch (e.ColumnIndex)
+                    {
+                        case 0: // Column Name
+                            outputColumn.Name = (String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                            break;
+                        case 1: // Usage
+                            designtimeComponent.SetOutputColumnProperty(outputID, outputColumnID, ManageProperties.usageOfColumn, ConvertFromStringToUsageOfColumn((String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value));
+                            break;
+                        case 2: // Format String
+                            designtimeComponent.SetOutputColumnProperty(outputID, outputColumnID, ManageProperties.dotNetFormatString, (String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+                            break;
+                        case 3: // Code Page
+                            //designtimeComponent.SetOutputColumnDataTypeProperties(outputID, outputColumnID, DataType, lLength, lPrecision, lScale, lCodePage);
+                            break;
+                        case 4: // Data Type
+                            break;
+                        case 5: // Length
+                            break;
+                        case 6: // Precision
+                            break;
+                        case 7: // Scale
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                }
+            }
+        }
+
         #endregion
+
+
 
     }
 }
