@@ -28,6 +28,7 @@ namespace Martin.SQLServer.Dts
             {
                 lbMasters.Items.Add(name);
             }
+            _isLoading = false;
         }
 
         public String SelectedMaster { get; private set; }

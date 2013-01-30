@@ -648,6 +648,8 @@ namespace Martin.SQLServer.Dts
 
         private void SetDataTypeDefaults(DataGridViewRow row)
         {
+            Boolean oldIsLoading = _isLoading;
+            _isLoading = true;
             DataGridViewComboBoxCell dataType = row.Cells[4] as DataGridViewComboBoxCell;
             switch ((DataType)dataType.Value)
             {
@@ -742,6 +744,7 @@ namespace Martin.SQLServer.Dts
                     row.Cells[7].Value = 0; // Scale
                     break;
             }
+            _isLoading = oldIsLoading;
         }
 
         private void SetOutputColumnsReadWrite(DataGridViewRow row)
