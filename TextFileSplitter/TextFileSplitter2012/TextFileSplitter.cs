@@ -1062,7 +1062,8 @@ namespace Martin.SQLServer.Dts
                 else if (propertyName == ManageProperties.typeOfOutput)
                 {
                     currentOutput = this.ComponentMetaData.OutputCollection.FindObjectByID(outputID);
-                    switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                    Utilities.typeOfOutputEnum oldType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                    switch (oldType)
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
                         case Utilities.typeOfOutputEnum.KeyRecords:
@@ -1078,11 +1079,49 @@ namespace Martin.SQLServer.Dts
                                 case Utilities.typeOfOutputEnum.KeyRecords:
                                 case Utilities.typeOfOutputEnum.PassThrough:
                                     throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, System.Enum.GetName(typeof(Utilities.typeOfOutputEnum), propertyValue)));
-                                case Utilities.typeOfOutputEnum.DataRecords:
-                                case Utilities.typeOfOutputEnum.MasterRecord:
-                                case Utilities.typeOfOutputEnum.ChildMasterRecord:
                                 case Utilities.typeOfOutputEnum.ChildRecord:
-                                    // These are the Valid Cases!
+                                    if ((oldType == Utilities.typeOfOutputEnum.MasterRecord) || (oldType == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                                    {
+                                        // Need to remove the MasterValues...
+                                        foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
+                                        {
+                                            Utilities.usageOfColumnEnum columnUsage = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
+                                            int masterID = (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.masterRecordID);
+                                            if ((columnUsage == Utilities.usageOfColumnEnum.MasterValue) && (masterID == -1))
+                                            {
+                                                SetOutputColumnProperty(currentOutput.ID, outputColumn.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case Utilities.typeOfOutputEnum.DataRecords:
+                                    if ((oldType == Utilities.typeOfOutputEnum.ChildRecord) || (oldType == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                                    {
+                                        // Need to remove the MasterValues...
+                                        List<int> columnsToRemove = new List<int>();
+                                        foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
+                                        {
+                                            Utilities.usageOfColumnEnum columnUsage = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
+                                            int keyRecordID = (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID);
+                                            if ((columnUsage == Utilities.usageOfColumnEnum.MasterValue) && (keyRecordID != -1))
+                                            {
+                                                // Set this to no longer be a MasterValue
+                                                ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                                // Then Delete it!
+                                                columnsToRemove.Add(outputColumn.ID);
+                                            }
+                                        }
+                                        foreach (int columnID in columnsToRemove)
+                                        {
+                                            DeleteOutputColumn(currentOutput.ID, columnID);
+                                        }
+                                    }
+                                    ManageProperties.SetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID, -1);
+                                    break;
+                                case Utilities.typeOfOutputEnum.MasterRecord:
+                                    ManageProperties.SetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID, -1);
+                                    break;
+                                case Utilities.typeOfOutputEnum.ChildMasterRecord:
                                     break;
                                 default:
                                     throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));

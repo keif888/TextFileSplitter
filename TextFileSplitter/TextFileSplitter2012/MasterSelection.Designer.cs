@@ -47,6 +47,7 @@
             // 
             // btnOk
             // 
+            this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOk.Enabled = false;
             this.btnOk.Location = new System.Drawing.Point(13, 227);
             this.btnOk.Name = "btnOk";

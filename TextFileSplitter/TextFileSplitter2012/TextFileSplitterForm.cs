@@ -1271,7 +1271,10 @@ namespace Martin.SQLServer.Dts
                                 }
                                 else
                                 {
-                                    designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
+                                    _isLoading = true;
+                                    cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.DataRecords);
+                                    _isLoading = false;
+                                    designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.DataRecords);
                                     lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                                     return;
                                 }
@@ -1306,8 +1309,8 @@ namespace Martin.SQLServer.Dts
                                 }
                             }
                         }
-                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                     }
+                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                 }
             }
         }
