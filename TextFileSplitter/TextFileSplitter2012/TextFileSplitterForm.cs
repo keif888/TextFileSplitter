@@ -30,6 +30,7 @@ namespace Martin.SQLServer.Dts
         private Variables variables;
         private Microsoft.SqlServer.Dts.Runtime.Design.IDtsConnectionService connService;
         private Boolean _isLoading;
+        Dictionary<String, List<String>> sampleDatas = new Dictionary<string, List<string>>();
 
         public TextFileSplitterForm()
         {
@@ -853,27 +854,31 @@ namespace Martin.SQLServer.Dts
         #region Outputs Tab Events
         private void lbOutputs_SelectedIndexChanged(object sender, EventArgs e)
         {
+            _isLoading = true;
             DrawingControl.SuspendDrawing(dgvOutputColumns);
+            DrawingControl.SuspendDrawing(dgvOutputPreview);
+            dgvOutputPreview.Columns.Clear();
+            dgvOutputPreview.Rows.Clear();
             dgvOutputColumns.SuspendLayout();
             dgvOutputColumns.Rows.Clear();
             tbOutputName.Text = String.Empty;
             tbRowTypeValue.Text = String.Empty;
-            _isLoading = true;
             foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
             {
                 if (output.Name == (String)lbOutputs.SelectedItem)
                 {
+                    tbOutputName.Text = output.Name;
+                    tbOutputName.Tag = output.ID;
+                    tbRowTypeValue.Text = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
+                    cbOutputDisposition.SelectedItem = output.ErrorRowDisposition;
+                    cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput));
+
+                    // This is how to get the value back out!
+                    // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
+
                     switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
                     {
                         case Utilities.typeOfOutputEnum.KeyRecords:
-                            tbOutputName.Text = output.Name;
-                            tbRowTypeValue.Text = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
-                            cbOutputDisposition.SelectedItem = output.ErrorRowDisposition;
-                            cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput));
-
-                            // This is how to get the value back out!
-                            // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
-
                             foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
                             {
                                 int rowNumber = dgvOutputColumns.Rows.Add(1);
@@ -907,13 +912,6 @@ namespace Martin.SQLServer.Dts
                         case Utilities.typeOfOutputEnum.MasterRecord:
                         case Utilities.typeOfOutputEnum.ChildMasterRecord:
                         case Utilities.typeOfOutputEnum.ChildRecord:
-                            tbOutputName.Text = output.Name;
-                            tbRowTypeValue.Text = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
-                            cbOutputDisposition.SelectedItem = output.ErrorRowDisposition;
-                            cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput));
-
-                            // This is how to get the value back out!
-                            // Utilities.typeOfOutputEnum testThis = ConvertFromString((String)cbOutputType.SelectedItem);
                             if (ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) != null)
                             {
                                 int MasterID = (int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID);
@@ -986,6 +984,7 @@ namespace Martin.SQLServer.Dts
             }
             _isLoading = false;
             dgvOutputColumns.ResumeLayout();
+            DrawingControl.ResumeDrawing(dgvOutputPreview);
             DrawingControl.ResumeDrawing(dgvOutputColumns);
         }
 
@@ -1001,12 +1000,12 @@ namespace Martin.SQLServer.Dts
         private void btnGenerateOutputs_Click(object sender, EventArgs e)
         {
             Dictionary<String, IDTSOutput100> validOutputs = new Dictionary<string, IDTSOutput100>();
-            Dictionary<String, List<String>> sampleDatas = new Dictionary<string, List<string>>();
+            sampleDatas = new Dictionary<string, List<string>>();
             Dictionary<String, Boolean> newOutputs = new Dictionary<string,bool>();
-            IDTSOutput100 keyOutput = null;
             IDTSOutput100 passThoughIDTSOutput = null;
-            Boolean keyOutputConfigured = false;
             int lastOutput = 0;
+            Boolean isBroken = false;
+
             foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
             {
                 String typeValue = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
@@ -1018,14 +1017,14 @@ namespace Martin.SQLServer.Dts
                         passThoughIDTSOutput = output;
                         break;
                     case Utilities.typeOfOutputEnum.KeyRecords:
-                        keyOutput = output;
+                        if (String.IsNullOrEmpty((String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue)))
+                        {
+                            isBroken = true;
+                            break;
+                        }
                         validOutputs.Add(typeValue, output);
                         sampleDatas.Add(typeValue, new List<string>());
                         newOutputs.Add(typeValue, false);
-                        if ((output.OutputColumnCollection.Count > 0) && (!String.IsNullOrEmpty(typeValue)))
-                        {
-                            keyOutputConfigured = true;
-                        }
                         break;
                     case Utilities.typeOfOutputEnum.DataRecords:
                     case Utilities.typeOfOutputEnum.MasterRecord:
@@ -1042,9 +1041,9 @@ namespace Martin.SQLServer.Dts
                 }
                 lastOutput = output.ID;
             }
-            if (!keyOutputConfigured)
+            if (isBroken)
             {
-                MessageBox.Show("The Key Output has not been configured.\r\nPlease configure befure using tihs button..", "Not Ready", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("You MUST set the Selector Value for the Key Output.", "Selector Not Set", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
             try
@@ -1128,9 +1127,10 @@ namespace Martin.SQLServer.Dts
 
                 foreach (KeyValuePair<String, Boolean> valuePair in newOutputs)
                 {
-                    if (valuePair.Value)
+                    
+                    if ((valuePair.Value) || (validOutputs[valuePair.Key].OutputColumnCollection.Count == 0))
                     {
-                        // Ok, we have a NEW output!!!
+                        // Ok, we have a NEW output, or one that needs to be updated...!!!
                         RecordFormatInfo[] delimitedColumns = dataDetector.DetectStringFormat(sampleDatas[valuePair.Key]);
                         if (delimitedColumns.Length == 1)
                         {
@@ -1158,6 +1158,7 @@ namespace Martin.SQLServer.Dts
 
                 //dataDetector.DetectStringFormat();
                 MessageBox.Show(String.Format("Parsed {0} rows to determine outputs.", RowCount), "Done");
+                lbOutputs_SelectedIndexChanged(sender, new EventArgs());
             }
             catch (Exception ex)
             {
@@ -1230,88 +1231,85 @@ namespace Martin.SQLServer.Dts
         {
             if (!_isLoading)
             {
-                if (dgvOutputColumns.Rows.Count > 0)
+                int outputID = (int)tbOutputName.Tag;
+                try
                 {
-                    int outputID = (int)dgvOutputColumns.Rows[0].Tag;
-                    try
+                    designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, ConvertFromString((String)cbOutputType.SelectedItem));
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                    return;
+                }
+                if ((ConvertFromString((String)cbOutputType.SelectedItem) == Utilities.typeOfOutputEnum.ChildRecord)
+                    || (ConvertFromString((String)cbOutputType.SelectedItem) == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                {
+                    List<String> masterNameList = new List<string>();
+                    foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
                     {
-                        designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, ConvertFromString((String)cbOutputType.SelectedItem));
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
-                        return;
-                    }
-                    if ((ConvertFromString((String)cbOutputType.SelectedItem) == Utilities.typeOfOutputEnum.ChildRecord)
-                      || (ConvertFromString((String)cbOutputType.SelectedItem) == Utilities.typeOfOutputEnum.ChildMasterRecord))
-                    {
-                        List<String> masterNameList = new List<string>();
-                        foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                        Utilities.typeOfOutputEnum outputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                        if ((outputType == Utilities.typeOfOutputEnum.MasterRecord) || (outputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
                         {
-                            Utilities.typeOfOutputEnum outputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput);
-                            if ((outputType == Utilities.typeOfOutputEnum.MasterRecord) || (outputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
-                            {
-                                masterNameList.Add(output.Name);
-                            }
+                            masterNameList.Add(output.Name);
                         }
-                        if (masterNameList.Count == 1)
+                    }
+                    if (masterNameList.Count == 1)
+                    {
+                        tbMaster.Text = masterNameList[0];
+                    }
+                    else
+                    {
+                        if (masterNameList.Count > 1)
                         {
-                            tbMaster.Text = masterNameList[0];
-                        }
-                        else
-                        {
-                            if (masterNameList.Count > 1)
+                            MasterSelection masterDialog = new MasterSelection();
+                            masterDialog.initMasterList(masterNameList);
+                            if (masterDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                             {
-                                MasterSelection masterDialog = new MasterSelection();
-                                masterDialog.initMasterList(masterNameList);
-                                if (masterDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                                {
-                                    tbMaster.Text = masterDialog.SelectedMaster;
-                                }
-                                else
-                                {
-                                    _isLoading = true;
-                                    cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.DataRecords);
-                                    _isLoading = false;
-                                    designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.DataRecords);
-                                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
-                                    return;
-                                }
+                                tbMaster.Text = masterDialog.SelectedMaster;
                             }
                             else
                             {
-                                designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
+                                _isLoading = true;
+                                cbOutputType.SelectedItem = Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.DataRecords);
+                                _isLoading = false;
+                                designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.DataRecords);
                                 lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                                 return;
                             }
                         }
-                        foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                        else
                         {
-                            Utilities.typeOfOutputEnum outputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput);
-                            if ((outputType == Utilities.typeOfOutputEnum.MasterRecord) || (outputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                            designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
+                            lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                            return;
+                        }
+                    }
+                    foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                    {
+                        Utilities.typeOfOutputEnum outputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                        if ((outputType == Utilities.typeOfOutputEnum.MasterRecord) || (outputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                        {
+                            if (output.Name == tbMaster.Text)
                             {
-                                if (output.Name == tbMaster.Text)
+                                try
                                 {
-                                    try
-                                    {
-                                        designtimeComponent.SetOutputProperty(outputID, ManageProperties.masterRecordID, output.ID);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                        tbMaster.Text = String.Empty;
-                                        designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
-                                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
-                                        return;
-                                    }
-                                    break;
+                                    designtimeComponent.SetOutputProperty(outputID, ManageProperties.masterRecordID, output.ID);
                                 }
+                                catch (Exception ex)
+                                {
+                                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    tbMaster.Text = String.Empty;
+                                    designtimeComponent.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
+                                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                                    return;
+                                }
+                                break;
                             }
                         }
                     }
-                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                 }
+                lbOutputs_SelectedIndexChanged(sender, new EventArgs());
             }
         }
 
@@ -1319,23 +1317,20 @@ namespace Martin.SQLServer.Dts
         {
             if (!_isLoading)
             {
-                if (dgvOutputColumns.Rows.Count > 0)
+                try
                 {
-                    try
+                    int outputID = (int)tbOutputName.Tag;
+                    IDTSOutput100 output = _componentMetaData.OutputCollection.GetObjectByID(outputID);
+                    if (output.Name != tbOutputName.Text)
                     {
-                        int outputID = (int)dgvOutputColumns.Rows[0].Tag;
-                        IDTSOutput100 output = _componentMetaData.OutputCollection.GetObjectByID(outputID);
-                        if (output.Name != tbOutputName.Text)
-                        {
-                            output.Name = tbOutputName.Text;
-                            lbOutputs.Items[lbOutputs.SelectedIndex] = tbOutputName.Text;
-                        }
+                        output.Name = tbOutputName.Text;
+                        lbOutputs.Items[lbOutputs.SelectedIndex] = tbOutputName.Text;
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
-                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                 }
             }
         }
@@ -1344,18 +1339,15 @@ namespace Martin.SQLServer.Dts
         {
             if (!_isLoading)
             {
-                if (dgvOutputColumns.Rows.Count > 0)
+                try
                 {
-                    try
-                    {
-                        int outputID = (int)dgvOutputColumns.Rows[0].Tag;
-                        designtimeComponent.SetOutputProperty(outputID, ManageProperties.rowTypeValue, tbRowTypeValue.Text);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        lbOutputs_SelectedIndexChanged(sender, new EventArgs());
-                    }
+                    int outputID = (int)tbOutputName.Tag;
+                    designtimeComponent.SetOutputProperty(outputID, ManageProperties.rowTypeValue, tbRowTypeValue.Text);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
                 }
             }
         }
@@ -1366,7 +1358,7 @@ namespace Martin.SQLServer.Dts
             {
                 try
                 {
-                    int outputID = (int)dgvOutputColumns.Rows[0].Tag;
+                    int outputID = (int)tbOutputName.Tag;
                     IDTSOutput100 output = _componentMetaData.OutputCollection.GetObjectByID(outputID);
                     output.ErrorRowDisposition = (DTSRowDisposition)cbOutputDisposition.SelectedItem;
                 }
@@ -1377,8 +1369,217 @@ namespace Martin.SQLServer.Dts
                 }
             }
         }
-        #endregion
 
+        private void btnOutputPreview_Click(object sender, EventArgs e)
+        {
+            IDTSOutput100 passThoughIDTSOutput = null;
+            int lastOutput = 0;
+
+            if (!sampleDatas.ContainsKey(tbRowTypeValue.Text))
+            {
+
+                foreach (IDTSOutput100 output in _componentMetaData.OutputCollection)
+                {
+                    String typeValue = (String)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.rowTypeValue);
+                    switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                    {
+                        case Utilities.typeOfOutputEnum.ErrorRecords:
+                            break;
+                        case Utilities.typeOfOutputEnum.PassThrough:
+                            passThoughIDTSOutput = output;
+                            break;
+                        case Utilities.typeOfOutputEnum.KeyRecords:
+                        case Utilities.typeOfOutputEnum.DataRecords:
+                        case Utilities.typeOfOutputEnum.MasterRecord:
+                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                        case Utilities.typeOfOutputEnum.ChildRecord:
+                            sampleDatas.Add(typeValue, new List<string>());
+                            break;
+                        case Utilities.typeOfOutputEnum.RowsProcessed:
+                            break;
+                        default:
+                            break;
+                    }
+                    lastOutput = output.ID;
+                }
+
+                try
+                {
+                    IDTSConnectionManagerFlatFile100 connectionFlatFile = connections[cbConnectionManager.SelectedItem].InnerObject as IDTSConnectionManagerFlatFile100;
+                    string FileName = connections[cbConnectionManager.SelectedItem].ConnectionString;
+
+                    SSISOutputColumn typeColumn = null;
+                    SSISOutputColumn valueColumn = null;
+
+                    SSISOutput passThroughOutput = new SSISOutput(passThoughIDTSOutput, null);
+                    bool firstRowColumnNames = connectionFlatFile.ColumnNamesInFirstDataRow;
+                    String passThroughClassString = Utilities.DynamicClassStringFromOutput(passThroughOutput, firstRowColumnNames, connectionFlatFile.Columns[connectionFlatFile.Columns.Count - 1].ColumnDelimiter, connectionFlatFile.Columns[0].ColumnDelimiter);
+                    Type passThroughType = ClassBuilder.ClassFromString(passThroughClassString);
+                    foreach (SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
+                    {
+                        ssisColumn.FileHelperField = passThroughType.GetField(ssisColumn.Name);
+                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(ssisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.RowType)
+                        {
+                            typeColumn = ssisColumn;
+                        }
+                        else if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(ssisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.RowData)
+                        {
+                            valueColumn = ssisColumn;
+                        }
+                    }
+                    System.Reflection.FieldInfo[] fieldList = passThroughType.GetFields();
+                    FileHelperAsyncEngine engine = new FileHelperAsyncEngine(passThroughType);
+                    engine.BeginReadFile(FileName);
+
+                    int RowCount = 0;
+
+                    while (engine.ReadNext() != null)
+                    {
+                        String typeValue = (String)typeColumn.FileHelperField.GetValue(engine.LastRecord);
+                        String valueValue = (String)valueColumn.FileHelperField.GetValue(engine.LastRecord);
+
+                        if (!sampleDatas.ContainsKey(typeValue))
+                        {
+                            sampleDatas.Add(typeValue, new List<string>());
+                            sampleDatas[typeValue].Add(valueValue);
+                        }
+                        else
+                        {
+                            if (sampleDatas[typeValue].Count < tbOutputNumberOfRecordsToPreview.Value)
+                            {
+                                sampleDatas[typeValue].Add(valueValue);
+                            }
+                        }
+                        if (++RowCount >= tbGenerateOutputsNumber.Value)
+                        {
+                            break;
+                        }
+                    }
+                    engine.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Something went Really Wrong!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            if (sampleDatas.ContainsKey(tbRowTypeValue.Text))
+            {
+                try
+                {
+                    DrawingControl.SuspendDrawing(dgvOutputPreview);
+                    int outputID = (int)tbOutputName.Tag;
+                    IDTSOutput100 output = _componentMetaData.OutputCollection.GetObjectByID(outputID);
+                    SSISOutput ssisOutput = new SSISOutput(output, null);
+                    dgvOutputPreview.Columns.Clear();
+                    dgvOutputPreview.Rows.Clear();
+                    string classString = Utilities.DynamicClassStringFromOutput(ssisOutput, false, String.Empty, tbColumnDelimiter.Text);
+                    Type classBuffer = ClassBuilder.ClassFromString(classString);
+                    foreach (SSISOutputColumn ssisColumn in ssisOutput.OutputColumnCollection)
+                    {
+                        ssisColumn.FileHelperField = classBuffer.GetField(ssisColumn.Name);
+                        if (!ssisColumn.IsDerived)
+                        {
+                            dgvOutputPreview.Columns.Add(ssisColumn.Name, ssisColumn.Name);
+                        }
+                    }
+                    FileHelperEngine engine = new FileHelperEngine(classBuffer);
+                    engine.ErrorManager.ErrorMode = ErrorMode.SaveAndContinue;
+                    if (sampleDatas[tbRowTypeValue.Text].Count == 0)
+                    {
+                        int currentGridRow = dgvOutputPreview.Rows.Add();
+                        dgvOutputPreview.Rows[currentGridRow].Cells[0].Value = String.Format("There were no records found in the first {0} lines of the file.  Change the value under the Generate Outputs button.", tbGenerateOutputsNumber.Value);
+                    }
+                    foreach (String RowDataValue in sampleDatas[tbRowTypeValue.Text])
+                    {
+                        List<Object> parseResults = engine.ReadStringAsList(RowDataValue);
+                        if (engine.ErrorManager.HasErrors)
+                        {
+                            foreach(ErrorInfo errorInfo in engine.ErrorManager.Errors)
+                            {
+                                int currentGridRow = dgvOutputPreview.Rows.Add();
+                                dgvOutputPreview.Rows[currentGridRow].Cells[0].Value = errorInfo.ExceptionInfo.Message;
+                                dgvOutputPreview.Rows[currentGridRow].Cells[1].Value = RowDataValue;
+                            }
+                        }
+                        foreach (Object result in parseResults)
+                        {
+                            int currentGridRow = dgvOutputPreview.Rows.Add();
+                            int currentCell = 0;
+                            foreach (SSISOutputColumn currentOutputColumn in ssisOutput.OutputColumnCollection)
+                            {
+                                if (!currentOutputColumn.IsDerived)
+                                {
+                                    Object currentValue = null;
+                                    try
+                                    {
+                                        currentValue = currentOutputColumn.FileHelperField.GetValue(result);
+                                        if (currentValue != null)
+                                        {
+                                            if (currentValue is String)
+                                            {
+                                                if (!String.IsNullOrEmpty((String)currentValue))
+                                                {
+                                                    dgvOutputPreview.Rows[currentGridRow].Cells[currentCell].Value = currentValue;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                dgvOutputPreview.Rows[currentGridRow].Cells[currentCell].Value = currentValue;
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        MessageBox.Show(ex.Message, "Parsing to Grid Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    }
+                                    currentCell++;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                }
+                finally
+                {
+                    DrawingControl.ResumeDrawing(dgvOutputPreview);
+                }
+            }
+            else
+            {
+                MessageBox.Show(String.Format("The value {0} was not found as a Row Type.",tbRowTypeValue.Text), "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void tbGenerateOutputsNumber_ValueChanged(object sender, EventArgs e)
+        {
+            sampleDatas = new Dictionary<string, List<string>>();
+        }
+
+        private void btnAddColumn_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Not Implemented Yet!");
+        }
+
+        private void btnRemoveColumn_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Not Implemented Yet!");
+        }
+
+        private void btnAddOutput_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Not Implemented Yet!");
+        }
+
+        private void btnRemoveOutput_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Not Implemented Yet!");
+        }
+        #endregion
 
     }
 }

@@ -84,6 +84,7 @@
             this.btnRemoveColumn = new System.Windows.Forms.Button();
             this.dgvOutputPreview = new System.Windows.Forms.DataGridView();
             this.panel7 = new System.Windows.Forms.Panel();
+            this.label12 = new System.Windows.Forms.Label();
             this.tbMaster = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.cbOutputType = new System.Windows.Forms.ComboBox();
@@ -98,6 +99,7 @@
             this.panel4 = new System.Windows.Forms.Panel();
             this.lbOutputs = new System.Windows.Forms.ListBox();
             this.panel6 = new System.Windows.Forms.Panel();
+            this.tbGenerateOutputsNumber = new System.Windows.Forms.NumericUpDown();
             this.btnGenerateOutputs = new System.Windows.Forms.Button();
             this.panel5 = new System.Windows.Forms.Panel();
             this.btnAddOutput = new System.Windows.Forms.Button();
@@ -106,8 +108,6 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.ttSplitter = new System.Windows.Forms.ToolTip(this.components);
-            this.label12 = new System.Windows.Forms.Label();
-            this.tbGenerateOutputsNumber = new System.Windows.Forms.NumericUpDown();
             this.panel1.SuspendLayout();
             this.tcMain.SuspendLayout();
             this.tpConnection.SuspendLayout();
@@ -131,10 +131,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbOutputNumberOfRecordsToPreview)).BeginInit();
             this.panel4.SuspendLayout();
             this.panel6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tbGenerateOutputsNumber)).BeginInit();
             this.panel5.SuspendLayout();
             this.tpAbout.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbGenerateOutputsNumber)).BeginInit();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -657,6 +657,7 @@
             this.btnAddColumn.TabIndex = 0;
             this.btnAddColumn.Text = "Add";
             this.btnAddColumn.UseVisualStyleBackColor = true;
+            this.btnAddColumn.Click += new System.EventHandler(this.btnAddColumn_Click);
             // 
             // btnRemoveColumn
             // 
@@ -666,6 +667,7 @@
             this.btnRemoveColumn.TabIndex = 1;
             this.btnRemoveColumn.Text = "Remove";
             this.btnRemoveColumn.UseVisualStyleBackColor = true;
+            this.btnRemoveColumn.Click += new System.EventHandler(this.btnRemoveColumn_Click);
             // 
             // dgvOutputPreview
             // 
@@ -698,6 +700,15 @@
             this.panel7.Name = "panel7";
             this.panel7.Size = new System.Drawing.Size(461, 85);
             this.panel7.TabIndex = 1;
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(255, 33);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(39, 13);
+            this.label12.TabIndex = 29;
+            this.label12.Text = "Master";
             // 
             // tbMaster
             // 
@@ -799,6 +810,7 @@
             0,
             0,
             0});
+            this.tbOutputNumberOfRecordsToPreview.ValueChanged += new System.EventHandler(this.tbGenerateOutputsNumber_ValueChanged);
             // 
             // btnOutputPreview
             // 
@@ -810,6 +822,7 @@
             this.ttSplitter.SetToolTip(this.btnOutputPreview, "Click this to read the data from the Connection Manager and display it in the Pre" +
         "view below.");
             this.btnOutputPreview.UseVisualStyleBackColor = true;
+            this.btnOutputPreview.Click += new System.EventHandler(this.btnOutputPreview_Click);
             // 
             // panel4
             // 
@@ -842,6 +855,30 @@
             this.panel6.Size = new System.Drawing.Size(167, 50);
             this.panel6.TabIndex = 3;
             // 
+            // tbGenerateOutputsNumber
+            // 
+            this.tbGenerateOutputsNumber.Location = new System.Drawing.Point(5, 27);
+            this.tbGenerateOutputsNumber.Maximum = new decimal(new int[] {
+            10000000,
+            0,
+            0,
+            0});
+            this.tbGenerateOutputsNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.tbGenerateOutputsNumber.Name = "tbGenerateOutputsNumber";
+            this.tbGenerateOutputsNumber.Size = new System.Drawing.Size(154, 20);
+            this.tbGenerateOutputsNumber.TabIndex = 19;
+            this.ttSplitter.SetToolTip(this.tbGenerateOutputsNumber, "Select the number of records that will be read into the preview grid.");
+            this.tbGenerateOutputsNumber.Value = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.tbGenerateOutputsNumber.ValueChanged += new System.EventHandler(this.tbGenerateOutputsNumber_ValueChanged);
+            // 
             // btnGenerateOutputs
             // 
             this.btnGenerateOutputs.Location = new System.Drawing.Point(3, 3);
@@ -870,6 +907,7 @@
             this.btnAddOutput.TabIndex = 0;
             this.btnAddOutput.Text = "Add";
             this.btnAddOutput.UseVisualStyleBackColor = true;
+            this.btnAddOutput.Click += new System.EventHandler(this.btnAddOutput_Click);
             // 
             // btnRemoveOutput
             // 
@@ -879,6 +917,7 @@
             this.btnRemoveOutput.TabIndex = 1;
             this.btnRemoveOutput.Text = "Remove";
             this.btnRemoveOutput.UseVisualStyleBackColor = true;
+            this.btnRemoveOutput.Click += new System.EventHandler(this.btnRemoveOutput_Click);
             // 
             // tpAbout
             // 
@@ -910,38 +949,6 @@
             this.pictureBox2.Size = new System.Drawing.Size(176, 154);
             this.pictureBox2.TabIndex = 13;
             this.pictureBox2.TabStop = false;
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(255, 33);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(39, 13);
-            this.label12.TabIndex = 29;
-            this.label12.Text = "Master";
-            // 
-            // tbGenerateOutputsNumber
-            // 
-            this.tbGenerateOutputsNumber.Location = new System.Drawing.Point(5, 27);
-            this.tbGenerateOutputsNumber.Maximum = new decimal(new int[] {
-            10000000,
-            0,
-            0,
-            0});
-            this.tbGenerateOutputsNumber.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.tbGenerateOutputsNumber.Name = "tbGenerateOutputsNumber";
-            this.tbGenerateOutputsNumber.Size = new System.Drawing.Size(154, 20);
-            this.tbGenerateOutputsNumber.TabIndex = 19;
-            this.ttSplitter.SetToolTip(this.tbGenerateOutputsNumber, "Select the number of records that will be read into the preview grid.");
-            this.tbGenerateOutputsNumber.Value = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
             // 
             // TextFileSplitterForm
             // 
@@ -982,10 +989,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.tbOutputNumberOfRecordsToPreview)).EndInit();
             this.panel4.ResumeLayout(false);
             this.panel6.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.tbGenerateOutputsNumber)).EndInit();
             this.panel5.ResumeLayout(false);
             this.tpAbout.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbGenerateOutputsNumber)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
