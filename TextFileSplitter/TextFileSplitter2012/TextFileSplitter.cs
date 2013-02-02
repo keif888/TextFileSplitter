@@ -182,18 +182,6 @@ namespace Martin.SQLServer.Dts
                 }
                 if (numberOfRowsOutput != 1)
                 {
-                    //ToDo: The following code NEEDS to be removed, because it is doing VERY NAUGHTY things.
-                    // Make sure it is removed after editing all the test packages
-                    // This will add the missing output.
-                    // Anyone looking at this, the code should be in the ReInitializeMetaData method.
-                    // Number of Rows output.
-                    IDTSOutput numberOfRows = this.ComponentMetaData.OutputCollection.New();
-                    numberOfRows.Name = MessageStrings.RowCountOutputName;
-                    numberOfRows.SynchronousInputID = 0;
-                    ManageProperties.AddOutputProperties(numberOfRows.CustomPropertyCollection);
-                    ManageProperties.SetPropertyValue(numberOfRows.CustomPropertyCollection, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.RowsProcessed);
-                    ManageColumns.AddNumberOfRowsOutputColumns(numberOfRows);
-                    //ToDo: End...
                     returnStatus = Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
                     this.PostError(MessageStrings.InvalidNumberOfRowsOutput);
                 }
