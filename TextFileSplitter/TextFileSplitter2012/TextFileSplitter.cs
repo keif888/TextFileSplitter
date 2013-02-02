@@ -1345,20 +1345,17 @@ namespace Martin.SQLServer.Dts
                         if (typeOfOutput == Utilities.typeOfOutputEnum.KeyRecords)
                         {
                             keyRecordFailure = false;
+                            // Zap all the Saved Values they are now redundant.
+                            foreach (int keyID in keyMasterValues.Keys.ToList())
+                            {
+                                keyMasterValues[keyID] = null;
+                            }
                         }
                         if (currentEngine.ErrorManager.HasErrors)
                         {
                             if (typeOfOutput == Utilities.typeOfOutputEnum.KeyRecords)
                             {
                                 keyRecordFailure = true;
-                                // Zap all the Key Values as we were unable to parse them.
-                                foreach (SSISOutputColumn outputColumn in currentOutput.OutputColumnCollection)
-                                {
-                                    if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
-                                    {
-                                        keyMasterValues[outputColumn.LineageID] = null;
-                                    }
-                                }
                             }
                             switch (currentOutput.ErrorRowDisposition)
                             {
