@@ -43,6 +43,11 @@ namespace Martin.SQLServer.Dts
 
         void IDtsComponentUI.Initialize(IDTSComponentMetaData100 dtsComponentMetadata, IServiceProvider serviceProvider)
         {
+            Initialize(dtsComponentMetadata, serviceProvider);
+        }
+
+        protected void Initialize(IDTSComponentMetaData100 dtsComponentMetadata, IServiceProvider serviceProvider)
+        {
             this._componentMetaData = dtsComponentMetadata;
             this.serviceProvider = serviceProvider;
 
@@ -60,7 +65,13 @@ namespace Martin.SQLServer.Dts
             this.connService = this.serviceProvider.GetService(typeof(Microsoft.SqlServer.Dts.Runtime.Design.IDtsConnectionService)) as Microsoft.SqlServer.Dts.Runtime.Design.IDtsConnectionService;
         }
 
+
         bool IDtsComponentUI.Edit(IWin32Window parentWindow, Microsoft.SqlServer.Dts.Runtime.Variables variables, Microsoft.SqlServer.Dts.Runtime.Connections connections)
+        {
+            return Edit(parentWindow, variables, connections);
+        }
+
+        protected bool Edit(IWin32Window parentWindow, Microsoft.SqlServer.Dts.Runtime.Variables variables, Microsoft.SqlServer.Dts.Runtime.Connections connections)
         {
             this.ClearErrors();
 
@@ -98,6 +109,11 @@ namespace Martin.SQLServer.Dts
         /// <param name="parentWindow">The calling window</param>
         void IDtsComponentUI.New(IWin32Window parentWindow)
         {
+            New(parentWindow);
+        }
+
+        protected void New(IWin32Window parentWindow)
+        {
         }
 
         /// <summary>
@@ -105,6 +121,11 @@ namespace Martin.SQLServer.Dts
         /// </summary>
         /// <param name="parentWindow">The calling window</param>
         void IDtsComponentUI.Delete(IWin32Window parentWindow)
+        {
+            Delete(parentWindow);
+        }
+
+        protected void Delete(IWin32Window parentWindow)
         {
         }
 
@@ -114,7 +135,13 @@ namespace Martin.SQLServer.Dts
         /// <param name="parentWindow">The calling window</param>
         void IDtsComponentUI.Help(IWin32Window parentWindow)
         {
+            Help(parentWindow);
         }
+
+        protected void Help(IWin32Window parentWindow)
+        {
+        }
+
         #endregion
 
         #region Handling errors

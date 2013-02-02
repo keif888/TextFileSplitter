@@ -85,6 +85,7 @@
   <ItemGroup>
     <Compile Include="DataFlowComponentUI.cs" />
     <Compile Include="DrawingControl.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="ManageColumns.cs" />
     <Compile Include="ManageProperties.cs" />
     <Compile Include="MasterSelection.cs">
