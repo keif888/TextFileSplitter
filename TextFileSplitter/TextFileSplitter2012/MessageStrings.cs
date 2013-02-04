@@ -82,6 +82,13 @@ namespace Martin.SQLServer.Dts
         {
             return String.Format(ErrorOutputHasInvalidColumnPattern, columName);
         }
+
+        public const string OutputHasDuplicateColumnNamesPattern = "The Output {0} has duplicate column names of {1} which is not allowed.";
+        public static string OutputHasDuplicateColumnNames(string outputName, string columnName)
+        {
+            return String.Format(OutputHasDuplicateColumnNamesPattern, outputName, columnName);
+        }
+
         #endregion
 
         #region Name Descriptions

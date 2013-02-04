@@ -211,6 +211,19 @@ namespace Martin.SQLServer.Dts
             }
             else
             {
+                List<String> outputColumnNames = new List<string>();
+                foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                {
+                    if (outputColumnNames.Contains(outputColumn.Name))
+                    {
+                        this.PostError(MessageStrings.OutputHasDuplicateColumnNames(output.Name, outputColumn.Name));
+                        returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISBROKEN);
+                    }
+                    else
+                    {
+                        outputColumnNames.Add(outputColumn.Name);
+                    }
+                }
                 switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
                 {
                     case Utilities.typeOfOutputEnum.ErrorRecords:
