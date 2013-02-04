@@ -52,6 +52,7 @@ namespace Martin.SQLServer.Dts
         private String fileName = String.Empty;
         private int codePage = 1252;
         private string columnDelimter = string.Empty;
+        object ffConnection = null;
         #endregion
 
         #region Design Time
@@ -507,6 +508,8 @@ namespace Martin.SQLServer.Dts
                 }
                 else
                 {
+                    // Have to acquire the connection to get any Expressions to fire...
+                    this.ffConnection = cm.AcquireConnection(transaction);
                     fileName = cmFlatFile.ConnectionString;
                     this.codePage = connectionFlatFile.CodePage;
                 }
@@ -517,7 +520,14 @@ namespace Martin.SQLServer.Dts
         #region Release Connections
         public override void ReleaseConnections()
         {
-            fileName = String.Empty;
+            if (!String.IsNullOrEmpty(fileName))
+            {
+                fileName = String.Empty;
+                if (this.ffConnection != null)
+                {
+
+                }
+            }
         }
         #endregion
 
