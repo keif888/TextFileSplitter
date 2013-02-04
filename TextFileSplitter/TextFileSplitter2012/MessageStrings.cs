@@ -5,90 +5,107 @@ namespace Martin.SQLServer.Dts
     internal static class MessageStrings
     {
         #region Dynamic Messages
-        const string InvalidPropertyValuePattern = "Invalid value \"{1}\" for property {0}.";
+        private const string InvalidPropertyValuePattern = "Invalid value \"{1}\" for property {0}.";
         public static string InvalidPropertyValue(string propertyName, object propertyValue)
         {
             return string.Format(InvalidPropertyValuePattern, propertyName, propertyValue);
         }
 
-        const string PropertyStringTooLongPattern = "The string \"{1}\" is too long for property {0}.";
+        private const string PropertyStringTooLongPattern = "The string \"{1}\" is too long for property {0}.";
         public static string PropertyStringTooLong(string propertyName, string propertyValue)
         {
             return string.Format(PropertyStringTooLongPattern, propertyName, propertyValue);
         }
 
-        const string PropertyDoesntDecodePattern = "The string \"{1}\" is not valid Base64 text for property {0}.";
+        private const string PropertyDoesntDecodePattern = "The string \"{1}\" is not valid Base64 text for property {0}.";
         public static string PropertyDoesntDecode(string propertyName, string propertyValue)
         {
             return string.Format(PropertyDoesntDecodePattern, propertyName, propertyValue);
         }
 
-        const string APropertyIsMissingPattern = "There is a property missing from {0}.";
+        private const string APropertyIsMissingPattern = "There is a property missing from {0}.";
         public static string APropertyIsMissing(string missingFrom)
         {
             return string.Format(APropertyIsMissingPattern, missingFrom);
         }
 
-        const string TheOutputTypeIsInvalidPattern = "The output {0} has an invalid type of {1}.";
+        private const string TheOutputTypeIsInvalidPattern = "The output {0} has an invalid type of {1}.";
         public static string InvalidOutputType(string outputName, string outputType)
         {
             return String.Format(TheOutputTypeIsInvalidPattern, outputName, outputType);
         }
 
-        const string RowOverflowPattern = "Row #{0}: The number of parsed row columns ({1}) is greater than the number ({2}) of defined output columns in output ({3}).";
+        private const string RowOverflowPattern = "Row #{0}: The number of parsed row columns ({1}) is greater than the number ({2}) of defined output columns in output ({3}).";
         public static string RowOverflow(Int64 rowNumber, int rowColumnCount, int outputColumnCount, string outputName)
         {
             return string.Format(RowOverflowPattern, rowNumber, rowColumnCount, outputColumnCount, outputName);
         }
 
-        const string FailedToAssignColumnValuePattern = "Row #{0}: Failed to assign the following value \"{1}\" to {2}.";
+        private const string FailedToAssignColumnValuePattern = "Row #{0}: Failed to assign the following value \"{1}\" to {2}.";
         public static string FailedToAssignColumnValue(Int64 rowNumber, string columnValue, string columnIdentification)
         {
             return string.Format(FailedToAssignColumnValuePattern, rowNumber, columnValue, columnIdentification);
         }
 
-        const string ParsingBufferOverflowPattern = "Row #{0}, column #{1}: Size of the parsed data exceeded maximum parsing buffer size ({2}).";
+        private const string ParsingBufferOverflowPattern = "Row #{0}, column #{1}: Size of the parsed data exceeded maximum parsing buffer size ({2}).";
         public static string ParsingBufferOverflow(Int64 rowNumber, int columnNumber, int maxBufferSize)
         {
             return string.Format(ParsingBufferOverflowPattern, rowNumber, columnNumber, maxBufferSize);
         }
 
-        const string MaximumColumnNumberOverflowPattern = "Row #{0}: This row contains more columns than the maximum allowed number ({1}).";
+        private const string MaximumColumnNumberOverflowPattern = "Row #{0}: This row contains more columns than the maximum allowed number ({1}).";
         public static string MaximumColumnNumberOverflow(Int64 rowNumber, int maxNoColumns)
         {
             return string.Format(MaximumColumnNumberOverflowPattern, rowNumber, maxNoColumns);
         }
 
-        public const string FileDoesNotExistPattern = "The following file {0} does not exist.";
+        private const string FileDoesNotExistPattern = "The following file {0} does not exist.";
         public static string FileDoesNotExist(string fileName)
         {
             return string.Format(FileDoesNotExistPattern, fileName);
         }
 
-        public const string MasterRecordIDInvalidPattern = "The Master Record ID for output {0} is invalid.";
+        private const string MasterRecordIDInvalidPattern = "The Master Record ID for output {0} is invalid.";
         public static string MasterRecordIDInvalid(string outputName)
         {
             return string.Format(MasterRecordIDInvalidPattern, outputName);
         }
 
-        public const string ChildColumnInvalidPattern = "The Child Column {1} is not valid or is missing in output {0}.";
+        private const string ChildColumnInvalidPattern = "The Child Column {1} is not valid or is missing in output {0}.";
         public static string ChildColumnInvalid(string outputName, string columnName)
         {
             return string.Format(ChildColumnInvalidPattern, outputName, columnName);
         }
 
-        public const string ErrorOutputHasInvalidColumnPattern = "The Error Output has an Invalid Column {0}.";
+        private const string ErrorOutputHasInvalidColumnPattern = "The Error Output has an Invalid Column {0}.";
         public static string ErrorOutputHasInvalidColumn(string columName)
         {
             return String.Format(ErrorOutputHasInvalidColumnPattern, columName);
         }
 
-        public const string OutputHasDuplicateColumnNamesPattern = "The Output {0} has duplicate column names of {1} which is not allowed.";
+        private const string OutputHasDuplicateColumnNamesPattern = "The Output {0} has duplicate column names of {1} which is not allowed.";
         public static string OutputHasDuplicateColumnNames(string outputName, string columnName)
         {
             return String.Format(OutputHasDuplicateColumnNamesPattern, outputName, columnName);
         }
 
+        private const string MasterOutputHasRecordIDPattern = "The Output {0} is defined as Master but has MasterRecordID.";
+        public static string MasterOutputHasRecordID(string outputName)
+        {
+            return String.Format(MasterOutputHasRecordIDPattern, outputName);
+        }
+
+        private const string DataOutputHasRecordIDPattern = "The Output {0} is defined as Data but has MasterRecordID.";
+        public static string DataOutputHasRecordID(string outputName)
+        {
+            return String.Format(DataOutputHasRecordIDPattern, outputName);
+        }
+
+        private const string MasterColumnHasKeyOutputIDPattern = "The Column {0} is defined as Master on a Master Output {1} but has keyOutputID.";
+        public static string MasterColumnHasKeyOutputID(string columnName, string outputName)
+        {
+            return String.Format(MasterColumnHasKeyOutputIDPattern, columnName, outputName);
+        }
         #endregion
 
         #region Name Descriptions
