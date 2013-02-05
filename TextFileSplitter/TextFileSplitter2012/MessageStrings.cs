@@ -106,6 +106,13 @@ namespace Martin.SQLServer.Dts
         {
             return String.Format(MasterColumnHasKeyOutputIDPattern, columnName, outputName);
         }
+
+        private const string ThereAreChildRecordsForMasterPattern = "The Column {0} is defined as Master on a Master Output {1} but has keyOutputID.";
+        public static string ThereAreChildRecordsForMaster(string outputName)
+        {
+            return String.Format(ThereAreChildRecordsForMasterPattern, outputName);
+        }
+        
         #endregion
 
         #region Name Descriptions

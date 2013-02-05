@@ -213,6 +213,7 @@ namespace Martin.SQLServer.Dts
             try
             {
                 _isLoading = true;
+                this.Text = _componentMetaData.Name;
                 cbOutputDisposition.DataSource = System.Enum.GetValues(typeof(DTSRowDisposition));
                 cbPTErrorDisposition.DataSource = System.Enum.GetValues(typeof(DTSRowDisposition));
                 cbOutputType.Items.Add(Enum.GetName(typeof(Utilities.typeOfOutputEnum), Utilities.typeOfOutputEnum.KeyRecords));
@@ -1589,22 +1590,86 @@ namespace Martin.SQLServer.Dts
 
         private void btnAddColumn_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not Implemented Yet!");
+            if (lbOutputs.SelectedItem != null)
+            {
+                try
+                {
+                    int lOutputID = (int)tbOutputName.Tag;
+                    IDTSOutput100 currentOutput = this._componentMetaData.OutputCollection.GetObjectByID(lOutputID);
+                    int lOutputColumnIndex = currentOutput.OutputColumnCollection.Count;
+                    IDTSOutputColumn100 newColumn = this.designtimeComponent.InsertOutputColumnAt(lOutputID, lOutputColumnIndex, String.Format("ColumnName{0}", lOutputColumnIndex + 1), String.Empty);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "New Output Column Create Failed.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+            }
         }
 
         private void btnRemoveColumn_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not Implemented Yet!");
+            if ((dgvOutputColumns.CurrentRow != null) && (lbOutputs.SelectedItem != null))
+            {
+                try
+                {
+                    int lOutputID = (int)tbOutputName.Tag;
+                    int lOutputColumnID = (int)dgvOutputColumns.CurrentRow.Cells[0].Tag;
+                    this.designtimeComponent.DeleteOutputColumn(lOutputID, lOutputColumnID);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+            }
         }
 
         private void btnAddOutput_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not Implemented Yet!");
+            try
+            {
+                int lOutputID = 0;
+                foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
+                {
+                    if (output.ID > lOutputID)
+                        lOutputID = output.ID;
+                }
+                IDTSOutput100 newOutput = this.designtimeComponent.InsertOutput(DTSInsertPlacement.IP_AFTER, lOutputID);
+                newOutput.Name = String.Format("NewOutput{0}", newOutput.ID);
+                int newItem = lbOutputs.Items.Add(newOutput.Name);
+                lbOutputs.SelectedIndex = newItem;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "New Output Create Failed.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+            }
         }
 
         private void btnRemoveOutput_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not Implemented Yet!");
+            Boolean deletedOutput = false;
+            if (lbOutputs.SelectedItem != null)
+            {
+                try
+                {
+                    int lOutputID = (int)tbOutputName.Tag;
+                    this.designtimeComponent.DeleteOutput(lOutputID);
+                    deletedOutput = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Not Applicable!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    lbOutputs_SelectedIndexChanged(sender, new EventArgs());
+                }
+                if (deletedOutput)
+                {
+                    int selectedIndex = lbOutputs.SelectedIndex;
+                    lbOutputs.Items.RemoveAt(selectedIndex);
+                    lbOutputs.SelectedIndex = 0;
+                }
+            }
         }
         #endregion
 

@@ -440,7 +440,6 @@ namespace Martin.SQLServer.Dts
                     case Utilities.usageOfColumnEnum.MasterValue:
                         this.PostError(MessageStrings.CannotSetPropertyToMasterValue);
                         return Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISBROKEN);
-                        break;
                     default:
                         break;
                 }
@@ -1184,6 +1183,18 @@ namespace Martin.SQLServer.Dts
                 }
                 else if (propertyName == ManageProperties.typeOfOutput)
                 {
+                    switch ((Utilities.typeOfOutputEnum)propertyValue)
+                    {
+                        case Utilities.typeOfOutputEnum.ErrorRecords:
+                        case Utilities.typeOfOutputEnum.KeyRecords:
+                        case Utilities.typeOfOutputEnum.PassThrough:
+                        case Utilities.typeOfOutputEnum.RowsProcessed:
+                            throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, System.Enum.GetName(typeof(Utilities.typeOfOutputEnum), propertyValue)));
+                        default:
+                            break;
+                    }
+                    List<int> columnsNoLongerMaster = new List<int>();
+                    List<int> columnsToDelete = new List<int>();
                     switch (oldOutputType)
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -1191,68 +1202,173 @@ namespace Martin.SQLServer.Dts
                         case Utilities.typeOfOutputEnum.PassThrough:
                             throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                         case Utilities.typeOfOutputEnum.MasterRecord:
-                        case Utilities.typeOfOutputEnum.DataRecords:
-                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
-                        case Utilities.typeOfOutputEnum.ChildRecord:
+                            #region MasterRecord
                             switch ((Utilities.typeOfOutputEnum)propertyValue)
                             {
-                                case Utilities.typeOfOutputEnum.ErrorRecords:
-                                case Utilities.typeOfOutputEnum.KeyRecords:
-                                case Utilities.typeOfOutputEnum.PassThrough:
-                                    throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, System.Enum.GetName(typeof(Utilities.typeOfOutputEnum), propertyValue)));
-                                case Utilities.typeOfOutputEnum.ChildRecord:
-                                    if ((oldOutputType == Utilities.typeOfOutputEnum.MasterRecord) || (oldOutputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
-                                    {
-                                        // Need to remove the MasterValues...
-                                        foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
-                                        {
-                                            Utilities.usageOfColumnEnum columnUsage = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
-                                            int masterID = (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.masterRecordID);
-                                            if ((columnUsage == Utilities.usageOfColumnEnum.MasterValue) && (masterID == -1))
-                                            {
-                                                SetOutputColumnProperty(currentOutput.ID, outputColumn.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
-                                            }
-                                        }
-                                    }
+                                case Utilities.typeOfOutputEnum.MasterRecord:
+                                case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                                    // Nothing to do in these cases.
+                                    // The ChildMaster case will be caught when the masterRecordID is set.
                                     break;
                                 case Utilities.typeOfOutputEnum.DataRecords:
-                                    if ((oldOutputType == Utilities.typeOfOutputEnum.ChildRecord) || (oldOutputType == Utilities.typeOfOutputEnum.ChildMasterRecord) || (oldOutputType == Utilities.typeOfOutputEnum.MasterRecord))
-                                    {
-                                        // Need to remove the MasterValues which are Children...
-                                        List<int> columnsToRemove = new List<int>();
-                                        foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
+                                case Utilities.typeOfOutputEnum.ChildRecord:
+                                    // Have to Prevent if there are already Child Records!
+                                        foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
                                         {
-                                            Utilities.usageOfColumnEnum columnUsage = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
-                                            int keyRecordID = (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID);
-                                            if (columnUsage == Utilities.usageOfColumnEnum.MasterValue) // && (keyRecordID != -1))
+                                            if ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == outputID)
                                             {
-                                                // Set this to no longer be a MasterValue
-                                                if (keyRecordID == -1)
-                                                {
-                                                    ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
-                                                }
-                                                else
-                                                {
-                                                    // Then Delete it!
-                                                    columnsToRemove.Add(outputColumn.ID);
-                                                }
+                                                throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(output.Name), E_FAIL);
                                             }
                                         }
-                                        foreach (int columnID in columnsToRemove)
+                                    // Ok, so there weren't any children (Throw!)
+                                    // Set any Master Columns to Passthrough
+                                        foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
                                         {
-                                            DeleteOutputColumn(currentOutput.ID, columnID);
+                                            if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                                            {
+                                                columnsNoLongerMaster.Add(outputColumn.ID);
+                                            }
+                                        }
+                                        foreach (int columnToChangeID in columnsNoLongerMaster)
+                                        {
+                                            this.SetOutputColumnProperty(outputID, columnToChangeID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                        }
+                                    break;
+                                default:
+                                    break;
+                            }
+                            #endregion
+                            break;
+                        case Utilities.typeOfOutputEnum.DataRecords:
+                            // Nothing to do for this case!
+                            break;
+                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                            #region ChildMasterRecord
+                            switch ((Utilities.typeOfOutputEnum)propertyValue)
+                            {
+                                case Utilities.typeOfOutputEnum.MasterRecord:
+                                    // Need to remove the old Master's columns.
+                                    // Set any Master Columns to Passthrough, or delete if they came from a Master up the tree.
+                                    foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
+                                    {
+                                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                                        {
+                                            if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) != -1)
+                                            {
+                                                columnsToDelete.Add(outputColumn.ID);
+                                            }
                                         }
                                     }
-                                    ManageProperties.SetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID, -1);
-                                    break;
-                                case Utilities.typeOfOutputEnum.MasterRecord:
+                                    foreach (int columnToDeleteID in columnsToDelete)
+                                    {
+                                        int keyValueToRemoveID = (int)ManageProperties.GetPropertyValue(currentOutput.OutputColumnCollection.GetObjectByID(columnToDeleteID).CustomPropertyCollection, ManageProperties.keyOutputColumnID);
+
+                                        ManageProperties.SetPropertyValue(currentOutput.OutputColumnCollection.GetObjectByID(columnToDeleteID).CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                        this.DeleteOutputColumn(outputID, columnToDeleteID);
+                                    } 
                                     ManageProperties.SetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID, -1);
                                     break;
                                 case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                                    // Nothing to do in this case.
+                                    break;
+                                case Utilities.typeOfOutputEnum.DataRecords:
+                                    // Have to Prevent if there are already Child Records!
+                                    foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                                    {
+                                        if ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == outputID)
+                                        {
+                                            throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(output.Name), E_FAIL);
+                                        }
+                                    }
+                                    // Ok, so there weren't any children (Throw!)
+                                    // Set any Master Columns to Passthrough, or delete if they came from a Master up the tree.
+                                    foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
+                                    {
+                                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                                        {
+                                            if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == -1)
+                                            {
+                                                columnsNoLongerMaster.Add(outputColumn.ID);
+                                            }
+                                            else
+                                            {
+                                                columnsToDelete.Add(outputColumn.ID);
+                                            }
+                                        }
+                                    }
+                                    foreach (int columnToChangeID in columnsNoLongerMaster)
+                                    {
+                                        this.SetOutputColumnProperty(outputID, columnToChangeID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                    }
+                                    foreach (int columnToDeleteID in columnsToDelete)
+                                    {
+                                        //RemoveLinkedColumnFromChildOutputs(-1, -1);
+                                        ManageProperties.SetPropertyValue(currentOutput.OutputColumnCollection.GetObjectByID(columnToDeleteID).CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                        this.DeleteOutputColumn(outputID, columnToDeleteID);
+                                    }
+                                    ManageProperties.SetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID, -1);
+                                    break;
+                                case Utilities.typeOfOutputEnum.ChildRecord:
+                                    // Have to Prevent if there are already Child Records!
+                                    foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                                    {
+                                        if ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == outputID)
+                                        {
+                                            throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(output.Name), E_FAIL);
+                                        }
+                                    }
+                                    // Ok, so there weren't any children (Throw!)
+                                    // Set any Master Columns to Passthrough
+                                    foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
+                                    {
+                                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                                        {
+                                            if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == -1)
+                                            {
+                                                columnsNoLongerMaster.Add(outputColumn.ID);
+                                            }
+                                        }
+                                    }
+                                    foreach (int columnToChangeID in columnsNoLongerMaster)
+                                    {
+                                        this.SetOutputColumnProperty(outputID, columnToChangeID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                            #endregion
+                            break;
+                        case Utilities.typeOfOutputEnum.ChildRecord:
+                            #region ChildRecord
+                            switch ((Utilities.typeOfOutputEnum)propertyValue)
+                            {
+                                case Utilities.typeOfOutputEnum.MasterRecord:
+                                case Utilities.typeOfOutputEnum.DataRecords:
+                                    // Need to remove the MasterValues
+                                    List<int> columnsToRemove = new List<int>();
+                                    foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
+                                    {
+                                        Utilities.usageOfColumnEnum columnUsage = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
+                                        if (columnUsage == Utilities.usageOfColumnEnum.MasterValue)
+                                        {
+                                            columnsToRemove.Add(outputColumn.ID);
+                                        }
+                                    }
+                                    foreach (int columnID in columnsToRemove)
+                                    {
+                                        DeleteOutputColumn(currentOutput.ID, columnID);
+                                    }
+                                    ManageProperties.SetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID, -1);
+                                    break;
+                                case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                                case Utilities.typeOfOutputEnum.ChildRecord:
+                                    // Nothing to do for this case!
                                     break;
                                 default:
                                     throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
                             }
+                            #endregion
                             break;
                         default:
                             throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
@@ -1278,11 +1394,55 @@ namespace Martin.SQLServer.Dts
                     case Utilities.typeOfOutputEnum.KeyRecords:
                         this.PostErrorAndThrow(MessageStrings.CannotDeleteKeyOutput);
                         break;
+                    case Utilities.typeOfOutputEnum.ChildRecord:
                     case Utilities.typeOfOutputEnum.DataRecords:
                         base.DeleteOutput(outputID);
                         break;
                     case Utilities.typeOfOutputEnum.PassThrough:
                         this.PostErrorAndThrow(MessageStrings.CannotDeletePassThroughOutput);
+                        break;
+                    case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                    case Utilities.typeOfOutputEnum.MasterRecord:
+                        // Find all the Master Columns (owned by this output) in this output, and force them to be deleted from the children.
+                        IDTSOutput100 currentOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(outputID);
+                        foreach(IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
+                        {
+                            if (((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                             && ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == -1))
+                                RemoveLinkedColumnFromOutputs(outputColumn);
+                        }
+
+                        // Walk the tree down and change Children to Data, and ChildMasters to Masters (or ChildMasters)...
+                        List<int> outputsToEdit = new List<int>();
+                        Boolean isChildMaster = ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord);
+                        int oldMasterID = (int)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.masterRecordID);
+                        foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                        {
+                            if ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == outputID)
+                            {
+                                // This output points at the output to be deleted.
+                                outputsToEdit.Add(output.ID);
+                            }
+                        }
+                        foreach (int outputToChangeID in outputsToEdit)
+                        {
+                            IDTSOutput100 outputToChange = this.ComponentMetaData.OutputCollection.GetObjectByID(outputToChangeID);
+                            if (isChildMaster)
+                            {
+                                this.SetOutputProperty(outputToChangeID, ManageProperties.masterRecordID, oldMasterID);
+                            }
+                            else
+                            {
+                                if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(outputToChange.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord)
+                                {
+                                    this.SetOutputProperty(outputToChangeID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.MasterRecord);
+                                }
+                                else
+                                {
+                                    this.SetOutputProperty(outputToChangeID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.DataRecords);
+                                }
+                            }
+                        }
                         break;
                     default:
                         break;
@@ -1983,6 +2143,18 @@ namespace Martin.SQLServer.Dts
                     output.OutputColumnCollection.RemoveObjectByID(IDToDelete);
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Removes the child columns that are below the passed in parentOutputID
+        /// </summary>
+        /// <param name="parentOutputID"></param>
+        /// <param name="keyColumnID"></param>
+        private void RemoveLinkedColumnFromChildOutputs(int parentOutputID, int keyColumnID)
+        {
+            IDTSOutput100 parentOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(parentOutputID);
+
         }
 
         private System.Text.Encoding GetEncoding()
