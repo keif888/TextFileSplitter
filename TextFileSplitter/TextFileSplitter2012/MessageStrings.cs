@@ -107,7 +107,7 @@ namespace Martin.SQLServer.Dts
             return String.Format(MasterColumnHasKeyOutputIDPattern, columnName, outputName);
         }
 
-        private const string ThereAreChildRecordsForMasterPattern = "The Column {0} is defined as Master on a Master Output {1} but has keyOutputID.";
+        private const string ThereAreChildRecordsForMasterPattern = "The Output {0} is a child of the output that you are attempting to change.  You can not change it's type.";
         public static string ThereAreChildRecordsForMaster(string outputName)
         {
             return String.Format(ThereAreChildRecordsForMasterPattern, outputName);

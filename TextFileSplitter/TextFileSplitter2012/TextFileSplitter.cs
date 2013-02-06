@@ -1262,7 +1262,7 @@ namespace Martin.SQLServer.Dts
                                     foreach (int columnToDeleteID in columnsToDelete)
                                     {
                                         int keyValueToRemoveID = (int)ManageProperties.GetPropertyValue(currentOutput.OutputColumnCollection.GetObjectByID(columnToDeleteID).CustomPropertyCollection, ManageProperties.keyOutputColumnID);
-
+                                        this.RemoveLinkedColumnFromChildOutputs(currentOutput.ID, keyValueToRemoveID);
                                         ManageProperties.SetPropertyValue(currentOutput.OutputColumnCollection.GetObjectByID(columnToDeleteID).CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
                                         this.DeleteOutputColumn(outputID, columnToDeleteID);
                                     } 
@@ -1302,7 +1302,7 @@ namespace Martin.SQLServer.Dts
                                     }
                                     foreach (int columnToDeleteID in columnsToDelete)
                                     {
-                                        //RemoveLinkedColumnFromChildOutputs(-1, -1);
+                                        RemoveLinkedColumnFromChildOutputs(currentOutput.ID, columnToDeleteID);
                                         ManageProperties.SetPropertyValue(currentOutput.OutputColumnCollection.GetObjectByID(columnToDeleteID).CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
                                         this.DeleteOutputColumn(outputID, columnToDeleteID);
                                     }
@@ -1429,7 +1429,7 @@ namespace Martin.SQLServer.Dts
                             IDTSOutput100 outputToChange = this.ComponentMetaData.OutputCollection.GetObjectByID(outputToChangeID);
                             if (isChildMaster)
                             {
-                                this.SetOutputProperty(outputToChangeID, ManageProperties.masterRecordID, oldMasterID);
+                                ManageProperties.SetPropertyValue(outputToChange.CustomPropertyCollection, ManageProperties.masterRecordID, oldMasterID);
                             }
                             else
                             {
@@ -1443,6 +1443,7 @@ namespace Martin.SQLServer.Dts
                                 }
                             }
                         }
+                        base.DeleteOutput(outputID);
                         break;
                     default:
                         break;
@@ -2153,8 +2154,30 @@ namespace Martin.SQLServer.Dts
         /// <param name="keyColumnID"></param>
         private void RemoveLinkedColumnFromChildOutputs(int parentOutputID, int keyColumnID)
         {
-            IDTSOutput100 parentOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(parentOutputID);
-
+            foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+            {
+                int masterID = (int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID);
+                if (masterID == parentOutputID)
+                {
+                    if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord)
+                    {
+                        RemoveLinkedColumnFromChildOutputs(output.ID, keyColumnID);
+                    }
+                    int columnToRemove = -1;
+                    foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                    {
+                        if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == keyColumnID)
+                        {
+                            columnToRemove = outputColumn.ID;
+                            break;
+                        }
+                    }
+                    if (columnToRemove != -1)
+                    {
+                        output.OutputColumnCollection.RemoveObjectByID(columnToRemove);
+                    }
+                }
+            }
         }
 
         private System.Text.Encoding GetEncoding()

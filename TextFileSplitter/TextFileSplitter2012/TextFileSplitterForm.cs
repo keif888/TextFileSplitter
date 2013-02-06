@@ -891,6 +891,7 @@ namespace Martin.SQLServer.Dts
             dgvOutputColumns.Rows.Clear();
             tbOutputName.Text = String.Empty;
             tbRowTypeValue.Text = String.Empty;
+            tbMaster.Text = String.Empty;
             foreach (IDTSOutput100 output in this._componentMetaData.OutputCollection)
             {
                 if (output.Name == (String)lbOutputs.SelectedItem)
@@ -961,14 +962,6 @@ namespace Martin.SQLServer.Dts
                                         designtimeComponent.SetOutputProperty(output.ID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.PassThrough);
                                     }
                                 }
-                                else
-                                {
-                                    tbMaster.Text = String.Empty;
-                                }
-                            }
-                            else
-                            {
-                                tbMaster.Text = String.Empty;
                             }
 
                             foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
@@ -1106,11 +1099,6 @@ namespace Martin.SQLServer.Dts
 
                 while (engine.ReadNext() != null)
                 {
-                    //int RowNumber = dgvPassThroughPreview.Rows.Add(engine.LastRecordValues);
-                    //foreach (SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
-                    //{
-                    //    dgvConnectionPreview.Rows[RowNumber].Cells[ssisColumn.Name].Value = (String)ssisColumn.FileHelperField.GetValue(engine.LastRecord);
-                    //}
                     String typeValue = (String)typeColumn.FileHelperField.GetValue(engine.LastRecord);
                     String valueValue = (String)valueColumn.FileHelperField.GetValue(engine.LastRecord);
 
