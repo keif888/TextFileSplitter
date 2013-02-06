@@ -1678,7 +1678,7 @@ namespace Martin.SQLServer.Dts
                                     foreach (ErrorInfo err in currentEngine.ErrorManager.Errors)
                                     {
                                         errorBuffer.AddRow();
-                                        errorBuffer[2] = TruncateStringTo4000(err.ExceptionInfo.Message);
+                                        errorBuffer[2] = TruncateStringTo4000(String.Format("Output {0} had error {1}", currentOutput.Name, err.ExceptionInfo.Message));
                                         errorBuffer[4] = TruncateStringTo4000(err.RecordString);
                                         Object currentValue = null;
                                         foreach (SSISOutputColumn currentOutputColumn in errorOutput.OutputColumnCollection)
