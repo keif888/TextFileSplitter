@@ -16,9 +16,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFileSplitter2008", "Tex
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TextFileSplitterInstallx86", "TextFileSplitterInstallx86\TextFileSplitterInstallx86.wixproj", "{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestTextFileSplitter2012", "UnitTestTextFileSplitter2012\UnitTestTextFileSplitter2012.csproj", "{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}"
+	ProjectSection(ProjectDependencies) = postProject
+		{51B00B6A-F94A-4C7E-860A-487C9893FC9A} = {51B00B6A-F94A-4C7E-860A-487C9893FC9A}
+		{EB8633FF-CEED-40EE-8D1A-CA1BF5678C42} = {EB8633FF-CEED-40EE-8D1A-CA1BF5678C42}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 6
+		SccNumberOfProjects = 7
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://martin-source.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -37,6 +43,9 @@ Global
 		SccProjectUniqueName5 = TextFileSplitterInstallx86\\TextFileSplitterInstallx86.wixproj
 		SccProjectName5 = TextFileSplitterInstallx86
 		SccLocalPath5 = TextFileSplitterInstallx86
+		SccProjectUniqueName6 = UnitTestTextFileSplitter2012\\UnitTestTextFileSplitter2012.csproj
+		SccProjectName6 = UnitTestTextFileSplitter2012
+		SccLocalPath6 = UnitTestTextFileSplitter2012
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +164,24 @@ Global
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.UnitTest|x64.ActiveCfg = Release|x86
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.UnitTest|x86.ActiveCfg = Release|x86
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.UnitTest|x86.Build.0 = Release|x86
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Release|x64.ActiveCfg = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.Release|x86.ActiveCfg = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|Any CPU.ActiveCfg = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|Any CPU.Build.0 = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|Mixed Platforms.Build.0 = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|x64.ActiveCfg = Release|Any CPU
+		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

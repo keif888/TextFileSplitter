@@ -170,7 +170,7 @@ namespace Martin.SQLServer.Dts
             }
         }
 
-        private static DTSValidationStatus ValidatePropertyExists(IDTSCustomPropertyCollection customPropertyCollection, string propertyName, DTSValidationStatus oldStatus)
+        private DTSValidationStatus ValidatePropertyExists(IDTSCustomPropertyCollection customPropertyCollection, string propertyName, DTSValidationStatus oldStatus)
         {
 
             foreach (IDTSCustomProperty property in customPropertyCollection)
@@ -180,6 +180,7 @@ namespace Martin.SQLServer.Dts
                     return Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISVALID);
                 }
             }
+            this.PostError(MessageStrings.MissingProperty(propertyName));
             return Utilities.CompareValidationValues(oldStatus, DTSValidationStatus.VS_ISCORRUPT);
         }
         #endregion
@@ -206,7 +207,7 @@ namespace Martin.SQLServer.Dts
             return resultStatus;
         }
 
-        public static DTSValidationStatus ValidateComponentProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
+        public DTSValidationStatus ValidateComponentProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus resultStatus = oldStatus;
             resultStatus = ValidatePropertyExists(customPropertyCollection, isTextDelmited, resultStatus);
@@ -217,7 +218,7 @@ namespace Martin.SQLServer.Dts
         }
 
 
-        public static DTSValidationStatus ValidateOutputProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
+        public DTSValidationStatus ValidateOutputProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus resultStatus = oldStatus;
             resultStatus = ValidatePropertyExists(customPropertyCollection, rowTypeValue, resultStatus);
@@ -226,7 +227,7 @@ namespace Martin.SQLServer.Dts
             return resultStatus;
         }
 
-        public static DTSValidationStatus ValidateOutputColumnProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
+        public DTSValidationStatus ValidateOutputColumnProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus resultStatus = oldStatus;
             resultStatus = ValidatePropertyExists(customPropertyCollection, usageOfColumn, resultStatus);

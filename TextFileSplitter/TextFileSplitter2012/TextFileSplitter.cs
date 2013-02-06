@@ -53,6 +53,12 @@ namespace Martin.SQLServer.Dts
         private int codePage = 1252;
         private string columnDelimter = string.Empty;
         object ffConnection = null;
+
+        public TextFileSplitter()
+        {
+            this.propertyManager.PostErrorEvent += new PostErrorDelegate(this.PostError);
+        }
+
         #endregion
 
         #region Design Time
@@ -132,7 +138,7 @@ namespace Martin.SQLServer.Dts
         private DTSValidationStatus ValidateComponentProperties(DTSValidationStatus oldStatus)
         {
             DTSValidationStatus returnStatus = oldStatus;
-            returnStatus = ManageProperties.ValidateComponentProperties(this.ComponentMetaData.CustomPropertyCollection, oldStatus);
+            returnStatus = this.propertyManager.ValidateComponentProperties(this.ComponentMetaData.CustomPropertyCollection, oldStatus);
             returnStatus =  this.propertyManager.ValidateProperties(this.ComponentMetaData.CustomPropertyCollection, returnStatus);
             return returnStatus;
         }
@@ -203,7 +209,7 @@ namespace Martin.SQLServer.Dts
                 returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISBROKEN);
             }
 
-            returnStatus = ManageProperties.ValidateOutputProperties(output.CustomPropertyCollection, returnStatus);
+            returnStatus = this.propertyManager.ValidateOutputProperties(output.CustomPropertyCollection, returnStatus);
             if (returnStatus != oldStatus)
             {
                 this.PostError(MessageStrings.APropertyIsMissing(output.Name));
@@ -391,7 +397,7 @@ namespace Martin.SQLServer.Dts
         {
             oldStatus = propertyManager.ValidateProperties(outputColumn.CustomPropertyCollection, oldStatus);
             DTSValidationStatus returnStatus = oldStatus;
-            returnStatus = ManageProperties.ValidateOutputColumnProperties(outputColumn.CustomPropertyCollection, returnStatus);
+            returnStatus = this.propertyManager.ValidateOutputColumnProperties(outputColumn.CustomPropertyCollection, returnStatus);
             if (returnStatus != oldStatus)
             {
                 this.PostError(MessageStrings.APropertyIsMissing(outputColumn.Name));

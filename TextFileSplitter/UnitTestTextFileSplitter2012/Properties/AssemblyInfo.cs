@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TextFileSplitter2012")]
+[assembly: AssemblyTitle("UnitTestTextFileSplitter2012")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TextFileSplitter2012")]
+[assembly: AssemblyProduct("UnitTestTextFileSplitter2012")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("12a41826-6155-4ec2-bbc2-16b5bd3747fb")]
+[assembly: Guid("95461535-7fbe-4ba4-8774-3fcee87340db")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -34,4 +34,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("UnitTestTextFileSplitter2012, PublicKey=0024000004800000940000000602000000240000525341310004000001000100a75465ee722f3822e103de4cd89e88401e918e294653d5fd144ad421ddd9f07b8182056b27496d06110884a801c8c6148af44d1177f403885e861448d64c1402358e996399ba57be54cb4b045939199da1dba5c87391313377369830cc1ceab47b3dec3f45cf7ee93ff91e819d46c01c3ffab985505ac73a6e6abe0a611f94db")]

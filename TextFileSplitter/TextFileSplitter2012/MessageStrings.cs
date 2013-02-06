@@ -112,7 +112,14 @@ namespace Martin.SQLServer.Dts
         {
             return String.Format(ThereAreChildRecordsForMasterPattern, outputName);
         }
+
+        private const string MissingPropertyPattern = "The custom property {0} is missing.";
+        public static string MissingProperty(string propertyName)
+        {
+            return String.Format(MissingPropertyPattern, propertyName);
+        }
         
+
         #endregion
 
         #region Name Descriptions

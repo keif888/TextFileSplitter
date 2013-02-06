@@ -106,9 +106,13 @@ namespace Martin.SQLServer.Dts
             {
                 return DTSValidationStatus.VS_ISCORRUPT;
             }
-            else
+            if (oldStatus == DTSValidationStatus.VS_ISBROKEN || newStatus == DTSValidationStatus.VS_ISBROKEN)
             {
                 return DTSValidationStatus.VS_ISBROKEN;
+            }
+            else
+            {
+                return DTSValidationStatus.VS_NEEDSNEWMETADATA;
             }
         }
 
