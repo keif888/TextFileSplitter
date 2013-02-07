@@ -118,7 +118,12 @@ namespace Martin.SQLServer.Dts
         {
             return String.Format(MissingPropertyPattern, propertyName);
         }
-        
+
+        private const string CantChangeOutputPropertiesPattern = "You are not allowed to change {0} Output properties.";
+        public static string CantChangeOutputProperties(string outputType)
+        {
+            return String.Format(CantChangeOutputPropertiesPattern, outputType);
+        }
 
         #endregion
 
@@ -171,7 +176,6 @@ namespace Martin.SQLServer.Dts
         public const string ErrorOutputColumnsAreMissing = "One or More of the required columns on the error output have been removed.";
         public const string NoErrorOutput = "The Error Output is MISSING!";
         public const string MissingInputProperties = "At least one input property is missing.";
-        public const string CantChangeErrorOutputProperties = "You are not allowed to change Error Output properties.";
         public const string CantAddInput = "You are not allowed to add another input.";
         public const string ReadWriteNotSupported = "This component does not support READWRITE.";
         public const string KeyColumnDescription = "This is a propogated name because it was chosen as a key name";

@@ -129,7 +129,19 @@ namespace Martin.SQLServer.Dts
             if (binaryVersion > metadataVersion)
             {
                 // Version 2 added a new Column property of isColumnOptional
-                bool isColumnOptionalMissing = (ManageProperties.GetPropertyValue(this.ComponentMetaData.OutputCollection[0].OutputColumnCollection[0].CustomPropertyCollection, ManageProperties.isColumnOptional) == null);
+                bool isColumnOptionalMissing = false; //(ManageProperties.GetPropertyValue(this.ComponentMetaData.OutputCollection[0].OutputColumnCollection[0].CustomPropertyCollection, ManageProperties.isColumnOptional) == null);
+
+                foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                {
+                    if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
+                    {
+                        foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                        {
+                            isColumnOptionalMissing = (ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.isColumnOptional) == null);
+                            break;
+                        }
+                    }
+                }
 
                 if (isColumnOptionalMissing)
                 {
@@ -763,9 +775,13 @@ namespace Martin.SQLServer.Dts
                 switch (outputUsage)
                 {
                     case Utilities.typeOfOutputEnum.ErrorRecords:
+                        this.PostErrorAndThrow(MessageStrings.CantChangeOutputProperties("Error"));
+                        return null;
                     case Utilities.typeOfOutputEnum.RowsProcessed:
+                        this.PostErrorAndThrow(MessageStrings.CantChangeOutputProperties("RowsProcessed"));
+                        return null;
                     case Utilities.typeOfOutputEnum.PassThrough:
-                        this.PostErrorAndThrow(MessageStrings.CantChangeErrorOutputProperties);
+                        this.PostErrorAndThrow(MessageStrings.CantChangeOutputProperties("PassThrough"));
                         return null;
                     case Utilities.typeOfOutputEnum.KeyRecords:
                     case Utilities.typeOfOutputEnum.DataRecords:
@@ -782,7 +798,7 @@ namespace Martin.SQLServer.Dts
             }
             else
             {
-                this.PostErrorAndThrow(MessageStrings.CantChangeErrorOutputProperties);
+                this.PostErrorAndThrow(MessageStrings.CantChangeOutputProperties("Error"));
                 return null;
             }
         }
@@ -996,7 +1012,7 @@ namespace Martin.SQLServer.Dts
             {
                 if (thisOutput.IsErrorOut)
                 {
-                    this.PostErrorAndThrow(MessageStrings.CantChangeErrorOutputProperties);
+                    this.PostErrorAndThrow(MessageStrings.CantChangeOutputProperties("Error"));
                 }
                 else
                 {
@@ -1057,7 +1073,7 @@ namespace Martin.SQLServer.Dts
             if (thisOutput != null)
             {
                 if (thisOutput.IsErrorOut)
-                    this.PostErrorAndThrow(MessageStrings.CantChangeErrorOutputProperties);
+                    this.PostErrorAndThrow(MessageStrings.CantChangeOutputProperties("Error"));
                 else
                 {
                     IDTSOutputColumn100 thisColumn = thisOutput.OutputColumnCollection.GetObjectByID(outputColumnID);

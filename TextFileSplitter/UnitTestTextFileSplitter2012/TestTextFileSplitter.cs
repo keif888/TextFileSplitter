@@ -5,6 +5,7 @@ using Microsoft.SqlServer.Dts.Pipeline;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
+using System.Diagnostics;
 
 
 namespace UnitTestTextFileSplitter2012
@@ -28,7 +29,7 @@ namespace UnitTestTextFileSplitter2012
 
             instance.ProvideComponentProperties();
 
-            Assert.AreEqual(1, textFileSplitter.Version);
+            Assert.AreEqual(2, textFileSplitter.Version);
             Assert.AreEqual(true, textFileSplitter.UsesDispositions);
             Assert.AreEqual("http://TextFileSplitter.codeplex.com/", textFileSplitter.ContactInfo);
             Assert.AreEqual(true, (Boolean)textFileSplitter.CustomPropertyCollection[ManageProperties.isTextDelmited].Value);
@@ -59,7 +60,19 @@ namespace UnitTestTextFileSplitter2012
             instance.ProvideComponentProperties();
             instance.ReinitializeMetaData();
 
-            Assert.AreEqual(1, textFileSplitter.Version);
+            foreach (IDTSOutput100 output in textFileSplitter.OutputCollection)
+            {
+                if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
+                {
+                    IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(output.ID, 0, "New Column", String.Empty);
+                    int isColumnID = newColumn.CustomPropertyCollection[ManageProperties.isColumnOptional].ID;
+                    newColumn.CustomPropertyCollection.RemoveObjectByID(isColumnID);
+                    
+                    break;
+                }
+            }
+
+            Assert.AreEqual(2, textFileSplitter.Version);
             textFileSplitter.Version = 0;
 
             string packageXML, package2XML;
@@ -77,7 +90,16 @@ namespace UnitTestTextFileSplitter2012
             thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
             dataFlowTask = thMainPipe.InnerObject as MainPipe;
             textFileSplitter = dataFlowTask.ComponentMetaDataCollection[0];
-            Assert.AreEqual(1, textFileSplitter.Version, "Version failed to match on reload");
+            Assert.AreEqual(2, textFileSplitter.Version, "Version failed to match on reload");
+            foreach (IDTSOutput100 output in textFileSplitter.OutputCollection)
+            {
+                if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
+                {
+                    Assert.AreEqual(false, ManageProperties.GetPropertyValue(output.OutputColumnCollection[0].CustomPropertyCollection, ManageProperties.isColumnOptional), "isColumnOptional Property not added");
+                    break;
+                }
+            }
+            
         }
 
         #endregion
