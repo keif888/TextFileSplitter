@@ -138,9 +138,14 @@ namespace Martin.SQLServer.Dts
                 if (!outputColumn.IsDerived)
                 {
                     String conversionString = (String)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString);
+                    Boolean isOptional = (Boolean)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.isColumnOptional);
                     if ((i + 1 == output.OutputColumnCollection.Count) && (!String.IsNullOrEmpty(rowTerminator)))
                     {
                         classString += "[FieldDelimiterAttribute(\"" + ReplaceEscapes(rowTerminator) + "\")]\r\n";
+                    }
+                    if (isOptional)
+                    {
+                        classString += "[FieldOptional()]\r\n";
                     }
                     switch (outputColumn.SSISDataType)
                     {

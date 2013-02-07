@@ -934,6 +934,7 @@ namespace Martin.SQLServer.Dts
                                 dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
 
                                 dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
+                                dgvOutputColumns.Rows[rowNumber].Cells[8].Value = (bool)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.isColumnOptional);
                                 SetOutputColumnsReadOnly(dgvOutputColumns.Rows[rowNumber]);
                             }
                             break;
@@ -991,6 +992,8 @@ namespace Martin.SQLServer.Dts
                                 dgvOutputColumns.Rows[rowNumber].Cells[6].Value = outputColumn.Precision;
 
                                 dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
+
+                                dgvOutputColumns.Rows[rowNumber].Cells[8].Value = (bool)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.isColumnOptional);
                                 SetOutputColumnsReadOnly(dgvOutputColumns.Rows[rowNumber]);
                             }
                             break;
@@ -1230,6 +1233,9 @@ namespace Martin.SQLServer.Dts
                                 Precision = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[7].Value.ToString());
                                 CodePage = int.Parse(dgvOutputColumns.Rows[e.RowIndex].Cells[3].Value.ToString());
                                 designtimeComponent.SetOutputColumnDataTypeProperties(outputID, outputColumnID, (DataType)dgvOutputColumns.Rows[e.RowIndex].Cells[4].Value, Length, Scale, Precision, CodePage);
+                            break;
+                        case 8: // Optional
+                            designtimeComponent.SetOutputColumnProperty(outputID, outputColumnID, ManageProperties.isColumnOptional, (bool)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
                             break;
                         default:
                             break;

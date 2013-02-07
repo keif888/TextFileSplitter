@@ -33,7 +33,7 @@ using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrap
 namespace Martin.SQLServer.Dts
 {
     [DtsPipelineComponent(DisplayName = "Text File Splitter Source",
-        CurrentVersion = 1 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
+        CurrentVersion = 2 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
         , Description = "Extract many outputs from a single Text File"
         , IconResource = "Martin.SQLServer.Dts.Resources.TextFileSplitter.ico"
 #if SQL2012
@@ -68,7 +68,7 @@ namespace Martin.SQLServer.Dts
         public override void ProvideComponentProperties()
         {
             this.RemoveAllInputsOutputsAndCustomProperties();
-            this.ComponentMetaData.Version = 1;  // NB.  Always keep this in sync with the CurrentVersion!!!
+            this.ComponentMetaData.Version = 2;  // NB.  Always keep this in sync with the CurrentVersion!!!
             this.ComponentMetaData.UsesDispositions = true;
             this.ComponentMetaData.ContactInfo = "http://TextFileSplitter.codeplex.com/";
             ManageProperties.AddComponentProperties(this.ComponentMetaData.CustomPropertyCollection);
@@ -119,8 +119,46 @@ namespace Martin.SQLServer.Dts
 
         public override void PerformUpgrade(int pipelineVersion)
         {
-            this.ComponentMetaData.Version = 1;  // NB.  Always keep this in sync with the CurrentVersion!!!
-            base.PerformUpgrade(pipelineVersion);
+            // Get the attributes for the executable
+            DtsPipelineComponentAttribute componentAttribute = (DtsPipelineComponentAttribute)Attribute.GetCustomAttribute(this.GetType(), typeof(DtsPipelineComponentAttribute), false);
+            int binaryVersion = componentAttribute.CurrentVersion;
+
+            // Get the attributes for the SSIS Package
+            int metadataVersion = ComponentMetaData.Version;
+
+            if (binaryVersion > metadataVersion)
+            {
+                // Version 2 added a new Column property of isColumnOptional
+                bool isColumnOptionalMissing = (ManageProperties.GetPropertyValue(this.ComponentMetaData.OutputCollection[0].OutputColumnCollection[0].CustomPropertyCollection, ManageProperties.isColumnOptional) == null);
+
+                if (isColumnOptionalMissing)
+                {
+                    foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                    {
+                        switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                        {
+                            case Utilities.typeOfOutputEnum.KeyRecords:
+                            case Utilities.typeOfOutputEnum.DataRecords:
+                            case Utilities.typeOfOutputEnum.PassThrough:
+                            case Utilities.typeOfOutputEnum.MasterRecord:
+                            case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                            case Utilities.typeOfOutputEnum.ChildRecord:
+                                foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                                {
+                                    ManageProperties.AddMissingOutputColumnProperties(outputColumn.CustomPropertyCollection);
+                                }
+                                break;
+                            case Utilities.typeOfOutputEnum.ErrorRecords:
+                            case Utilities.typeOfOutputEnum.RowsProcessed:
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            this.ComponentMetaData.Version = 2;  // NB.  Always keep this in sync with the CurrentVersion!!!
+            //base.PerformUpgrade(pipelineVersion);
         }
 
         #endregion
@@ -1606,7 +1644,7 @@ namespace Martin.SQLServer.Dts
             columnDelimter = connectionFlatFile.Columns[0].ColumnDelimiter;
 
             String passThroughClassString = string.Empty;
-            passThroughClassString = DynamicClassStringFromOutput(passThroughOutput, firstRowColumnNames, connectionFlatFile.Columns[connectionFlatFile.Columns.Count - 1].ColumnDelimiter, connectionFlatFile.Columns[0].ColumnDelimiter);
+            passThroughClassString = Utilities.DynamicClassStringFromOutput(passThroughOutput, firstRowColumnNames, connectionFlatFile.Columns[connectionFlatFile.Columns.Count - 1].ColumnDelimiter, connectionFlatFile.Columns[0].ColumnDelimiter);
 
             Type passThroughType = ClassBuilder.ClassFromString(passThroughClassString);
             foreach(SSISOutputColumn ssisColumn in passThroughOutput.OutputColumnCollection)
@@ -1935,7 +1973,7 @@ namespace Martin.SQLServer.Dts
 
         private void SetupFileHelper(IDTSOutput output, SSISOutput dataOutput, out Type classBuffer, out FileHelperEngine engine)
         {
-            String classString = DynamicClassStringFromOutput(dataOutput, false, string.Empty, (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter));
+            String classString = Utilities.DynamicClassStringFromOutput(dataOutput, false, string.Empty, (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter));
             classBuffer = ClassBuilder.ClassFromString(classString);
             foreach (SSISOutputColumn ssisColumn in dataOutput.OutputColumnCollection)
             {
@@ -1950,125 +1988,6 @@ namespace Martin.SQLServer.Dts
             String workString = stringToCleanse.Replace("\\", @"\");
             return workString.Replace("\n", @"\n").Replace("\a", @"\a").Replace("\b", @"\b").Replace("\f", @"\f").Replace("\r", @"\r").Replace("\t", @"\t").Replace("\v", @"\v").Replace("\'", @"\'");
         }
-
-        public String DynamicClassStringFromOutput(SSISOutput output, Boolean firstRowColumnNames, String rowTerminator, String columnDelimiter)
-        {
-            String classString = string.Empty;
-            classString += "[DelimitedRecord(\"" + ReplaceEscapes(columnDelimiter) + "\")]\r\n";
-            if (firstRowColumnNames)
-            {
-                classString += "[IgnoreFirst(1)]\r\n";
-            }
-            classString += "public sealed class " + output.Name + "\r\n";
-            classString += "{\r\n";
-            for (int i = 0; i < output.OutputColumnCollection.Count; i++ )
-            {
-                SSISOutputColumn outputColumn = output.OutputColumnCollection[i];
-                if (!outputColumn.IsDerived)
-                {
-                    String conversionString = (String)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString);
-                    if ((i + 1 == output.OutputColumnCollection.Count) && (!String.IsNullOrEmpty(rowTerminator)))
-                    {
-                        classString += "[FieldDelimiterAttribute(\"" + ReplaceEscapes(rowTerminator) + "\")]\r\n";
-                    }
-                    switch (outputColumn.SSISDataType)
-                    {
-                        case DataType.DT_BOOL:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Boolean, \"" + conversionString + "\")]\r\n";
-                            classString += "public Boolean? ";
-                            break;
-                        case DataType.DT_DATE:
-                        case DataType.DT_DBDATE:
-                        case DataType.DT_DBTIME:
-                        case DataType.DT_DBTIME2:
-                        case DataType.DT_DBTIMESTAMP:
-                        case DataType.DT_DBTIMESTAMP2:
-                        case DataType.DT_DBTIMESTAMPOFFSET:
-                        case DataType.DT_FILETIME:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Date, \"" + conversionString + "\")]\r\n";
-                            classString += "public DateTime? ";
-                            break;
-                        case DataType.DT_CY:
-                        case DataType.DT_DECIMAL:
-                        case DataType.DT_NUMERIC:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Decimal, \"" + conversionString + "\")]\r\n";
-                            classString += "public Decimal? ";
-                            break;
-                        case DataType.DT_I1:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Byte, \"" + conversionString + "\")]\r\n";
-                            classString += "public Byte? ";
-                            break;
-                        case DataType.DT_I2:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Int16, \"" + conversionString + "\")]\r\n";
-                            classString += "public Int16? ";
-                            break;
-                        case DataType.DT_I4:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Int32, \"" + conversionString + "\")]\r\n";
-                            classString += "public Int32? ";
-                            break;
-                        case DataType.DT_I8:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Int64, \"" + conversionString + "\")]\r\n";
-                            classString += "public Int64? ";
-                            break;
-                        case DataType.DT_R4:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Single, \"" + conversionString + "\")]\r\n";
-                            classString += "public Single? ";
-                            break;
-                        case DataType.DT_R8:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Dpuble, \"" + conversionString + "\")]\r\n";
-                            classString += "public Double? ";
-                            break;
-                        case DataType.DT_UI1:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.SByte, \"" + conversionString + "\")]\r\n";
-                            classString += "public SByte? ";
-                            break;
-                        case DataType.DT_UI2:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.UInt16, \"" + conversionString + "\")]\r\n";
-                            classString += "public UInt16? ";
-                            break;
-                        case DataType.DT_UI4:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.UInt32, \"" + conversionString + "\")]\r\n";
-                            classString += "public UInt32? ";
-                            break;
-                        case DataType.DT_UI8:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.UInt64, \"" + conversionString + "\")]\r\n";
-                            classString += "public UInt64? ";
-                            break;
-                        case DataType.DT_GUID:
-                            if (!String.IsNullOrEmpty(conversionString))
-                                classString += "[FieldConverter(ConverterKind.Guid, \"" + conversionString + "\")]\r\n";
-                            classString += "public Guid? ";
-                            break;
-                        case DataType.DT_STR:
-                        case DataType.DT_TEXT:
-                        case DataType.DT_NTEXT:
-                        case DataType.DT_WSTR:
-                            classString += "public String ";
-                            break;
-                        default:
-                            classString += "public String ";
-                            break;
-                    }
-                    classString += outputColumn.Name + ";\r\n";
-                }
-            }
-            classString += "}\r\n";
-            return classString;
-        }
-
 
         private void PushMasterValueColumnsToChildren(IDTSOutput masterOutput, int outputColumnID, IDTSOutputColumn thisColumn)//int masterOutputID, IDTSOutputColumn masterOutputColumn)
         {

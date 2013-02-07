@@ -29,6 +29,7 @@ namespace Martin.SQLServer.Dts
         internal const string usageOfColumn = "usageOfColumn";
         internal const string keyOutputColumnID = "keyOutputColumnID";
         internal const string dotNetFormatString = "dotNetFormatString";
+        internal const string isColumnOptional = "isColumnOptional";
 
         // Defaults
         const string DefaultDelimiter = ",";
@@ -58,6 +59,7 @@ namespace Martin.SQLServer.Dts
             this.propertyValidationTable.Add(usageOfColumn, new ValidateProperty(ValidateUsageOfColumnProperty));
             this.propertyValidationTable.Add(keyOutputColumnID, new ValidateProperty(ValidateIntegerProperty));
             this.propertyValidationTable.Add(dotNetFormatString, new ValidateProperty(ValidateStringProperty));
+            this.propertyValidationTable.Add(isColumnOptional, new ValidateProperty(ValidateBooleanProperty));
         }
 
         private DTSValidationStatus ValidateRowTypeProperty(string propertyName, object propertyValue)
@@ -233,6 +235,7 @@ namespace Martin.SQLServer.Dts
             resultStatus = ValidatePropertyExists(customPropertyCollection, usageOfColumn, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, keyOutputColumnID, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, dotNetFormatString, resultStatus);
+            resultStatus = ValidatePropertyExists(customPropertyCollection, isColumnOptional, resultStatus);
             return resultStatus;
         }
 
@@ -300,6 +303,27 @@ namespace Martin.SQLServer.Dts
             AddCustomProperty(propertyCollection, usageOfColumn, MessageStrings.UsageOfColumnPropDescription, Utilities.usageOfColumnEnum.Passthrough, typeof(Utilities.usageOfColumnEnum).AssemblyQualifiedName);
             AddCustomProperty(propertyCollection, keyOutputColumnID, MessageStrings.KeyOutputColumnIDPropDescription, -1, true);
             AddCustomProperty(propertyCollection, dotNetFormatString, MessageStrings.DotNetFormatStringPropDescription, String.Empty);
+            AddCustomProperty(propertyCollection, isColumnOptional, MessageStrings.IsColumnOptionalPropDescription, false);
+        }
+
+        public static void AddMissingOutputColumnProperties(IDTSCustomPropertyCollection100 propertyCollection)
+        {
+            if (GetPropertyValue(propertyCollection, usageOfColumn) == null)
+            {
+                AddCustomProperty(propertyCollection, usageOfColumn, MessageStrings.UsageOfColumnPropDescription, Utilities.usageOfColumnEnum.Passthrough, typeof(Utilities.usageOfColumnEnum).AssemblyQualifiedName);
+            }
+            if (GetPropertyValue(propertyCollection, keyOutputColumnID) == null)
+            {
+                AddCustomProperty(propertyCollection, keyOutputColumnID, MessageStrings.KeyOutputColumnIDPropDescription, -1, true);
+            }
+            if (GetPropertyValue(propertyCollection, dotNetFormatString) == null)
+            {
+                AddCustomProperty(propertyCollection, dotNetFormatString, MessageStrings.DotNetFormatStringPropDescription, String.Empty);
+            }
+            if (GetPropertyValue(propertyCollection, isColumnOptional) == null)
+            {
+                AddCustomProperty(propertyCollection, isColumnOptional, MessageStrings.IsColumnOptionalPropDescription, false);
+            }
         }
 
         #endregion

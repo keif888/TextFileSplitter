@@ -141,6 +141,7 @@ namespace Martin.SQLServer.Dts
         public const string KeyValueColumnDescription = "The key value that was used to determine what output this row went to.";
         public const string NumberOfRowsColumnDescription = "The number of rows that were sent down this associated output.";
         public const string KeyValueStatusColumnDescription = "The status that this output held when being processed.";
+        public const string IsColumnOptionalPropDescription = "Stores a True/False that shows if this column is optional within the delimited text.";
         #endregion
 
         #region Key Value Status Values
