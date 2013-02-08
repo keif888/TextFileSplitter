@@ -33,7 +33,7 @@ using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrap
 namespace Martin.SQLServer.Dts
 {
     [DtsPipelineComponent(DisplayName = "Text File Splitter Source",
-        CurrentVersion = 2 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
+        CurrentVersion = 3 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
         , Description = "Extract many outputs from a single Text File"
         , IconResource = "Martin.SQLServer.Dts.Resources.TextFileSplitter.ico"
 #if SQL2012
@@ -68,7 +68,7 @@ namespace Martin.SQLServer.Dts
         public override void ProvideComponentProperties()
         {
             this.RemoveAllInputsOutputsAndCustomProperties();
-            this.ComponentMetaData.Version = 2;  // NB.  Always keep this in sync with the CurrentVersion!!!
+            this.ComponentMetaData.Version = 3;  // NB.  Always keep this in sync with the CurrentVersion!!!
             this.ComponentMetaData.UsesDispositions = true;
             this.ComponentMetaData.ContactInfo = "http://TextFileSplitter.codeplex.com/";
             ManageProperties.AddComponentProperties(this.ComponentMetaData.CustomPropertyCollection);
@@ -130,6 +130,7 @@ namespace Martin.SQLServer.Dts
             {
                 // Version 2 added a new Column property of isColumnOptional
                 bool isColumnOptionalMissing = false; //(ManageProperties.GetPropertyValue(this.ComponentMetaData.OutputCollection[0].OutputColumnCollection[0].CustomPropertyCollection, ManageProperties.isColumnOptional) == null);
+                bool isPropertyExpressionNotify = false;  // Version 3 removed Notify on Expressions
 
                 foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
                 {
@@ -138,6 +139,7 @@ namespace Martin.SQLServer.Dts
                         foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
                         {
                             isColumnOptionalMissing = (ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.isColumnOptional) == null);
+                            isPropertyExpressionNotify = (outputColumn.CustomPropertyCollection[0].ExpressionType == DTSCustomPropertyExpressionType.CPET_NOTIFY);
                             break;
                         }
                     }
@@ -168,9 +170,43 @@ namespace Martin.SQLServer.Dts
                         }
                     }
                 }
+
+                // Remove the ability to set columnProperties via Expressions.
+                if (isPropertyExpressionNotify)
+                {
+                    foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                    {
+                        switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                        {
+                            case Utilities.typeOfOutputEnum.KeyRecords:
+                            case Utilities.typeOfOutputEnum.DataRecords:
+                            case Utilities.typeOfOutputEnum.PassThrough:
+                            case Utilities.typeOfOutputEnum.MasterRecord:
+                            case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                            case Utilities.typeOfOutputEnum.ChildRecord:
+                                foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                                {
+                                    foreach (IDTSCustomProperty100 columnProperty in outputColumn.CustomPropertyCollection)
+                                    {
+                                        columnProperty.ExpressionType = DTSCustomPropertyExpressionType.CPET_NONE;
+                                    }
+                                }
+                                foreach (IDTSCustomProperty100 outputProperty in output.CustomPropertyCollection)
+                                {
+                                    outputProperty.ExpressionType = DTSCustomPropertyExpressionType.CPET_NONE;
+                                }
+                                break;
+                            case Utilities.typeOfOutputEnum.ErrorRecords:
+                            case Utilities.typeOfOutputEnum.RowsProcessed:
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+
             }
-            this.ComponentMetaData.Version = 2;  // NB.  Always keep this in sync with the CurrentVersion!!!
-            //base.PerformUpgrade(pipelineVersion);
+            this.ComponentMetaData.Version = 3;  // NB.  Always keep this in sync with the CurrentVersion!!!
         }
 
         #endregion
@@ -1028,18 +1064,35 @@ namespace Martin.SQLServer.Dts
                         {
                             throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                         }
+                        if (((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                           & ((int)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) != -1))
+                        {
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                        }
+
                         if (ValidateSupportedDataTypes(eDataType) == DTSValidationStatus.VS_ISVALID)
                         {
                             thisColumn.SetDataTypeProperties(eDataType, iLength, iPrecision, iScale, iCodePage);
-                            if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                            if (((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                            ||(((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                           & ((int)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == -1)))
                             {
                                 // Need to set the "children"!
                                 foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
                                 {
                                     if (output.CustomPropertyCollection.Count > 0)
                                     {
-                                        if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.DataRecords)
+                                        switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
                                         {
+                                            case Utilities.typeOfOutputEnum.ErrorRecords:
+                                            case Utilities.typeOfOutputEnum.KeyRecords:
+                                            case Utilities.typeOfOutputEnum.PassThrough:
+                                            case Utilities.typeOfOutputEnum.RowsProcessed:
+                                                break;
+                                            case Utilities.typeOfOutputEnum.DataRecords:
+                                            case Utilities.typeOfOutputEnum.MasterRecord:
+                                            case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                                            case Utilities.typeOfOutputEnum.ChildRecord:
                                             foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
                                             {
                                                 if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
@@ -1047,6 +1100,9 @@ namespace Martin.SQLServer.Dts
                                                     outputColumn.SetDataTypeProperties(eDataType, iLength, iPrecision, iScale, iCodePage);
                                                 }
                                             }
+                                                break;
+                                            default:
+                                                break;
                                         }
                                     }
                                 }

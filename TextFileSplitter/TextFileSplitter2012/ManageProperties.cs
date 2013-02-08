@@ -267,7 +267,7 @@ namespace Martin.SQLServer.Dts
             property.Name = name;
             property.Description = description;
             property.Value = defaultValue;
-            property.ExpressionType = DTSCustomPropertyExpressionType.CPET_NOTIFY;
+            property.ExpressionType = DTSCustomPropertyExpressionType.CPET_NONE; // Don't make this Notify as it causes MAJOR performance issues. (and why would you want them to be expressioned anyway)?
             property.ContainsID = valueContainsID;
             if (defaultValue is string)
             {
