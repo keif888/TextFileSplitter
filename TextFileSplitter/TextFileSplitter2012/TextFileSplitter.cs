@@ -586,11 +586,14 @@ namespace Martin.SQLServer.Dts
                     {
                         if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(childOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
                         {
-                            if (((int)ManageProperties.GetPropertyValue(childOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == masterOutputColumn.LineageID)
-                                || ((int)ManageProperties.GetPropertyValue(childOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == (int)ManageProperties.GetPropertyValue(masterOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID)))
+                            if ((int)ManageProperties.GetPropertyValue(childOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) != -1)
                             {
-                                foundColumn = true;
-                                oldStatus = ValidateOutputAndKeyColumn(masterOutputColumn, childOutputColumn, output.Name, oldStatus);
+                                if (((int)ManageProperties.GetPropertyValue(childOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == masterOutputColumn.LineageID)
+                                    || ((int)ManageProperties.GetPropertyValue(childOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == (int)ManageProperties.GetPropertyValue(masterOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID)))
+                                {
+                                    foundColumn = true;
+                                    oldStatus = ValidateOutputAndKeyColumn(masterOutputColumn, childOutputColumn, output.Name, oldStatus);
+                                }
                             }
                         }
                     }
