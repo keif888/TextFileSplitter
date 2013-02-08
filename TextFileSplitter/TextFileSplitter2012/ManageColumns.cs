@@ -1,59 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+﻿using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime.Wrapper;
-
-using IDTSOutput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
-using IDTSCustomProperty = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
-using IDTSOutputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn100;
-using IDTSOutputColumnCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumnCollection100;
-using IDTSInput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput100;
-using IDTSInputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumn100;
-using IDTSVirtualInputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumn100;
-using IDTSVirtualInput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInput100;
-using IDTSInputColumnCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumnCollection100;
-using IDTSComponentMetaData = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
-
-
+using System;
 
 namespace Martin.SQLServer.Dts
 {
     class ManageColumns
     {
-        public const String ErrorMessageColumnName = "ErrorMessage";
-        public const string ColumnDataColumnName = "ColumnData";
-        public const string RowDataColumnName = "RowData";
-        public const int DefaultStringColumnSize = 255;
+        private const int DefaultStringColumnSize = 255;
 
-        public static void AddErrorOutputColumns(IDTSOutput errorOutput)
+        /// <summary>
+        /// Add the columns required to the Error Output.
+        /// </summary>
+        /// <param name="errorOutput">The actual error output</param>
+        public static void AddErrorOutputColumns(IDTSOutput100 errorOutput)
         {
-            IDTSOutputColumnCollection outputColumnCollection = errorOutput.OutputColumnCollection;
-            IDTSOutputColumn outputColumn = outputColumnCollection.New();
-            outputColumn.Name = ErrorMessageColumnName;
+            IDTSOutputColumnCollection100 outputColumnCollection = errorOutput.OutputColumnCollection;
+            IDTSOutputColumn100 outputColumn = outputColumnCollection.New();
+            outputColumn.Name = MessageStrings.ErrorMessageColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_WSTR, 4000, 0, 0, 0);
             outputColumn = outputColumnCollection.New();
-            outputColumn.Name = ColumnDataColumnName;
+            outputColumn.Name = MessageStrings.ColumnDataColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_WSTR, 4000, 0, 0, 0);
             outputColumn = outputColumnCollection.New();
-            outputColumn.Name = RowDataColumnName;
+            outputColumn.Name = MessageStrings.RowDataColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_WSTR, 4000, 0, 0, 0);
         }
 
-        public static void SetOutputColumnDefaults(IDTSOutputColumn outputColumn, int CodePage)
+        /// <summary>
+        /// Set a columns default properties (regardless of the column).
+        /// </summary>
+        /// <param name="outputColumn">The column that is to be setup</param>
+        /// <param name="CodePage">The code page that is currently being used.</param>
+        public static void SetOutputColumnDefaults(IDTSOutputColumn100 outputColumn, int CodePage)
         {
-            // If any column has a failure, use the Output level dispositions for redirection.
-            //outputColumn.ErrorRowDisposition = DTSRowDisposition.RD_FailComponent;
-            //outputColumn.TruncationRowDisposition = DTSRowDisposition.RD_FailComponent;
-            //outputColumn.ErrorOrTruncationOperation = MessageStrings.ColumnLevelErrorTruncationOperation;
             outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, CodePage);
         }
 
-        internal static void AddNumberOfRowsOutputColumns(IDTSOutput numberOfRows)
+        /// <summary>
+        /// Adds the columns that are required to the Number Of Rows output
+        /// </summary>
+        /// <param name="numberOfRows">the number of rows output</param>
+        internal static void AddNumberOfRowsOutputColumns(IDTSOutput100 numberOfRows)
         {
-            IDTSOutputColumnCollection outputColumnCollection = numberOfRows.OutputColumnCollection;
-            IDTSOutputColumn outputColumn = outputColumnCollection.New();
+            IDTSOutputColumnCollection100 outputColumnCollection = numberOfRows.OutputColumnCollection;
+            IDTSOutputColumn100 outputColumn = outputColumnCollection.New();
             outputColumn.Name = MessageStrings.KeyValueColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, 1252);
             outputColumn.Description = MessageStrings.KeyValueColumnDescription;

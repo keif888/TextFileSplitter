@@ -32,13 +32,13 @@ namespace UnitTestTextFileSplitter2012
             ManageColumns.AddErrorOutputColumns(actual);
 
             Assert.AreEqual(3, actual.OutputColumnCollection.Count, "Number of Columns is wrong");
-            Assert.AreEqual("ErrorMessage", actual.OutputColumnCollection[0].Name, "Column Name is wrong");
+            Assert.AreEqual(MessageStrings.ErrorMessageColumnName, actual.OutputColumnCollection[0].Name, "Column Name is wrong");
             Assert.AreEqual(DataType.DT_WSTR, actual.OutputColumnCollection[0].DataType, "DataType is wrong");
             Assert.AreEqual(4000, actual.OutputColumnCollection[0].Length, "Length is wrong");
-            Assert.AreEqual("ColumnData", actual.OutputColumnCollection[1].Name, "Column Name is wrong");
+            Assert.AreEqual(MessageStrings.ColumnDataColumnName, actual.OutputColumnCollection[1].Name, "Column Name is wrong");
             Assert.AreEqual(DataType.DT_WSTR, actual.OutputColumnCollection[1].DataType, "DataType is wrong");
             Assert.AreEqual(4000, actual.OutputColumnCollection[1].Length, "Length is wrong");
-            Assert.AreEqual("RowData", actual.OutputColumnCollection[2].Name, "Column Name is wrong");
+            Assert.AreEqual(MessageStrings.RowDataColumnName, actual.OutputColumnCollection[2].Name, "Column Name is wrong");
             Assert.AreEqual(DataType.DT_WSTR, actual.OutputColumnCollection[2].DataType, "DataType is wrong");
             Assert.AreEqual(4000, actual.OutputColumnCollection[2].Length, "Length is wrong");
         }

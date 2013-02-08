@@ -164,6 +164,9 @@ namespace Martin.SQLServer.Dts
         public const string KeyValueColumnName = "KeyValue";
         public const string NumberOfRowsColumnName = "NumberOfRows";
         public const string KeyValueStatusColumnName = "KeyValueStatus";
+        public const string ErrorMessageColumnName = "ErrorMessage";
+        public const string ColumnDataColumnName = "ColumnData";
+        public const string RowDataColumnName = "RowData";
         #endregion
 
         #region Messages
