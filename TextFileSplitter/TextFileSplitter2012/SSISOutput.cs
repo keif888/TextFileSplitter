@@ -1,64 +1,24 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.SqlServer.Dts.Pipeline;
-using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
-using Microsoft.SqlServer.Dts.Runtime.Wrapper;
-using Microsoft.SqlServer.Dts.Runtime;
-
-#if SQL2012
-using IDTSOutput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
-using IDTSCustomProperty = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
-using IDTSOutputCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputCollection100;
-using IDTSOutputColumnCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumnCollection100;
-using IDTSOutputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn100;
-using IDTSInput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput100;
-using IDTSInputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumn100;
-using IDTSVirtualInputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumn100;
-using IDTSVirtualInput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInput100;
-using IDTSInputColumnCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumnCollection100;
-using IDTSComponentMetaData = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
-using IDTSExternalMetadataColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSExternalMetadataColumn100;
-using IDTSRuntimeConnection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSRuntimeConnection100;
-using IDTSConnectionManagerFlatFile = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFile100;
-using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFileColumn100;
-using IDTSBufferManager = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSBufferManager100;
-#endif
-#if SQL2008
-    using IDTSOutput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutput100;
-    using IDTSCustomProperty = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
-    using IDTSOutputCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputCollection100;
-    using IDTSOutputColumnCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumnCollection100;
-    using IDTSOutputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSOutputColumn100;
-    using IDTSInput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInput100;
-    using IDTSInputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumn100;
-    using IDTSVirtualInputColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInputColumn100;
-    using IDTSVirtualInput = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSVirtualInput100;
-    using IDTSInputColumnCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSInputColumnCollection100;
-    using IDTSComponentMetaData = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSComponentMetaData100;
-    using IDTSExternalMetadataColumn = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSExternalMetadataColumn100;
-    using IDTSRuntimeConnection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSRuntimeConnection100;
-    using IDTSConnectionManagerFlatFile = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFile100;
-    using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrapper.IDTSConnectionManagerFlatFileColumn100;
-    using IDTSBufferManager = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSBufferManager100;
-#endif
 
 namespace Martin.SQLServer.Dts
 {
+    /// <summary>
+    /// Class to store the details about an IDTSOutput100, without the overhead of COM calls...
+    /// </summary>
     public class SSISOutput
     {
-        public SSISOutput()
+        /// <summary>
+        /// Creator of the SSISOutput class.  Will populate this class with all the relevant parts of an IDTSOutput100
+        /// </summary>
+        /// <param name="output">The IDTSOutput100 that you wish to collect all relevant data from</param>
+        /// <param name="bufferManager">The buffer manager, or null.  This is used for the collection of column lineage into buffers.</param>
+        public SSISOutput(IDTSOutput100 output, IDTSBufferManager100 bufferManager)
         {
             _customPropertyCollection = new Dictionary<string, SSISProperty>();
             _outputColumnCollection = new List<SSISOutputColumn>();
-        }
-
-        public SSISOutput(IDTSOutput output, IDTSBufferManager bufferManager)
-        {
-            _customPropertyCollection = new Dictionary<string, SSISProperty>();
-            _outputColumnCollection = new List<SSISOutputColumn>();
-            _name = "_" + output.Name.Replace(" ", String.Empty).Replace("_", String.Empty).Replace("@", String.Empty);
+            _name = "_" + System.Text.RegularExpressions.Regex.Replace(output.Name, @"[^a-zA-Z0-9]", String.Empty);
             _errorRowDisposition = output.ErrorRowDisposition;
 
             // Get the Custom Properties
@@ -80,18 +40,22 @@ namespace Martin.SQLServer.Dts
 
         private Dictionary<String, SSISProperty> _customPropertyCollection;
 
+        /// <summary>
+        /// Returns the CustomPropertyCollection
+        /// </summary>
         public Dictionary<String, SSISProperty> CustomPropertyCollection
         {
             get { return _customPropertyCollection; }
-            set { _customPropertyCollection = value; }
         }
 
         private List<SSISOutputColumn> _outputColumnCollection;
 
+        /// <summary>
+        /// Returns the list of SSISOutputColumns that were attached to the IDTSOutput100
+        /// </summary>
         public List<SSISOutputColumn> OutputColumnCollection
         {
             get { return _outputColumnCollection; }
-            set { _outputColumnCollection = value; }
         }
 
         private DTSRowDisposition _errorRowDisposition;
@@ -99,7 +63,6 @@ namespace Martin.SQLServer.Dts
         public DTSRowDisposition ErrorRowDisposition
         {
             get { return _errorRowDisposition; }
-            set { _errorRowDisposition = value; }
         }
 
         private String _name;
@@ -107,7 +70,6 @@ namespace Martin.SQLServer.Dts
         public String Name
         {
             get { return _name; }
-            set { _name = value.Replace(" ", String.Empty); }
         }
         
     }

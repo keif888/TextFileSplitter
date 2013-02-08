@@ -2,12 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
-
-using IDTSCustomProperty = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomProperty100;
-using IDTSCustomPropertyCollection = Microsoft.SqlServer.Dts.Pipeline.Wrapper.IDTSCustomPropertyCollection100;
-
-
-
 namespace Martin.SQLServer.Dts
 {
     internal class ManageProperties
@@ -92,7 +86,7 @@ namespace Martin.SQLServer.Dts
             }
             else
             {
-                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, System.Enum.GetName(typeof(Utilities.typeOfOutputEnum), propertyValue)));
+                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
                 return DTSValidationStatus.VS_ISCORRUPT;
             }
         }
@@ -106,7 +100,7 @@ namespace Martin.SQLServer.Dts
             }
             else
             {
-                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), propertyValue)));
+                this.PostError(MessageStrings.InvalidPropertyValue(propertyName, propertyValue));
                 return DTSValidationStatus.VS_ISCORRUPT;
             }
         }
@@ -172,10 +166,10 @@ namespace Martin.SQLServer.Dts
             }
         }
 
-        private DTSValidationStatus ValidatePropertyExists(IDTSCustomPropertyCollection customPropertyCollection, string propertyName, DTSValidationStatus oldStatus)
+        private DTSValidationStatus ValidatePropertyExists(IDTSCustomPropertyCollection100 customPropertyCollection, string propertyName, DTSValidationStatus oldStatus)
         {
 
-            foreach (IDTSCustomProperty property in customPropertyCollection)
+            foreach (IDTSCustomProperty100 property in customPropertyCollection)
             {
                 if (property.Name == propertyName)
                 {
@@ -188,10 +182,10 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region Public Validations
-        public DTSValidationStatus ValidateProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
+        public DTSValidationStatus ValidateProperties(IDTSCustomPropertyCollection100 customPropertyCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus resultStatus = oldStatus;
-            foreach (IDTSCustomProperty property in customPropertyCollection)
+            foreach (IDTSCustomProperty100 property in customPropertyCollection)
             {
                 resultStatus = ValidatePropertyValue(property.Name, property.Value, resultStatus);
             }
@@ -209,7 +203,7 @@ namespace Martin.SQLServer.Dts
             return resultStatus;
         }
 
-        public DTSValidationStatus ValidateComponentProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
+        public DTSValidationStatus ValidateComponentProperties(IDTSCustomPropertyCollection100 customPropertyCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus resultStatus = oldStatus;
             resultStatus = ValidatePropertyExists(customPropertyCollection, isTextDelmited, resultStatus);
@@ -220,7 +214,7 @@ namespace Martin.SQLServer.Dts
         }
 
 
-        public DTSValidationStatus ValidateOutputProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
+        public DTSValidationStatus ValidateOutputProperties(IDTSCustomPropertyCollection100 customPropertyCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus resultStatus = oldStatus;
             resultStatus = ValidatePropertyExists(customPropertyCollection, rowTypeValue, resultStatus);
@@ -229,7 +223,7 @@ namespace Martin.SQLServer.Dts
             return resultStatus;
         }
 
-        public DTSValidationStatus ValidateOutputColumnProperties(IDTSCustomPropertyCollection customPropertyCollection, DTSValidationStatus oldStatus)
+        public DTSValidationStatus ValidateOutputColumnProperties(IDTSCustomPropertyCollection100 customPropertyCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus resultStatus = oldStatus;
             resultStatus = ValidatePropertyExists(customPropertyCollection, usageOfColumn, resultStatus);
@@ -246,24 +240,24 @@ namespace Martin.SQLServer.Dts
 
         #region Add Properties
 
-        private static void AddCustomProperty(IDTSCustomPropertyCollection propertyCollection, string name, string description, object defaultValue)
+        private static void AddCustomProperty(IDTSCustomPropertyCollection100 propertyCollection, string name, string description, object defaultValue)
         {
             AddCustomProperty(propertyCollection, name, description, defaultValue, string.Empty, false);
         }
 
-        private static void AddCustomProperty(IDTSCustomPropertyCollection propertyCollection, string name, string description, object defaultValue, Boolean valueContainsID)
+        private static void AddCustomProperty(IDTSCustomPropertyCollection100 propertyCollection, string name, string description, object defaultValue, Boolean valueContainsID)
         {
             AddCustomProperty(propertyCollection, name, description, defaultValue, string.Empty, valueContainsID);
         }
 
-        private static void AddCustomProperty(IDTSCustomPropertyCollection propertyCollection, string name, string description, object defaultValue, string typeConverter)
+        private static void AddCustomProperty(IDTSCustomPropertyCollection100 propertyCollection, string name, string description, object defaultValue, string typeConverter)
         {
             AddCustomProperty(propertyCollection, name, description, defaultValue, typeConverter, false);
         }
 
-        private static void AddCustomProperty(IDTSCustomPropertyCollection propertyCollection, string name, string description, object defaultValue, string typeConverter, Boolean valueContainsID)
+        private static void AddCustomProperty(IDTSCustomPropertyCollection100 propertyCollection, string name, string description, object defaultValue, string typeConverter, Boolean valueContainsID)
         {
-            IDTSCustomProperty property = propertyCollection.New();
+            IDTSCustomProperty100 property = propertyCollection.New();
             property.Name = name;
             property.Description = description;
             property.Value = defaultValue;
@@ -282,7 +276,7 @@ namespace Martin.SQLServer.Dts
 
         #region Add To SSIS Stuff
 
-        public static void AddComponentProperties(IDTSCustomPropertyCollection propertyCollection)
+        public static void AddComponentProperties(IDTSCustomPropertyCollection100 propertyCollection)
         {
             AddCustomProperty(propertyCollection, isTextDelmited, MessageStrings.IsTextDelmitedPropDescription, true);
             AddCustomProperty(propertyCollection, textDelmiter, MessageStrings.TextDelmiterPropDescription, "\"");
@@ -290,7 +284,7 @@ namespace Martin.SQLServer.Dts
             AddCustomProperty(propertyCollection, treatEmptyStringsAsNull, MessageStrings.TreatEmptyStringsAsNullPropDescription, true);
         }
 
-        public static void AddOutputProperties(IDTSCustomPropertyCollection propertyCollection)
+        public static void AddOutputProperties(IDTSCustomPropertyCollection100 propertyCollection)
         {
             AddCustomProperty(propertyCollection, typeOfOutput, MessageStrings.TypeOfOutputPropDescription, Utilities.typeOfOutputEnum.DataRecords, typeof(Utilities.typeOfOutputEnum).AssemblyQualifiedName);
             AddCustomProperty(propertyCollection, rowTypeValue, MessageStrings.RowTypeValuePropDescription, String.Empty);
@@ -298,7 +292,7 @@ namespace Martin.SQLServer.Dts
         }
 
         
-        public static void AddOutputColumnProperties(IDTSCustomPropertyCollection propertyCollection)
+        public static void AddOutputColumnProperties(IDTSCustomPropertyCollection100 propertyCollection)
         {
             AddCustomProperty(propertyCollection, usageOfColumn, MessageStrings.UsageOfColumnPropDescription, Utilities.usageOfColumnEnum.Passthrough, typeof(Utilities.usageOfColumnEnum).AssemblyQualifiedName);
             AddCustomProperty(propertyCollection, keyOutputColumnID, MessageStrings.KeyOutputColumnIDPropDescription, -1, true);
@@ -330,11 +324,11 @@ namespace Martin.SQLServer.Dts
 
         #region Get Properties
 
-        public static object GetPropertyValue(IDTSCustomPropertyCollection propertyCollection, string name)
+        public static object GetPropertyValue(IDTSCustomPropertyCollection100 propertyCollection, string name)
         {
             for (int i = 0; i < propertyCollection.Count; i++)
             {
-                IDTSCustomProperty property = propertyCollection[i];
+                IDTSCustomProperty100 property = propertyCollection[i];
                 if (property.Name.Equals(name))
                 {
                     return property.Value;
@@ -359,11 +353,11 @@ namespace Martin.SQLServer.Dts
 
         #region Set Properties
 
-        public static Boolean SetPropertyValue(IDTSCustomPropertyCollection propertyCollection, string name, object value)
+        public static Boolean SetPropertyValue(IDTSCustomPropertyCollection100 propertyCollection, string name, object value)
         {
             for (int i = 0; i < propertyCollection.Count; i++)
             {
-                IDTSCustomProperty property = propertyCollection[i];
+                IDTSCustomProperty100 property = propertyCollection[i];
                 if (property.Name.Equals(name))
                 {
                     property.Value = value;
@@ -374,11 +368,11 @@ namespace Martin.SQLServer.Dts
             return false;
         }
 
-        public static Boolean SetContainsLineage(IDTSCustomPropertyCollection propertyCollection, string name, Boolean value)
+        public static Boolean SetContainsLineage(IDTSCustomPropertyCollection100 propertyCollection, string name, Boolean value)
         {
             for (int i = 0; i < propertyCollection.Count; i++)
             {
-                IDTSCustomProperty property = propertyCollection[i];
+                IDTSCustomProperty100 property = propertyCollection[i];
                 if (property.Name.Equals(name))
                 {
                     property.ContainsID = value;
