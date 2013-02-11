@@ -291,10 +291,10 @@ namespace Martin.SQLServer.Dts
 
             if (output.SynchronousInputID != 0)
             {
-                this.PostError(MessageStrings.OutputIsSyncronous);
+                this.PostError(MessageStrings.OutputIsSyncronous(output.Name));
                 returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISBROKEN);
             }
-
+            oldStatus = returnStatus;
             returnStatus = this.propertyManager.ValidateOutputProperties(output.CustomPropertyCollection, returnStatus);
             if (returnStatus != oldStatus)
             {
@@ -1218,6 +1218,7 @@ namespace Martin.SQLServer.Dts
             {
                 currentOutput = this.ComponentMetaData.OutputCollection.FindObjectByID(outputID);
                 Utilities.typeOfOutputEnum oldOutputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                int oldMasterID = (int)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID);
                 // If we are setting the masterRecordID, which points at the output that is the Master of this Child/ChildMaster...
                 if (propertyName == ManageProperties.masterRecordID)
                 {
@@ -1232,68 +1233,88 @@ namespace Martin.SQLServer.Dts
                             throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                         case Utilities.typeOfOutputEnum.ChildMasterRecord:
                         case Utilities.typeOfOutputEnum.ChildRecord:
-                            // Add the "MasterValue" columns into this record
-                            IDTSOutput masterOutput = null;
-                            try
+                            if (oldMasterID != (int)propertyValue)
                             {
-                                masterOutput = this.ComponentMetaData.OutputCollection.FindObjectByID((int)propertyValue);
-                            }
-                            catch
-                            {
-                                // If we couldn't find the output in the masterRecordID, then it's obviously wrong, so error out.
-                                throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
-                            }
-                            if (masterOutput == null)
-                            {
-                                // If we couldn't find the output in the masterRecordID, then it's obviously wrong, so error out.
-                                throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
-                            }
-                            Utilities.typeOfOutputEnum masterType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(masterOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
-                            if ((masterType == Utilities.typeOfOutputEnum.ChildMasterRecord) || (masterType == Utilities.typeOfOutputEnum.MasterRecord))
-                            {
-                                int columnPosition = 0;
-                                foreach (IDTSOutputColumn outputColumn in masterOutput.OutputColumnCollection)
+                                if (oldMasterID != -1)
                                 {
-                                    // increment the column position to avoid Key properties.
-                                    if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                    // Remove all the Master columns that are not -1's
+                                    List<int> columnsToRemove = new List<int>();
+                                    foreach (IDTSOutputColumn100 childColumn in currentOutput.OutputColumnCollection)
                                     {
-                                        columnPosition++;
-                                    }
-                                    else
-                                    {
-                                        // If it's a MasterValue, then it has to be propogated into this child.
-                                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+                                        if (((int)ManageProperties.GetPropertyValue(childColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) != -1)
+                                        && ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(childColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue))
                                         {
-                                            IDTSOutputColumn newOutputColumn = currentOutput.OutputColumnCollection.NewAt(columnPosition);
-                                            newOutputColumn.Name = outputColumn.Name;
-                                            newOutputColumn.Description = MessageStrings.KeyColumnDescription;
-                                            ManageProperties.AddOutputColumnProperties(newOutputColumn.CustomPropertyCollection);
-                                            ManageProperties.SetPropertyValue(newOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
-                                            // Make sure that we point at the ORIGINAL column ID...
-                                            if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) > 0)
-                                            {
-                                                ManageProperties.SetPropertyValue(newOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID));
-                                            }
-                                            else
-                                            {
-                                                ManageProperties.SetPropertyValue(newOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, outputColumn.LineageID);
-                                            }
-                                            newOutputColumn.SetDataTypeProperties(outputColumn.DataType, outputColumn.Length, outputColumn.Precision, outputColumn.Scale, outputColumn.CodePage);
+                                            columnsToRemove.Add(childColumn.ID);
+                                        }
+                                    }
+                                    foreach (int columnToRemoveID in columnsToRemove)
+                                    {
+                                        currentOutput.OutputColumnCollection.RemoveObjectByID(columnToRemoveID);
+                                    }
+                                }
+                                // Add the "MasterValue" columns into this record
+                                IDTSOutput masterOutput = null;
+                                try
+                                {
+                                    masterOutput = this.ComponentMetaData.OutputCollection.FindObjectByID((int)propertyValue);
+                                }
+                                catch
+                                {
+                                    // If we couldn't find the output in the masterRecordID, then it's obviously wrong, so error out.
+                                    throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
+                                }
+                                if (masterOutput == null)
+                                {
+                                    // If we couldn't find the output in the masterRecordID, then it's obviously wrong, so error out.
+                                    throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
+                                }
+                                Utilities.typeOfOutputEnum masterType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(masterOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
+                                if ((masterType == Utilities.typeOfOutputEnum.ChildMasterRecord) || (masterType == Utilities.typeOfOutputEnum.MasterRecord))
+                                {
+                                    int columnPosition = 0;
+                                    foreach (IDTSOutputColumn outputColumn in masterOutput.OutputColumnCollection)
+                                    {
+                                        // increment the column position to avoid Key properties.
+                                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                        {
                                             columnPosition++;
-                                            // If WE are a ChildMaster, then we need to propogate the new columns to OUR children.
-                                            // The UI Doesn't support this, but the "Advanced Editor" does...
-                                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord)
+                                        }
+                                        else
+                                        {
+                                            // If it's a MasterValue, then it has to be propogated into this child.
+                                            if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
                                             {
-                                                PushMasterValueColumnsToChildren(currentOutput, outputColumn.ID, outputColumn);
+                                                IDTSOutputColumn newOutputColumn = currentOutput.OutputColumnCollection.NewAt(columnPosition);
+                                                newOutputColumn.Name = outputColumn.Name;
+                                                newOutputColumn.Description = MessageStrings.KeyColumnDescription;
+                                                ManageProperties.AddOutputColumnProperties(newOutputColumn.CustomPropertyCollection);
+                                                ManageProperties.SetPropertyValue(newOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
+                                                // Make sure that we point at the ORIGINAL column ID...
+                                                if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) > 0)
+                                                {
+                                                    ManageProperties.SetPropertyValue(newOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID));
+                                                }
+                                                else
+                                                {
+                                                    ManageProperties.SetPropertyValue(newOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, outputColumn.LineageID);
+                                                }
+                                                newOutputColumn.SetDataTypeProperties(outputColumn.DataType, outputColumn.Length, outputColumn.Precision, outputColumn.Scale, outputColumn.CodePage);
+                                                columnPosition++;
+                                                // If WE are a ChildMaster, then we need to propogate the new columns to OUR children.
+                                                // The UI Doesn't support this, but the "Advanced Editor" does...
+                                                if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord)
+                                                {
+                                                    PushMasterValueColumnsToChildren(currentOutput, outputColumn.ID, outputColumn);
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                // You can only set the masterRecordID to a Master or MasterChild output...
-                                throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
+                                else
+                                {
+                                    // You can only set the masterRecordID to a Master or MasterChild output...
+                                    throw new COMException(MessageStrings.InvalidPropertyValue(propertyName, propertyValue), E_FAIL);
+                                }
                             }
                             break;
                         default:
