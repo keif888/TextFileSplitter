@@ -1171,24 +1171,30 @@ namespace Martin.SQLServer.Dts
                         }
                         else if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
                         {
-                            if (((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.MasterRecord)
-                             || ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ChildMasterRecord))
+                            switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
                             {
-                                if ((int)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) <= 0)
-                                {
-                                    // Need to delete the "children"!
-                                    RemoveLinkedColumnFromOutputs(thisColumn);
-                                }
-                                else
-                                {
-                                    throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                                }
+                                case Utilities.typeOfOutputEnum.ErrorRecords:
+                                case Utilities.typeOfOutputEnum.KeyRecords:
+                                case Utilities.typeOfOutputEnum.DataRecords:
+                                case Utilities.typeOfOutputEnum.PassThrough:
+                                case Utilities.typeOfOutputEnum.ChildRecord:
+                                case Utilities.typeOfOutputEnum.RowsProcessed:
+                                    break;
+                                case Utilities.typeOfOutputEnum.MasterRecord:
+                                case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                                    if ((int)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) <= 0)
+                                    {
+                                        // Need to delete the "children"!
+                                        RemoveLinkedColumnFromOutputs(thisColumn);
+                                    }
+                                    else
+                                    {
+                                        throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                                    }
+                                    break;
+                                default:
+                                    break;
                             }
-                            else
-                            {
-                                throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                            }
-
                         }
                     }
                 }
