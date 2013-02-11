@@ -1359,12 +1359,18 @@ namespace Martin.SQLServer.Dts
                                 case Utilities.typeOfOutputEnum.DataRecords:
                                 case Utilities.typeOfOutputEnum.ChildRecord:
                                     // Have to Prevent if there are already Child Records!
+                                    Boolean childRecords = false;
                                         foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
                                         {
                                             if ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == outputID)
                                             {
-                                                throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(output.Name), E_FAIL);
+                                                childRecords = true;
+                                                this.PostError(MessageStrings.MasterHasChild(currentOutput.Name, output.Name));
                                             }
+                                        }
+                                        if (childRecords)
+                                        {
+                                            throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(currentOutput.Name), E_FAIL);
                                         }
                                     // Ok, so there weren't any children (Throw!)
                                     // Set any Master Columns to Passthrough

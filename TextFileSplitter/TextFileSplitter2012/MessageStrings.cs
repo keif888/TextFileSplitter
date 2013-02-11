@@ -107,7 +107,7 @@ namespace Martin.SQLServer.Dts
             return String.Format(MasterColumnHasKeyOutputIDPattern, columnName, outputName);
         }
 
-        private const string ThereAreChildRecordsForMasterPattern = "The Output {0} is a child of the output that you are attempting to change.  You can not change it's type.";
+        private const string ThereAreChildRecordsForMasterPattern = "The Output {0} has a child.  You can not change it's type.";
         public static string ThereAreChildRecordsForMaster(string outputName)
         {
             return String.Format(ThereAreChildRecordsForMasterPattern, outputName);
@@ -129,6 +129,12 @@ namespace Martin.SQLServer.Dts
         public static string OutputIsSyncronous(string outputName)
         {
             return String.Format(OutputIsSyncronousPattern, outputName);
+        }
+
+        private const string MasterHasChildPattern = "Output {0} has a child {1} which is preventing it being changed.";
+        public static string MasterHasChild(string masterOutputName, string childOutputName)
+        {
+            return String.Format(MasterHasChildPattern, masterOutputName, childOutputName);
         }
 
         #endregion
