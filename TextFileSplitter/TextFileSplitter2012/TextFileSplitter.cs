@@ -1141,74 +1141,75 @@ namespace Martin.SQLServer.Dts
         public override void DeleteOutputColumn(int outputID, int outputColumnID)
         {
             IDTSOutput100 thisOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(outputID);
-            if (thisOutput != null)
+            IDTSOutputColumn thisColumn = thisOutput.OutputColumnCollection.GetObjectByID(outputColumnID);
+            Utilities.typeOfOutputEnum thisOutputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
+
+            switch (thisOutputType)
             {
-                if (thisOutput.IsErrorOut)
-                    this.PostErrorAndThrow(MessageStrings.CantChangeOutputProperties("Error"));
+                case Utilities.typeOfOutputEnum.ErrorRecords:
+                    throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
+                case Utilities.typeOfOutputEnum.RowsProcessed:
+                    throw new COMException(MessageStrings.CantChangeOutputProperties("RowsProcessed"), E_FAIL);
+                default:
+                    break;
+            }
+
+            if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+            {
+                if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) != Utilities.typeOfOutputEnum.KeyRecords)
+                {
+                    throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                }
                 else
                 {
-                    IDTSOutputColumn100 thisColumn = thisOutput.OutputColumnCollection.GetObjectByID(outputColumnID);
-                    if (thisColumn != null)
+                    // Need to delete the "children"!
+                    foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
                     {
-                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                        if (!output.IsErrorOut)
                         {
-                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) != Utilities.typeOfOutputEnum.KeyRecords)
+                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.DataRecords)
                             {
-                                throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                            }
-                            else
-                            {
-                                // Need to delete the "children"!
-                                foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-                                {
-                                    if (!output.IsErrorOut)
+                                int columnIDToDelete = -1;
+                                foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
+                                    if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                                     {
-                                        if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.DataRecords)
-                                        {
-                                            int columnIDToDelete = -1;
-                                            foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
-                                                if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
-                                                {
-                                                    columnIDToDelete = outputColumn.ID;
-                                                    break;
-                                                }
-                                            if (columnIDToDelete != -1)
-                                            {
-                                                output.OutputColumnCollection.RemoveObjectByID(columnIDToDelete);
-                                            }
-                                        }
+                                        columnIDToDelete = outputColumn.ID;
+                                        break;
                                     }
+                                if (columnIDToDelete != -1)
+                                {
+                                    output.OutputColumnCollection.RemoveObjectByID(columnIDToDelete);
                                 }
                             }
                         }
-                        else if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
-                        {
-                            switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
-                            {
-                                case Utilities.typeOfOutputEnum.ErrorRecords:
-                                case Utilities.typeOfOutputEnum.KeyRecords:
-                                case Utilities.typeOfOutputEnum.DataRecords:
-                                case Utilities.typeOfOutputEnum.PassThrough:
-                                case Utilities.typeOfOutputEnum.ChildRecord:
-                                case Utilities.typeOfOutputEnum.RowsProcessed:
-                                    break;
-                                case Utilities.typeOfOutputEnum.MasterRecord:
-                                case Utilities.typeOfOutputEnum.ChildMasterRecord:
-                                    if ((int)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) <= 0)
-                                    {
-                                        // Need to delete the "children"!
-                                        RemoveLinkedColumnFromOutputs(thisColumn);
-                                    }
-                                    else
-                                    {
-                                        throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
                     }
+                }
+            }
+            else if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
+            {
+                switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                {
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                    case Utilities.typeOfOutputEnum.KeyRecords:
+                    case Utilities.typeOfOutputEnum.DataRecords:
+                    case Utilities.typeOfOutputEnum.PassThrough:
+                    case Utilities.typeOfOutputEnum.ChildRecord:
+                    case Utilities.typeOfOutputEnum.RowsProcessed:
+                        break;
+                    case Utilities.typeOfOutputEnum.MasterRecord:
+                    case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                        if ((int)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) <= 0)
+                        {
+                            // Need to delete the "children"!
+                            RemoveLinkedColumnFromOutputs(thisColumn);
+                        }
+                        else
+                        {
+                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
             base.DeleteOutputColumn(outputID, outputColumnID);
@@ -1237,6 +1238,17 @@ namespace Martin.SQLServer.Dts
                 currentOutput = this.ComponentMetaData.OutputCollection.FindObjectByID(outputID);
                 Utilities.typeOfOutputEnum oldOutputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
                 int oldMasterID = (int)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID);
+                switch (oldOutputType)
+                {
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                        throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
+                    case Utilities.typeOfOutputEnum.PassThrough:
+                        throw new COMException(MessageStrings.CantChangeOutputProperties("PassThrough"), E_FAIL);
+                    case Utilities.typeOfOutputEnum.RowsProcessed:
+                        throw new COMException(MessageStrings.CantChangeOutputProperties("RowsProcessed"), E_FAIL);
+                    default:
+                        break;
+                }
                 // If we are setting the masterRecordID, which points at the output that is the Master of this Child/ChildMaster...
                 switch (propertyName)
                 {
@@ -1244,11 +1256,8 @@ namespace Martin.SQLServer.Dts
                     #region masterRecordID
                     switch (oldOutputType)
                     {
-                        case Utilities.typeOfOutputEnum.ErrorRecords:
-                            throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
                         case Utilities.typeOfOutputEnum.KeyRecords:
                         case Utilities.typeOfOutputEnum.DataRecords:
-                        case Utilities.typeOfOutputEnum.PassThrough:
                         case Utilities.typeOfOutputEnum.MasterRecord:
                             // You can NOT set the masterRecordID for the output types above...
                             throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
@@ -1339,7 +1348,7 @@ namespace Martin.SQLServer.Dts
                             }
                             break;
                         default:
-                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
+                            break;
                     }
                     #endregion
                         break;
@@ -1347,12 +1356,8 @@ namespace Martin.SQLServer.Dts
                     #region typeOfOutput
                     switch (oldOutputType)
                     {
-                        case Utilities.typeOfOutputEnum.ErrorRecords:
-                            throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
                         case Utilities.typeOfOutputEnum.KeyRecords:
                             throw new COMException(MessageStrings.CantChangeOutputProperties("Key"), E_FAIL);
-                        case Utilities.typeOfOutputEnum.PassThrough:
-                            throw new COMException(MessageStrings.CantChangeOutputProperties("PassThrough"), E_FAIL);
                         default:
                             break;
                     }
@@ -1552,17 +1557,8 @@ namespace Martin.SQLServer.Dts
                         break;
                     case ManageProperties.rowTypeValue:
                         #region rowTypeValue
-                        switch (oldOutputType)
-                        {
-                            case Utilities.typeOfOutputEnum.ErrorRecords:
-                                throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
-                            case Utilities.typeOfOutputEnum.PassThrough:
-                                throw new COMException(MessageStrings.CantChangeOutputProperties("PassThrough"), E_FAIL);
-                            case Utilities.typeOfOutputEnum.RowsProcessed:
-                                throw new COMException(MessageStrings.CantChangeOutputProperties("RowsProcessed"), E_FAIL);
-                            default:
-                                break;
-                        }
+                        // You are allowed to set this!
+                        // The places you can't have already thrown!
                         #endregion
                         break;
                     default:
@@ -1587,6 +1583,9 @@ namespace Martin.SQLServer.Dts
                         break;
                     case Utilities.typeOfOutputEnum.KeyRecords:
                         this.PostErrorAndThrow(MessageStrings.CannotDeleteKeyOutput);
+                        break;
+                    case Utilities.typeOfOutputEnum.RowsProcessed:
+                        this.PostErrorAndThrow(MessageStrings.CannotDeleteRowsProcessedOutput);
                         break;
                     case Utilities.typeOfOutputEnum.ChildRecord:
                     case Utilities.typeOfOutputEnum.DataRecords:

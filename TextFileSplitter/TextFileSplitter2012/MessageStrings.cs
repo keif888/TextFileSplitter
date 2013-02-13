@@ -203,6 +203,7 @@ namespace Martin.SQLServer.Dts
         public const string CannotDeleteKeyOutput = "You can NOT delete the Key Output!";
         public const string CannotDeleteErrorOutput = "You can NOT delete the error output!";
         public const string CannotDeletePassThroughOutput = "You can NOT delete the PassThrough output!";
+        public const string CannotDeleteRowsProcessedOutput = "You can NOT delete the Rows Processed output!";
         public const string OnlyStringDataTypesSupported = "You can only use String data types with this component";
         public const string BadParsingGraphError = "WTF...  We have a Bad Parsing state from parsing the string!";
         public const string MustBeFlatFileConnection = "The connection manager MUST be a Flat File connection mamager";
