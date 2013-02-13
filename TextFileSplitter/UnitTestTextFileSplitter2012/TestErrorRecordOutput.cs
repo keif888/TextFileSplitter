@@ -453,5 +453,38 @@ namespace UnitTestTextFileSplitter2012
 
             Assert.IsTrue(exceptionThrown, "Exception Not Thrown");
         }
+
+        [TestMethod]
+        public void TestChangeErrorOutputSetColumnDataType()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 errorOutput = textFileSplitter.OutputCollection[1];
+
+            Boolean exceptionThrown = false;
+            try
+            {
+                instance.SetOutputColumnDataTypeProperties(errorOutput.ID, errorOutput.OutputColumnCollection[0].ID, DataType.DT_STR, 512, 0, 0, 1252);
+            }
+            catch (COMException ex)
+            {
+                Assert.AreEqual(MessageStrings.CantChangeOutputProperties("Error"), ex.Message, "Exception Message Wrong");
+                exceptionThrown = true;
+            }
+
+            Assert.IsTrue(exceptionThrown, "Exception Not Thrown");
+        }
     }
 }
