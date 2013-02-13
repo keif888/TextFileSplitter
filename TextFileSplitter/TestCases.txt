@@ -1,0 +1,42 @@
+Test Cases:
+Outputs:
+Error Records
+	Delete Output (Exception) - MessageStrings.CannotDeleteErrorOutput
+	Change typeOfOutput to anything else (Exception) - MessageStrings.CantChangeOutputProperties("Error")
+	Change masterRecordID (Exception) - MessageStrings.CantChangeOutputProperties("Error")
+	Change rowTypeValue (Exception) - MessageStrings.CantChangeOutputProperties("Error")
+	Add Column (Exception) - MessageStrings.CantChangeOutputProperties("Error")
+	Delete Column (Exception) - MessageStrings.CantChangeOutputProperties("Error")
+	Set ANY Column property on ANY column (Exception) - MessageStrings.CantChangeOutputProperties("Error")
+	Set ANY Column data type values (Exception) - MessageStrings.CantChangeOutputProperties("Error")
+	
+Rows Processed
+	Delete Output (Exception) - MessageStrings.CannotDeleteRowsProcessedOutput
+	Change typeOfOutput to anything else (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
+	Change masterRecordID (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
+	Change rowTypeValue (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
+	Add Column (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
+	Delete Column (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
+	Set ANY Column property on ANY column (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
+	Set ANY Column data type values (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
+	
+Key Records  ** Not Done Yet **
+	Delete Output (Exception) - MessageStrings.CannotDeleteKeyOutput
+	Change typeOfOutput to anything else (Exception) - MessageStrings.CantChangeOutputProperties("Key")
+	Change masterRecordID (Exception) - MessageStrings.CantChangeOutputProperties("Key")
+	Change rowTypeValue (Succeed)
+	Add Column (Succeed)
+	Delete Passthrough Column (Succeed)
+	Delete Key Column (Succeed)
+	Set Column from Passthrough to Key (Succeed) - Validate that all outputs but RowsProcessed output get the Key column added
+	Set Column from Key to Passthrough (Succeed) - Validate that all outputs but RowsProcessed output get the Key column removed
+	Set Column from Passthrough to anything but Key (Exception) - MessageStrings.InvalidPropertyValue(...)
+	Set Passthrough Column Data Types (Succeed)
+	Set Key Column Data Types (Succeed) - Validate that all outputs but RowsProcessed output get the Key column changed
+	
+Data Records
+Pass Through
+Master Records
+Child Master Records
+Child Records
+

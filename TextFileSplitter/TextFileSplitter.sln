@@ -6,6 +6,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A6C86C09-9B0F-4BFF-AA1E-E20A9295D773}"
 	ProjectSection(SolutionItems) = preProject
 		Performance1.psess = Performance1.psess
+		TestCases.txt = TestCases.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileHelpers", "FileHelpers\FileHelpers.csproj", "{EB8633FF-CEED-40EE-8D1A-CA1BF5678C42}"
