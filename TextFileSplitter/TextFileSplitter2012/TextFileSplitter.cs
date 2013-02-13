@@ -860,11 +860,23 @@ namespace Martin.SQLServer.Dts
             }
             if (this.propertyManager.ValidatePropertyValue(propertyName, propertyValue, DTSValidationStatus.VS_ISVALID) == DTSValidationStatus.VS_ISVALID)
             {
+                IDTSOutput thisOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(outputID);
+                IDTSOutputColumn thisColumn = thisOutput.OutputColumnCollection.GetObjectByID(outputColumnID);
+                Utilities.typeOfOutputEnum thisOutputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
+
+                switch (thisOutputType)
+                {
+                    case Utilities.typeOfOutputEnum.ErrorRecords:
+                        throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
+                    case Utilities.typeOfOutputEnum.RowsProcessed:
+                        throw new COMException(MessageStrings.CantChangeOutputProperties("RowsProcessed"), E_FAIL);
+                    default:
+                        break;
+                }
+
                 // We need to add/remove the key columns to the outputs...
                 if (propertyName == ManageProperties.usageOfColumn)
                 {
-                    IDTSOutput thisOutput = this.ComponentMetaData.OutputCollection.GetObjectByID(outputID);
-                    IDTSOutputColumn thisColumn = thisOutput.OutputColumnCollection.GetObjectByID(outputColumnID);
                     Utilities.usageOfColumnEnum oldValue = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
                     switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
                     {
@@ -1226,11 +1238,14 @@ namespace Martin.SQLServer.Dts
                 Utilities.typeOfOutputEnum oldOutputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.typeOfOutput);
                 int oldMasterID = (int)ManageProperties.GetPropertyValue(currentOutput.CustomPropertyCollection, ManageProperties.masterRecordID);
                 // If we are setting the masterRecordID, which points at the output that is the Master of this Child/ChildMaster...
-                if (propertyName == ManageProperties.masterRecordID)
+                switch (propertyName)
                 {
+                    case ManageProperties.masterRecordID:
+                    #region masterRecordID
                     switch (oldOutputType)
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
+                            throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
                         case Utilities.typeOfOutputEnum.KeyRecords:
                         case Utilities.typeOfOutputEnum.DataRecords:
                         case Utilities.typeOfOutputEnum.PassThrough:
@@ -1326,9 +1341,21 @@ namespace Martin.SQLServer.Dts
                         default:
                             throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                     }
-                }
-                else if (propertyName == ManageProperties.typeOfOutput)
-                {
+                    #endregion
+                        break;
+                    case ManageProperties.typeOfOutput:
+                    #region typeOfOutput
+                    switch (oldOutputType)
+                    {
+                        case Utilities.typeOfOutputEnum.ErrorRecords:
+                            throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
+                        case Utilities.typeOfOutputEnum.KeyRecords:
+                            throw new COMException(MessageStrings.CantChangeOutputProperties("Key"), E_FAIL);
+                        case Utilities.typeOfOutputEnum.PassThrough:
+                            throw new COMException(MessageStrings.CantChangeOutputProperties("PassThrough"), E_FAIL);
+                        default:
+                            break;
+                    }
                     switch ((Utilities.typeOfOutputEnum)propertyValue)
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -1343,10 +1370,6 @@ namespace Martin.SQLServer.Dts
                     List<int> columnsToDelete = new List<int>();
                     switch (oldOutputType)
                     {
-                        case Utilities.typeOfOutputEnum.ErrorRecords:
-                        case Utilities.typeOfOutputEnum.KeyRecords:
-                        case Utilities.typeOfOutputEnum.PassThrough:
-                            throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                         case Utilities.typeOfOutputEnum.MasterRecord:
                             #region MasterRecord
                             switch ((Utilities.typeOfOutputEnum)propertyValue)
@@ -1525,6 +1548,25 @@ namespace Martin.SQLServer.Dts
                         default:
                             throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                     }
+                    #endregion
+                        break;
+                    case ManageProperties.rowTypeValue:
+                        #region rowTypeValue
+                        switch (oldOutputType)
+                        {
+                            case Utilities.typeOfOutputEnum.ErrorRecords:
+                                throw new COMException(MessageStrings.CantChangeOutputProperties("Error"), E_FAIL);
+                            case Utilities.typeOfOutputEnum.PassThrough:
+                                throw new COMException(MessageStrings.CantChangeOutputProperties("PassThrough"), E_FAIL);
+                            case Utilities.typeOfOutputEnum.RowsProcessed:
+                                throw new COMException(MessageStrings.CantChangeOutputProperties("RowsProcessed"), E_FAIL);
+                            default:
+                                break;
+                        }
+                        #endregion
+                        break;
+                    default:
+                        throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                 }
                 return base.SetOutputProperty(outputID, propertyName, propertyValue);
             }
