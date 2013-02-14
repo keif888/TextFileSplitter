@@ -30,7 +30,7 @@ namespace UnitTestTextFileSplitter2012
 
             instance.ProvideComponentProperties();
 
-            Assert.AreEqual(3, textFileSplitter.Version);
+            Assert.AreEqual(4, textFileSplitter.Version);
             Assert.AreEqual(true, textFileSplitter.UsesDispositions);
             Assert.AreEqual("http://TextFileSplitter.codeplex.com/", textFileSplitter.ContactInfo);
             Assert.AreEqual(true, (Boolean)textFileSplitter.CustomPropertyCollection[ManageProperties.isTextDelmited].Value);
@@ -73,7 +73,7 @@ namespace UnitTestTextFileSplitter2012
                 }
             }
 
-            Assert.AreEqual(3, textFileSplitter.Version);
+            Assert.AreEqual(4, textFileSplitter.Version);
             textFileSplitter.Version = 0;
 
             string packageXML, package2XML;
@@ -91,7 +91,7 @@ namespace UnitTestTextFileSplitter2012
             thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
             dataFlowTask = thMainPipe.InnerObject as MainPipe;
             textFileSplitter = dataFlowTask.ComponentMetaDataCollection[0];
-            Assert.AreEqual(3, textFileSplitter.Version, "Version failed to match on reload");
+            Assert.AreEqual(4, textFileSplitter.Version, "Version failed to match on reload");
             foreach (IDTSOutput100 output in textFileSplitter.OutputCollection)
             {
                 if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
@@ -504,8 +504,8 @@ namespace UnitTestTextFileSplitter2012
             newOutput.Name = "NewOutput";
 
             Assert.AreEqual(DTSValidationStatus.VS_ISBROKEN, instance.Validate());
-            Assert.AreEqual(1, events.errorMessages.Count);
-            Assert.AreEqual(String.Format("[Error] Text File Splitter Source: {0}", MessageStrings.InvalidPassKeyOutput), events.errorMessages[0]);
+            Assert.AreEqual(2, events.errorMessages.Count);
+            Assert.IsTrue(events.errorMessages.Contains(String.Format("[Error] Text File Splitter Source: {0}", MessageStrings.InvalidPassKeyOutput)), MessageStrings.InvalidPassKeyOutput);
         }
 
         [TestMethod]
@@ -717,18 +717,15 @@ namespace UnitTestTextFileSplitter2012
             IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
             IDTSOutputColumn100 keyColumn3 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
 
-            instance.SetOutputColumnProperty(keyID, keyColumn1.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-            instance.SetOutputColumnProperty(keyID, keyColumn3.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-
             // Add a master Output with 4 columns, 1 as Master
             IDTSOutput100 masterOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, numberOfRowsOutput.ID);
             masterOutput.Name = "masterOutput";
             int masterID = masterOutput.ID;
             instance.SetOutputProperty(masterID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.MasterRecord);
-            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn1", String.Empty);
-            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn2", String.Empty);
-            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn3", String.Empty);
-            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 5, "MasterColumn4", String.Empty);
+            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 1, "MasterColumn1", String.Empty);
+            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn2", String.Empty);
+            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn3", String.Empty);
+            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn4", String.Empty);
             instance.SetOutputColumnProperty(masterID, masterColumn2.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
 
             // Add a child Output with 2 columns.
@@ -737,24 +734,22 @@ namespace UnitTestTextFileSplitter2012
             int childID = childOutput.ID;
             instance.SetOutputProperty(childID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildRecord);
             instance.SetOutputProperty(childID, ManageProperties.masterRecordID, masterID);
-            IDTSOutputColumn100 childColumn1 = instance.InsertOutputColumnAt(childID, 3, "ChildColumn1", String.Empty);
-            IDTSOutputColumn100 childColumn2 = instance.InsertOutputColumnAt(childID, 4, "ChildColumn2", String.Empty);
+            IDTSOutputColumn100 childColumn1 = instance.InsertOutputColumnAt(childID, 2, "ChildColumn1", String.Empty);
+            IDTSOutputColumn100 childColumn2 = instance.InsertOutputColumnAt(childID, 3, "ChildColumn2", String.Empty);
 
             // Make sure that the output is correct before resetting Master Record ID
             Assert.AreEqual(DTSValidationStatus.VS_ISVALID, instance.Validate(), "Validation Failed");
-            Assert.AreEqual(5, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
+            Assert.AreEqual(4, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
 
             instance.SetOutputProperty(childID, ManageProperties.masterRecordID, masterID);
 
             Assert.AreEqual(DTSValidationStatus.VS_ISVALID, instance.Validate(), "Second Validation Failed");
-            Assert.AreEqual(5, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
+            Assert.AreEqual(4, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
             List<String> columnNames = new List<string>();
             foreach (IDTSOutputColumn100 childColumn in childOutput.OutputColumnCollection)
             {
                 columnNames.Add(childColumn.Name);
             }
-            Assert.IsTrue(columnNames.Contains("KeyColumn1"), "KeyColumn1");
-            Assert.IsTrue(columnNames.Contains("KeyColumn3"), "KeyColumn3");
             Assert.IsTrue(columnNames.Contains("MasterColumn2"), "MasterColumn2");
             Assert.IsTrue(columnNames.Contains("ChildColumn1"), "ChildColumn1");
             Assert.IsTrue(columnNames.Contains("ChildColumn2"), "ChildColumn2");
@@ -830,18 +825,15 @@ namespace UnitTestTextFileSplitter2012
             IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
             IDTSOutputColumn100 keyColumn3 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
 
-            instance.SetOutputColumnProperty(keyID, keyColumn1.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-            instance.SetOutputColumnProperty(keyID, keyColumn3.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-
             // Add a master Output with 4 columns, 1 as Master
             IDTSOutput100 masterOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, numberOfRowsOutput.ID);
             masterOutput.Name = "masterOutput";
             int masterID = masterOutput.ID;
             instance.SetOutputProperty(masterID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.MasterRecord);
-            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn1", String.Empty);
-            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn2", String.Empty);
-            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn3", String.Empty);
-            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 5, "MasterColumn4", String.Empty);
+            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 1, "MasterColumn1", String.Empty);
+            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn2", String.Empty);
+            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn3", String.Empty);
+            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn4", String.Empty);
             instance.SetOutputColumnProperty(masterID, masterColumn2.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
 
             // Add a child Output with 2 columns.
@@ -850,24 +842,22 @@ namespace UnitTestTextFileSplitter2012
             int childID = childOutput.ID;
             instance.SetOutputProperty(childID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildRecord);
             instance.SetOutputProperty(childID, ManageProperties.masterRecordID, masterID);
-            IDTSOutputColumn100 childColumn1 = instance.InsertOutputColumnAt(childID, 3, "ChildColumn1", String.Empty);
-            IDTSOutputColumn100 childColumn2 = instance.InsertOutputColumnAt(childID, 4, "ChildColumn2", String.Empty);
+            IDTSOutputColumn100 childColumn1 = instance.InsertOutputColumnAt(childID, 2, "ChildColumn1", String.Empty);
+            IDTSOutputColumn100 childColumn2 = instance.InsertOutputColumnAt(childID, 3, "ChildColumn2", String.Empty);
 
             // Make sure that the output is correct before resetting Master Record ID
             Assert.AreEqual(DTSValidationStatus.VS_ISVALID, instance.Validate(), "Validation Failed");
-            Assert.AreEqual(5, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
+            Assert.AreEqual(4, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
 
             instance.SetOutputProperty(childID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.DataRecords);
 
             Assert.AreEqual(DTSValidationStatus.VS_ISVALID, instance.Validate(), "Second Validation Failed");
-            Assert.AreEqual(4, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
+            Assert.AreEqual(3, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
             List<String> columnNames = new List<string>();
             foreach (IDTSOutputColumn100 childColumn in childOutput.OutputColumnCollection)
             {
                 columnNames.Add(childColumn.Name);
             }
-            Assert.IsTrue(columnNames.Contains("KeyColumn1"), "KeyColumn1");
-            Assert.IsTrue(columnNames.Contains("KeyColumn3"), "KeyColumn3");
             Assert.IsTrue(columnNames.Contains("ChildColumn1"), "ChildColumn1");
             Assert.IsTrue(columnNames.Contains("ChildColumn2"), "ChildColumn2");
         }
@@ -941,18 +931,15 @@ namespace UnitTestTextFileSplitter2012
             IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
             IDTSOutputColumn100 keyColumn3 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
 
-            instance.SetOutputColumnProperty(keyID, keyColumn1.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-            instance.SetOutputColumnProperty(keyID, keyColumn3.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-
             // Add a master Output with 4 columns, 1 as Master
             IDTSOutput100 masterOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, numberOfRowsOutput.ID);
             masterOutput.Name = "masterOutput";
             int masterID = masterOutput.ID;
             instance.SetOutputProperty(masterID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.MasterRecord);
-            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn1", String.Empty);
-            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn2", String.Empty);
-            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn3", String.Empty);
-            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 5, "MasterColumn4", String.Empty);
+            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 1, "MasterColumn1", String.Empty);
+            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn2", String.Empty);
+            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn3", String.Empty);
+            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn4", String.Empty);
             instance.SetOutputColumnProperty(masterID, masterColumn2.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
 
             // Add a child Output with 2 columns.
@@ -961,12 +948,12 @@ namespace UnitTestTextFileSplitter2012
             int childID = childOutput.ID;
             instance.SetOutputProperty(childID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildRecord);
             instance.SetOutputProperty(childID, ManageProperties.masterRecordID, masterID);
-            IDTSOutputColumn100 childColumn1 = instance.InsertOutputColumnAt(childID, 3, "ChildColumn1", String.Empty);
-            IDTSOutputColumn100 childColumn2 = instance.InsertOutputColumnAt(childID, 4, "ChildColumn2", String.Empty);
+            IDTSOutputColumn100 childColumn1 = instance.InsertOutputColumnAt(childID, 2, "ChildColumn1", String.Empty);
+            IDTSOutputColumn100 childColumn2 = instance.InsertOutputColumnAt(childID, 3, "ChildColumn2", String.Empty);
 
             // Make sure that the output is correct before resetting Master Record ID
             Assert.AreEqual(DTSValidationStatus.VS_ISVALID, instance.Validate(), "Validation Failed");
-            Assert.AreEqual(5, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
+            Assert.AreEqual(4, childOutput.OutputColumnCollection.Count, "Incorrect Number of Columns");
 
             bool exceptionThrown = false;
             try
@@ -1053,18 +1040,15 @@ namespace UnitTestTextFileSplitter2012
             IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
             IDTSOutputColumn100 keyColumn3 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
 
-            instance.SetOutputColumnProperty(keyID, keyColumn1.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-            instance.SetOutputColumnProperty(keyID, keyColumn3.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-
             // Add a master Output with 4 columns, 1 as Master
             IDTSOutput100 masterOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, numberOfRowsOutput.ID);
             masterOutput.Name = "masterOutput";
             int masterID = masterOutput.ID;
             instance.SetOutputProperty(masterID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.MasterRecord);
-            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn1", String.Empty);
-            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn2", String.Empty);
-            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn3", String.Empty);
-            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 5, "MasterColumn4", String.Empty);
+            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 1, "MasterColumn1", String.Empty);
+            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn2", String.Empty);
+            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn3", String.Empty);
+            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn4", String.Empty);
             instance.SetOutputColumnProperty(masterID, masterColumn2.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
 
             // Add a masterChild Output with 3 columns.
@@ -1073,9 +1057,9 @@ namespace UnitTestTextFileSplitter2012
             int masterChildID = masterChildOutput.ID;
             instance.SetOutputProperty(masterChildID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildMasterRecord);
             instance.SetOutputProperty(masterChildID, ManageProperties.masterRecordID, masterID);
-            IDTSOutputColumn100 childColumn1 = instance.InsertOutputColumnAt(masterChildID, 3, "ChildMasterColumn1", String.Empty);
-            childColumn1 = instance.InsertOutputColumnAt(masterChildID, 4, "ChildMasterColumn2", String.Empty);
-            childColumn1 = instance.InsertOutputColumnAt(masterChildID, 5, "ChildMasterColumn3", String.Empty);
+            IDTSOutputColumn100 childColumn1 = instance.InsertOutputColumnAt(masterChildID, 2, "ChildMasterColumn1", String.Empty);
+            childColumn1 = instance.InsertOutputColumnAt(masterChildID, 3, "ChildMasterColumn2", String.Empty);
+            childColumn1 = instance.InsertOutputColumnAt(masterChildID, 4, "ChildMasterColumn3", String.Empty);
             instance.SetOutputColumnProperty(masterChildID, childColumn1.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
 
             // Add a child Output with 2 columns.
@@ -1084,13 +1068,13 @@ namespace UnitTestTextFileSplitter2012
             int childID2 = childOutput2.ID;
             instance.SetOutputProperty(childID2, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildRecord);
             instance.SetOutputProperty(childID2, ManageProperties.masterRecordID, masterChildID);
-            IDTSOutputColumn100 childColumn2 = instance.InsertOutputColumnAt(childID2, 4, "ChildColumn1", String.Empty);
-            childColumn2 = instance.InsertOutputColumnAt(childID2, 5, "ChildColumn2", String.Empty);
+            IDTSOutputColumn100 childColumn2 = instance.InsertOutputColumnAt(childID2, 3, "ChildColumn1", String.Empty);
+            childColumn2 = instance.InsertOutputColumnAt(childID2, 4, "ChildColumn2", String.Empty);
 
 
             // Make sure that the output is correct before resetting Master Record ID
             Assert.AreEqual(DTSValidationStatus.VS_ISVALID, instance.Validate(), "Validation Failed");
-            Assert.AreEqual(6, childOutput2.OutputColumnCollection.Count, "Incorrect Number of Columns in ChildOutput2");
+            Assert.AreEqual(5, childOutput2.OutputColumnCollection.Count, "Incorrect Number of Columns in ChildOutput2");
 
             bool exceptionThrown = false;
             try
@@ -1177,18 +1161,15 @@ namespace UnitTestTextFileSplitter2012
             IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
             IDTSOutputColumn100 keyColumn3 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
 
-            instance.SetOutputColumnProperty(keyID, keyColumn1.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-            instance.SetOutputColumnProperty(keyID, keyColumn3.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-
             // Add a master Output with 4 columns, 1 as Master
             IDTSOutput100 masterOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, numberOfRowsOutput.ID);
             masterOutput.Name = "masterOutput";
             int masterID = masterOutput.ID;
             instance.SetOutputProperty(masterID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.MasterRecord);
-            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn1", String.Empty);
-            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn2", String.Empty);
-            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn3", String.Empty);
-            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 5, "MasterColumn4", String.Empty);
+            IDTSOutputColumn100 masterColumn1 = instance.InsertOutputColumnAt(masterID, 1, "MasterColumn1", String.Empty);
+            IDTSOutputColumn100 masterColumn2 = instance.InsertOutputColumnAt(masterID, 2, "MasterColumn2", String.Empty);
+            IDTSOutputColumn100 masterColumn3 = instance.InsertOutputColumnAt(masterID, 3, "MasterColumn3", String.Empty);
+            IDTSOutputColumn100 masterColumn4 = instance.InsertOutputColumnAt(masterID, 4, "MasterColumn4", String.Empty);
             instance.SetOutputColumnProperty(masterID, masterColumn2.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
 
 
@@ -1203,8 +1184,6 @@ namespace UnitTestTextFileSplitter2012
             {
                 columnNames.Add(childColumn.Name);
             }
-            Assert.IsTrue(columnNames.Contains("KeyColumn1"), "KeyColumn1");
-            Assert.IsTrue(columnNames.Contains("KeyColumn3"), "KeyColumn3");
             Assert.IsTrue(columnNames.Contains("MasterColumn1"), "MasterColumn1");
             Assert.IsTrue(columnNames.Contains("MasterColumn2"), "MasterColumn2");
             Assert.IsTrue(columnNames.Contains("MasterColumn3"), "MasterColumn3");
