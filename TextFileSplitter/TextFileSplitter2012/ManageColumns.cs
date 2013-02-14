@@ -66,7 +66,7 @@ namespace Martin.SQLServer.Dts
         internal static IDTSOutputColumn100 AddKeyOutputColumns(IDTSOutput100 keyRecords)
         {
             IDTSOutputColumnCollection100 outputColumnCollection = keyRecords.OutputColumnCollection;
-            IDTSOutputColumn100 outputColumn = outputColumnCollection.New();
+            IDTSOutputColumn100 outputColumn = outputColumnCollection.NewAt(0);
             outputColumn.Name = MessageStrings.KeyRecordKeyColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_GUID, 0, 0, 0, 0);
             outputColumn.Description = MessageStrings.KeyRecordKeyColumnDescription;

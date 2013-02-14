@@ -273,7 +273,7 @@ namespace Martin.SQLServer.Dts
                                 case Utilities.typeOfOutputEnum.MasterRecord:
                                 case Utilities.typeOfOutputEnum.ChildMasterRecord:
                                 case Utilities.typeOfOutputEnum.ChildRecord:
-                                    IDTSOutputColumn outputColumn = output.OutputColumnCollection.New();
+                                    IDTSOutputColumn outputColumn = output.OutputColumnCollection.NewAt(0);
                                     outputColumn.Name = newColumn.Name;
                                     outputColumn.Description = MessageStrings.KeyColumnDescription;
                                     ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);

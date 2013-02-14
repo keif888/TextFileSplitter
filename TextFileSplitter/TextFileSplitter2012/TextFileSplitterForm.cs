@@ -1147,7 +1147,7 @@ namespace Martin.SQLServer.Dts
                 foreach (KeyValuePair<String, Boolean> valuePair in newOutputs)
                 {
                     
-                    if ((valuePair.Value) || (validOutputs[valuePair.Key].OutputColumnCollection.Count == 0))
+                    if ((valuePair.Value) || (validOutputs[valuePair.Key].OutputColumnCollection.Count == 1))
                     {
                         // Ok, we have a NEW output, or one that needs to be updated...!!!
                         RecordFormatInfo[] delimitedColumns = dataDetector.DetectStringFormat(sampleDatas[valuePair.Key]);
@@ -1204,6 +1204,39 @@ namespace Martin.SQLServer.Dts
                         case 0: // Column Name
                             outputColumn.Name = (String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
                             lbOutputs.SelectedItem = (String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                            if (ConvertFromStringToUsageOfColumn((String)dgvOutputColumns.Rows[e.RowIndex].Cells[1].Value) == Utilities.usageOfColumnEnum.Key)
+                            {
+                                foreach(IDTSOutput100 otherOutput in _componentMetaData.OutputCollection)
+                                {
+                                    if (outputID != otherOutput.ID)
+                                    {
+                                        switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(otherOutput.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                                        {
+                                            case Utilities.typeOfOutputEnum.ErrorRecords:
+                                            case Utilities.typeOfOutputEnum.KeyRecords:
+                                            case Utilities.typeOfOutputEnum.DataRecords:
+                                            case Utilities.typeOfOutputEnum.MasterRecord:
+                                            case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                                            case Utilities.typeOfOutputEnum.ChildRecord:
+                                                foreach (IDTSOutputColumn100 otherOutputColumn in otherOutput.OutputColumnCollection)
+                                                {
+                                                    if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(otherOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                                    {
+                                                        otherOutputColumn.Name = (String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                                                        break;
+                                                    }
+                                                }
+                                                break;
+                                            case Utilities.typeOfOutputEnum.PassThrough:
+                                                break;
+                                            case Utilities.typeOfOutputEnum.RowsProcessed:
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
                             break;
                         case 1: // Usage
                             designtimeComponent.SetOutputColumnProperty(outputID, outputColumnID, ManageProperties.usageOfColumn, ConvertFromStringToUsageOfColumn((String)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value));
