@@ -161,6 +161,7 @@ namespace Martin.SQLServer.Dts
                                 foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
                                 {
                                     ManageProperties.AddMissingOutputColumnProperties(outputColumn.CustomPropertyCollection);
+                                    PostInformation(String.Format("Output {0}'s column {1} has been updated to add missing properties.", output.Name, outputColumn.Name));
                                 }
                                 break;
                             case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -191,11 +192,13 @@ namespace Martin.SQLServer.Dts
                                     {
                                         columnProperty.ExpressionType = DTSCustomPropertyExpressionType.CPET_NONE;
                                     }
+                                    PostInformation(String.Format("Output {0}'s column {1} has been updated to deactivate expresion notify.", output.Name, outputColumn.Name));
                                 }
                                 foreach (IDTSCustomProperty100 outputProperty in output.CustomPropertyCollection)
                                 {
                                     outputProperty.ExpressionType = DTSCustomPropertyExpressionType.CPET_NONE;
                                 }
+                                PostInformation(String.Format("Output {0} has been updated to deactivate expresion notify.", output.Name));
                                 break;
                             case Utilities.typeOfOutputEnum.ErrorRecords:
                             case Utilities.typeOfOutputEnum.RowsProcessed:
@@ -209,6 +212,7 @@ namespace Martin.SQLServer.Dts
                 if (metadataVersion < 4)
                 {
                     // Add the missing GUID key record, and de key all the other columns.
+                    IDTSOutputColumn100 newColumn = null;
                     foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
                     {
                         if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
@@ -222,17 +226,68 @@ namespace Martin.SQLServer.Dts
                                 {
                                     RemoveLinkedColumnFromOutputs(outputColumn);
                                     ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                    PostInformation(String.Format("Output {0}'s column {1} has been updated to switch to Passthrough.", output.Name, outputColumn.Name));
                                 }
-                                if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == -1)
+                                if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == -2)
                                 {
                                     foundNewKeyColumn = true;
                                 }
                             }
                             if (!foundNewKeyColumn)
                             {
-                                ManageColumns.AddKeyOutputColumns(output);
+                                newColumn = ManageColumns.AddKeyOutputColumns(output);
+                                PostInformation(String.Format("Output {0} has been updated to add new Key column.", output.Name));
                             }
                             break;
+                        }
+                        else if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.RowsProcessed)
+                        {
+                            foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                            {
+                                if (ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == null)
+                                {
+                                    ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
+                                }
+                            }
+                        }
+                        else if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.ErrorRecords)
+                        {
+                            foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                            {
+                                if (ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == null)
+                                {
+                                    ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
+                                }
+                            }
+                        }
+                    }
+                    if (newColumn != null)
+                    {
+                        // Propogate the Key to all Children
+                        foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                        {
+                            switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                            {
+                                case Utilities.typeOfOutputEnum.ErrorRecords:
+                                case Utilities.typeOfOutputEnum.DataRecords:
+                                case Utilities.typeOfOutputEnum.MasterRecord:
+                                case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                                case Utilities.typeOfOutputEnum.ChildRecord:
+                                    IDTSOutputColumn outputColumn = output.OutputColumnCollection.New();
+                                    outputColumn.Name = newColumn.Name;
+                                    outputColumn.Description = MessageStrings.KeyColumnDescription;
+                                    ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
+                                    ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
+                                    ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, newColumn.LineageID);
+                                    outputColumn.SetDataTypeProperties(newColumn.DataType, newColumn.Length, newColumn.Precision, newColumn.Scale, newColumn.CodePage);
+                                    break;
+                                case Utilities.typeOfOutputEnum.KeyRecords:
+                                case Utilities.typeOfOutputEnum.PassThrough:
+                                case Utilities.typeOfOutputEnum.RowsProcessed:
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                 }
@@ -392,7 +447,7 @@ namespace Martin.SQLServer.Dts
             }
             else
             {
-                returnStatus = ValidateOutputColumns(outputColumnCollection, returnStatus);
+                returnStatus = ValidateOutputColumns(output, returnStatus);
             }
 
             return returnStatus;
@@ -488,7 +543,8 @@ namespace Martin.SQLServer.Dts
                 {
                     if (ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) != null)
                     {
-                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) != Utilities.usageOfColumnEnum.Key)
+                        if (((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) != Utilities.usageOfColumnEnum.Key)
+                            && ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) != Utilities.usageOfColumnEnum.Ignore))
                         {
                             this.PostError(MessageStrings.ErrorOutputHasInvalidColumn(outputColumn.Name));
                             returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISCORRUPT);
@@ -547,12 +603,12 @@ namespace Martin.SQLServer.Dts
             return returnStatus;
         }
 
-        private DTSValidationStatus ValidateOutputColumns(IDTSOutputColumnCollection outputColumnCollection, DTSValidationStatus oldStatus)
+        private DTSValidationStatus ValidateOutputColumns(IDTSOutput100 output, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus returnStatus = oldStatus;
             int numberOfKeyColumns = 0;
 
-            foreach (IDTSOutputColumn outputColumn in outputColumnCollection)
+            foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
             {
                 returnStatus = ValidateOutputColumn(outputColumn, returnStatus);
                 if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
@@ -561,9 +617,9 @@ namespace Martin.SQLServer.Dts
                 }
             }
 
-            if (numberOfKeyColumns != 1)
+            if ((numberOfKeyColumns != 1) && ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) != Utilities.typeOfOutputEnum.PassThrough))
             {
-                this.PostError(MessageStrings.KeyRecordIncorrectNumberOfKeyColumns);
+                this.PostError(MessageStrings.AKeyColumnIsMissingFromOutput(output.Name));
                 returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISCORRUPT);
             }
             return returnStatus;
@@ -1699,7 +1755,6 @@ namespace Martin.SQLServer.Dts
             Boolean rowCountConnected = false;
             Boolean keyRecordFailure = false;
             int keyColumnID = 0;
-            Guid GUIDkeyValue;
 
             columnDelimter = (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
 
@@ -1906,7 +1961,7 @@ namespace Martin.SQLServer.Dts
                                         Object currentValue = null;
                                         foreach (SSISOutputColumn currentOutputColumn in errorOutput.OutputColumnCollection)
                                         {
-                                            if (currentOutputColumn.CustomPropertyCollection.Count > 0)
+                                            if (currentOutputColumn.CustomPropertyCollection.ContainsKey(ManageProperties.keyOutputColumnID))
                                             {
                                                 if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                 {
@@ -1962,9 +2017,20 @@ namespace Martin.SQLServer.Dts
                                             Object currentValue = null;
                                             if (currentOutputColumn.IsDerived)
                                             {
-                                                if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                                int keyID = (int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID);
+                                                if (keyID == -2)
                                                 {
-                                                    currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                    if (keyMasterValues.TryGetValue(keyColumnID, out currentValue))
+                                                    {
+                                                        currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                                    {
+                                                        currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                    }
                                                 }
                                             }
                                             else
@@ -2228,7 +2294,7 @@ namespace Martin.SQLServer.Dts
                 int IDToDelete = -1;
                 foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
                 {
-                    if (outputColumn.CustomPropertyCollection.Count > 0)
+                    if (outputColumn.CustomPropertyCollection.Count > 1)
                     {
                         if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                         {
@@ -2304,6 +2370,13 @@ namespace Martin.SQLServer.Dts
         #endregion
 
         #region Handlers
+        private void PostInformation(string informationMessage)
+        {
+            Boolean pbFireAgain = true;
+            ComponentMetaData.FireInformation(0, ComponentMetaData.Name, informationMessage, string.Empty, 0, ref pbFireAgain);
+        }
+
+        
         private void PostWarning(string warningMessage)
         {
             ComponentMetaData.FireWarning(0, ComponentMetaData.Name, warningMessage, string.Empty, 0);

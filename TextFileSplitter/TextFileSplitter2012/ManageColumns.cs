@@ -63,7 +63,7 @@ namespace Martin.SQLServer.Dts
             ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
         }
 
-        internal static void AddKeyOutputColumns(IDTSOutput100 keyRecords)
+        internal static IDTSOutputColumn100 AddKeyOutputColumns(IDTSOutput100 keyRecords)
         {
             IDTSOutputColumnCollection100 outputColumnCollection = keyRecords.OutputColumnCollection;
             IDTSOutputColumn100 outputColumn = outputColumnCollection.New();
@@ -73,6 +73,7 @@ namespace Martin.SQLServer.Dts
             ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
             ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
             ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, -2);
+            return outputColumn;
         }
     }
 }

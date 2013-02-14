@@ -142,6 +142,13 @@ namespace Martin.SQLServer.Dts
         {
             return String.Format(KeyRecordColumnBadValuePattern, columnName, propertyName);
         }
+
+        private const string AKeyColumnIsMissingFromOutputPattern = "The Key Column is missing from output {0}.";
+        public static string AKeyColumnIsMissingFromOutput(string outputName)
+        {
+            return String.Format(AKeyColumnIsMissingFromOutputPattern, outputName);
+        }
+
         #endregion
 
         #region Name Descriptions

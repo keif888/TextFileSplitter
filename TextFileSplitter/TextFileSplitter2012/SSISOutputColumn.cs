@@ -79,9 +79,12 @@ namespace Martin.SQLServer.Dts
                         break;
                 }
 
-                if ((int)_customPropertyCollection[ManageProperties.keyOutputColumnID].Value > 0)
+                if (_customPropertyCollection.ContainsKey(ManageProperties.keyOutputColumnID))
                 {
-                    _isDerived = true;
+                    if ((int)_customPropertyCollection[ManageProperties.keyOutputColumnID].Value > 0)
+                    {
+                        _isDerived = true;
+                    }
                 }
             }
             else
