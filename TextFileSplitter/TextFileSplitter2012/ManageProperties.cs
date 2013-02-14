@@ -300,6 +300,11 @@ namespace Martin.SQLServer.Dts
             AddCustomProperty(propertyCollection, isColumnOptional, MessageStrings.IsColumnOptionalPropDescription, false);
         }
 
+        public static void AddIgnorableColumnProperties(IDTSCustomPropertyCollection100 propertyCollection)
+        {
+            AddCustomProperty(propertyCollection, usageOfColumn, MessageStrings.UsageOfColumnPropDescription, Utilities.usageOfColumnEnum.Ignore, typeof(Utilities.usageOfColumnEnum).AssemblyQualifiedName);
+        }
+
         public static void AddMissingOutputColumnProperties(IDTSCustomPropertyCollection100 propertyCollection)
         {
             if (GetPropertyValue(propertyCollection, usageOfColumn) == null)

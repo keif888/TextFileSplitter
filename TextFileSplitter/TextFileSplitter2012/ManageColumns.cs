@@ -18,12 +18,15 @@ namespace Martin.SQLServer.Dts
             IDTSOutputColumn100 outputColumn = outputColumnCollection.New();
             outputColumn.Name = MessageStrings.ErrorMessageColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_WSTR, 4000, 0, 0, 0);
+            ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
             outputColumn = outputColumnCollection.New();
             outputColumn.Name = MessageStrings.ColumnDataColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_WSTR, 4000, 0, 0, 0);
+            ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
             outputColumn = outputColumnCollection.New();
             outputColumn.Name = MessageStrings.RowDataColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_WSTR, 4000, 0, 0, 0);
+            ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
         }
 
         /// <summary>
@@ -47,14 +50,29 @@ namespace Martin.SQLServer.Dts
             outputColumn.Name = MessageStrings.KeyValueColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, 1252);
             outputColumn.Description = MessageStrings.KeyValueColumnDescription;
+            ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
             outputColumn = outputColumnCollection.New();
             outputColumn.Name = MessageStrings.NumberOfRowsColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_I8, 0, 0, 0, 0);
             outputColumn.Description = MessageStrings.NumberOfRowsColumnDescription;
+            ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
             outputColumn = outputColumnCollection.New();
             outputColumn.Name = MessageStrings.KeyValueStatusColumnName;
             outputColumn.SetDataTypeProperties(DataType.DT_STR, DefaultStringColumnSize, 0, 0, 1252);
             outputColumn.Description = MessageStrings.KeyValueStatusColumnDescription;
+            ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
+        }
+
+        internal static void AddKeyOutputColumns(IDTSOutput100 keyRecords)
+        {
+            IDTSOutputColumnCollection100 outputColumnCollection = keyRecords.OutputColumnCollection;
+            IDTSOutputColumn100 outputColumn = outputColumnCollection.New();
+            outputColumn.Name = MessageStrings.KeyRecordKeyColumnName;
+            outputColumn.SetDataTypeProperties(DataType.DT_GUID, 0, 0, 0, 0);
+            outputColumn.Description = MessageStrings.KeyRecordKeyColumnDescription;
+            ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
+            ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
+            ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, -2);
         }
     }
 }

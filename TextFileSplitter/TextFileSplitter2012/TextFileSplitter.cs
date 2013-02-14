@@ -33,7 +33,7 @@ using IDTSConnectionManagerFlatFileColumn = Microsoft.SqlServer.Dts.Runtime.Wrap
 namespace Martin.SQLServer.Dts
 {
     [DtsPipelineComponent(DisplayName = "Text File Splitter Source",
-        CurrentVersion = 3 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
+        CurrentVersion = 4 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
         , Description = "Extract many outputs from a single Text File"
         , IconResource = "Martin.SQLServer.Dts.Resources.TextFileSplitter.ico"
 #if SQL2012
@@ -68,7 +68,7 @@ namespace Martin.SQLServer.Dts
         public override void ProvideComponentProperties()
         {
             this.RemoveAllInputsOutputsAndCustomProperties();
-            this.ComponentMetaData.Version = 3;  // NB.  Always keep this in sync with the CurrentVersion!!!
+            this.ComponentMetaData.Version = 4;  // NB.  Always keep this in sync with the CurrentVersion!!!
             this.ComponentMetaData.UsesDispositions = true;
             this.ComponentMetaData.ContactInfo = "http://TextFileSplitter.codeplex.com/";
             ManageProperties.AddComponentProperties(this.ComponentMetaData.CustomPropertyCollection);
@@ -98,6 +98,7 @@ namespace Martin.SQLServer.Dts
             keyRecords.SynchronousInputID = 0;
             ManageProperties.AddOutputProperties(keyRecords.CustomPropertyCollection);
             ManageProperties.SetPropertyValue(keyRecords.CustomPropertyCollection, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.KeyRecords);
+            ManageColumns.AddKeyOutputColumns(keyRecords);
 
             // Number of Rows output.
             IDTSOutput numberOfRows = this.ComponentMetaData.OutputCollection.New();
@@ -205,8 +206,39 @@ namespace Martin.SQLServer.Dts
                     }
                 }
 
+                if (metadataVersion < 4)
+                {
+                    // Add the missing GUID key record, and de key all the other columns.
+                    foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                    {
+                        if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)
+                        {
+                            Boolean foundNewKeyColumn = false;
+                            // Remove the old Key columns
+                            foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                            {
+                                if (((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                && ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == -1))
+                                {
+                                    RemoveLinkedColumnFromOutputs(outputColumn);
+                                    ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                                }
+                                if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) == -1)
+                                {
+                                    foundNewKeyColumn = true;
+                                }
+                            }
+                            if (!foundNewKeyColumn)
+                            {
+                                ManageColumns.AddKeyOutputColumns(output);
+                            }
+                            break;
+                        }
+                    }
+                }
+
             }
-            this.ComponentMetaData.Version = 3;  // NB.  Always keep this in sync with the CurrentVersion!!!
+            this.ComponentMetaData.Version = 4;  // NB.  Always keep this in sync with the CurrentVersion!!!
         }
 
         #endregion
@@ -323,6 +355,7 @@ namespace Martin.SQLServer.Dts
                         returnStatus  =  Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISBROKEN);
                         break;
                     case Utilities.typeOfOutputEnum.KeyRecords:
+                        returnStatus = ValidateKeyOutput(output, returnStatus);
                         keyOutputs++;
                         break;
                     case Utilities.typeOfOutputEnum.DataRecords:
@@ -467,15 +500,72 @@ namespace Martin.SQLServer.Dts
             return returnStatus;
         }
 
+        private DTSValidationStatus ValidateKeyOutput(IDTSOutput keyOutput, DTSValidationStatus oldStatus)
+        {
+            DTSValidationStatus returnStatus = oldStatus;
+
+            IDTSOutputColumnCollection outputColumnCollection = keyOutput.OutputColumnCollection;
+
+            if (outputColumnCollection.Count < 1)
+            {
+                this.PostError(MessageStrings.KeyOutputColumnsAreMissing);
+                returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISCORRUPT);
+            }
+            else
+            {
+                int numberOfKeyColumns = 0;
+                foreach (IDTSOutputColumn outputColumn in outputColumnCollection)
+                {
+                    if (ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) != null)
+                    {
+                        if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                        {
+                            if ((int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID) != -2)
+                            {
+                                this.PostError(MessageStrings.KeyRecordColumnBadValue(outputColumn.Name, ManageProperties.keyOutputColumnID));
+                                returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISCORRUPT);
+                            }
+                            else
+                            {
+                                numberOfKeyColumns++;
+                            }
+                        }
+                        else if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) != Utilities.usageOfColumnEnum.Passthrough)
+                        {
+                            this.PostError(MessageStrings.KeyRecordColumnBadValue(outputColumn.Name, ManageProperties.usageOfColumn));
+                            returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISCORRUPT);
+                        }
+                    }
+                }
+                if (numberOfKeyColumns != 1)
+                {
+                    this.PostError(MessageStrings.KeyRecordIncorrectNumberOfKeyColumns);
+                    returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISCORRUPT);
+                }
+            }
+
+            return returnStatus;
+        }
+
         private DTSValidationStatus ValidateOutputColumns(IDTSOutputColumnCollection outputColumnCollection, DTSValidationStatus oldStatus)
         {
             DTSValidationStatus returnStatus = oldStatus;
+            int numberOfKeyColumns = 0;
 
             foreach (IDTSOutputColumn outputColumn in outputColumnCollection)
             {
                 returnStatus = ValidateOutputColumn(outputColumn, returnStatus);
+                if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                {
+                    numberOfKeyColumns++;
+                }
             }
 
+            if (numberOfKeyColumns != 1)
+            {
+                this.PostError(MessageStrings.KeyRecordIncorrectNumberOfKeyColumns);
+                returnStatus = Utilities.CompareValidationValues(returnStatus, DTSValidationStatus.VS_ISCORRUPT);
+            }
             return returnStatus;
         }
 
@@ -845,7 +935,7 @@ namespace Martin.SQLServer.Dts
 
         #region SetOutputColumnProperty
         /// <summary>
-        /// Enables the setting of custom properties.  If the Property is Key, (and on the appropriate output), then the column will be propogated to all Data outputs.
+        /// Enables the setting of custom properties.
         /// </summary>
         /// <param name="outputID"></param>
         /// <param name="outputColumnID"></param>
@@ -883,65 +973,28 @@ namespace Martin.SQLServer.Dts
                         case Utilities.typeOfOutputEnum.ErrorRecords:
                             break;
                         case Utilities.typeOfOutputEnum.KeyRecords:
-                            #region KeyRecords
-                            // The Key value can be used here, BUT the column must be added to the other outputs!
-                            oldValue = (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn);
-                            if ((oldValue != (Utilities.usageOfColumnEnum)propertyValue) && ((oldValue == Utilities.usageOfColumnEnum.Key) || ((Utilities.usageOfColumnEnum)propertyValue == Utilities.usageOfColumnEnum.Key)))
+                            switch ((Utilities.usageOfColumnEnum)oldValue)
                             {
-                                if ((Utilities.usageOfColumnEnum)propertyValue == Utilities.usageOfColumnEnum.Key)
-                                {
-                                    // Determine the correct position for this record in the output.
-                                    int keyPosition = 0;
-                                    for (int i = 0; i < thisOutput.OutputColumnCollection.Count; i++)
-                                    {
-                                        if (thisOutput.OutputColumnCollection[i].ID == outputColumnID)
-                                        {
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisOutput.OutputColumnCollection[i].CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
-                                            {
-                                                keyPosition++;
-                                            }
-                                        }
-                                    }
-                                    // Add column to the other Outputs.
-                                    foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-                                    {
-                                        Utilities.typeOfOutputEnum outputType = (Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput);
-                                        if ((outputType == Utilities.typeOfOutputEnum.DataRecords)
-                                            || (outputType == Utilities.typeOfOutputEnum.MasterRecord)
-                                            || (outputType == Utilities.typeOfOutputEnum.ChildRecord)
-                                            || (outputType == Utilities.typeOfOutputEnum.ChildMasterRecord))
-                                        {
-                                            IDTSOutputColumn outputColumn = output.OutputColumnCollection.NewAt(keyPosition);
-                                            outputColumn.Name = thisColumn.Name;
-                                            outputColumn.Description = MessageStrings.KeyColumnDescription;
-                                            ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
-                                            ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-                                            ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, thisColumn.LineageID);
-                                            outputColumn.SetDataTypeProperties(thisColumn.DataType, thisColumn.Length, thisColumn.Precision, thisColumn.Scale, thisColumn.CodePage);
-                                        }
-                                        else if (outputType == Utilities.typeOfOutputEnum.ErrorRecords)
-                                        {
-                                            IDTSOutputColumn outputColumn = output.OutputColumnCollection.New();
-                                            outputColumn.Name = thisColumn.Name;
-                                            outputColumn.Description = MessageStrings.KeyColumnDescription;
-                                            ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
-                                            ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
-                                            ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, thisColumn.LineageID);
-                                            outputColumn.SetDataTypeProperties(thisColumn.DataType, thisColumn.Length, thisColumn.Precision, thisColumn.Scale, thisColumn.CodePage);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    // Remove this column from the outputs
-                                    RemoveLinkedColumnFromOutputs(thisColumn);
-                                }
-                            } 
-                            #endregion
+                                case Utilities.usageOfColumnEnum.Passthrough:
+                                    break;
+                                default:
+                                    throw new COMException(MessageStrings.InvalidPropertyValue(ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), propertyValue)));
+                            }
+                            switch ((Utilities.usageOfColumnEnum)propertyValue)
+                            {
+                                case Utilities.usageOfColumnEnum.RowType:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToRowType, E_FAIL);
+                                case Utilities.usageOfColumnEnum.RowData:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToRowData, E_FAIL);
+                                case Utilities.usageOfColumnEnum.Key:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToKey, E_FAIL);
+                                case Utilities.usageOfColumnEnum.MasterValue:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToMasterValue, E_FAIL);
+                                case Utilities.usageOfColumnEnum.Ignore:
+                                    throw new COMException(MessageStrings.CannotSetPropertyToIgnore, E_FAIL);
+                                default:
+                                    break;
+                            }
                             break;
                         case Utilities.typeOfOutputEnum.DataRecords:
                         case Utilities.typeOfOutputEnum.ChildRecord:
@@ -1073,8 +1126,7 @@ namespace Martin.SQLServer.Dts
 
             if (thisColumn != null)
             {
-                if (((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
-                    & ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) != Utilities.typeOfOutputEnum.KeyRecords))
+                if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
                 {
                     throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
                 }
@@ -1156,34 +1208,7 @@ namespace Martin.SQLServer.Dts
 
             if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
             {
-                if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(thisOutput.CustomPropertyCollection, ManageProperties.typeOfOutput) != Utilities.typeOfOutputEnum.KeyRecords)
-                {
                     throw new COMException(MessageStrings.CannotSetProperty, E_FAIL);
-                }
-                else
-                {
-                    // Need to delete the "children"!
-                    foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
-                    {
-                        if (!output.IsErrorOut)
-                        {
-                            if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.DataRecords)
-                            {
-                                int columnIDToDelete = -1;
-                                foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
-                                    if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
-                                    {
-                                        columnIDToDelete = outputColumn.ID;
-                                        break;
-                                    }
-                                if (columnIDToDelete != -1)
-                                {
-                                    output.OutputColumnCollection.RemoveObjectByID(columnIDToDelete);
-                                }
-                            }
-                        }
-                    }
-                }
             }
             else if ((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(thisColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
             {
@@ -1673,6 +1698,8 @@ namespace Martin.SQLServer.Dts
             Int64 recordsRead = 0;
             Boolean rowCountConnected = false;
             Boolean keyRecordFailure = false;
+            int keyColumnID = 0;
+            Guid GUIDkeyValue;
 
             columnDelimter = (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
 
@@ -1705,6 +1732,7 @@ namespace Martin.SQLServer.Dts
                                     if (outputColumn.IsMasterOrKey)
                                     {
                                         keyMasterValues.Add(outputColumn.LineageID, null);
+                                        keyColumnID = outputColumn.LineageID;
                                     }
                                 }
                                 SetupFileHelper(output, dataOutput, out currentSplitOutput.ClassBuffer, out currentSplitOutput.Engine);
@@ -1843,6 +1871,7 @@ namespace Martin.SQLServer.Dts
                             {
                                 keyMasterValues[keyID] = null;
                             }
+                            keyMasterValues[keyColumnID] = Guid.NewGuid();
                         }
                         if (currentEngine.ErrorManager.HasErrors)
                         {

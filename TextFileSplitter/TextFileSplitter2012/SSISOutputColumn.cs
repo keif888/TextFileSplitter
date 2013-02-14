@@ -39,28 +39,43 @@ namespace Martin.SQLServer.Dts
                         _isMasterOrKey = false;
                         _isRowData = false;
                         _isRowType = true;
+                        _isDerived = false;
                         break;
                     case Utilities.usageOfColumnEnum.Passthrough:
+                        _isMasterOrKey = false;
+                        _isRowData = false;
+                        _isRowType = false;
+                        _isDerived = false;
+                        break;
                     case Utilities.usageOfColumnEnum.Ignore:
                         _isMasterOrKey = false;
                         _isRowData = false;
                         _isRowType = false;
+                        _isDerived = true;
                         break;
                     case Utilities.usageOfColumnEnum.Key:
+                        _isMasterOrKey = true;
+                        _isRowData = false;
+                        _isRowType = false;
+                        _isDerived = true;
+                        break;
                     case Utilities.usageOfColumnEnum.MasterValue:
                         _isMasterOrKey = true;
                         _isRowData = false;
                         _isRowType = false;
+                        _isDerived = false;
                         break;
                     case Utilities.usageOfColumnEnum.RowData:
                         _isMasterOrKey = false;
                         _isRowData = true;
                         _isRowType = false;
+                        _isDerived = false;
                         break;
                     default:
                         _isMasterOrKey = false;
                         _isRowData = false;
                         _isRowType = false;
+                        _isDerived = true;
                         break;
                 }
 
@@ -68,11 +83,6 @@ namespace Martin.SQLServer.Dts
                 {
                     _isDerived = true;
                 }
-                else
-                {
-                    _isDerived = false;
-                }
-            
             }
             else
             {

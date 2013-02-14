@@ -27,12 +27,12 @@ Key Records  ** Not Done Yet **
 	Change rowTypeValue (Succeed)
 	Add Column (Succeed)
 	Delete Passthrough Column (Succeed)
-	Delete Key Column (Succeed)
-	Set Column from Passthrough to Key (Succeed) - Validate that all outputs but RowsProcessed output get the Key column added
-	Set Column from Key to Passthrough (Succeed) - Validate that all outputs but RowsProcessed output get the Key column removed
-	Set Column from Passthrough to anything but Key (Exception) - MessageStrings.InvalidPropertyValue(...)
+	Delete Key Column (Exception) - MessageStrings.CantDeleteKeyColumn
+	Set Column from Passthrough to Key (Exception) - MessageStrings.CantSetKeyColumn
+	Set Column from Key to Passthrough (Exception) - MessageStrings.CantUnsetKeyColumn
+	Set Column from Passthrough to Anything (Exception) - MessageStrings.InvalidPropertyValue(...)
 	Set Passthrough Column Data Types (Succeed)
-	Set Key Column Data Types (Succeed) - Validate that all outputs but RowsProcessed output get the Key column changed
+	Set Key Column Data Types (Exception) - MessageStrings.CantSetKeyColumn
 	
 Data Records
 Pass Through

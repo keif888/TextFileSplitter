@@ -137,6 +137,11 @@ namespace Martin.SQLServer.Dts
             return String.Format(MasterHasChildPattern, masterOutputName, childOutputName);
         }
 
+        private const string KeyRecordColumnBadValuePattern = "Column {0} in the key output has the property {1} set incorrectly.";
+        public static string KeyRecordColumnBadValue(string columnName, string propertyName)
+        {
+            return String.Format(KeyRecordColumnBadValuePattern, columnName, propertyName);
+        }
         #endregion
 
         #region Name Descriptions
@@ -159,6 +164,7 @@ namespace Martin.SQLServer.Dts
         public const string NumberOfRowsColumnDescription = "The number of rows that were sent down this associated output.";
         public const string KeyValueStatusColumnDescription = "The status that this output held when being processed.";
         public const string IsColumnOptionalPropDescription = "Stores a True/False that shows if this column is optional within the delimited text.";
+        public const string KeyRecordKeyColumnDescription = "The GUID value that uniquely identifies this Key record.";
         #endregion
 
         #region Key Value Status Values
@@ -179,6 +185,7 @@ namespace Martin.SQLServer.Dts
         public const string ErrorMessageColumnName = "ErrorMessage";
         public const string ColumnDataColumnName = "ColumnData";
         public const string RowDataColumnName = "RowData";
+        public const string KeyRecordKeyColumnName = "TextFileSplitter KeyRecord KeyColumn";
         #endregion
 
         #region Messages
@@ -199,6 +206,7 @@ namespace Martin.SQLServer.Dts
         public const string CannotSetPropertyToRowData = "You can only set RowData on the PassThrough Output";
         public const string CannotSetPropertyToRowType = "You can only set RowType on the PassThrough Output";
         public const string CannotSetPropertyToPassThrough = "You can't set PassThrough on this Output";
+        public const string CannotSetPropertyToIgnore = "You can't set Ignore on this Output";
         public const string CannotSetProperty = "You are not allowed to change this property.";
         public const string CannotDeleteKeyOutput = "You can NOT delete the Key Output!";
         public const string CannotDeleteErrorOutput = "You can NOT delete the error output!";
@@ -216,6 +224,8 @@ namespace Martin.SQLServer.Dts
         public const string ThereCanOnlyBeOneRowDataColumn = "There can only be one RowData column in the PassThrough output.";
         public const string InvalidNumberOfRowsOutput = "There MUST be One and Only One RowsProcessed output!";
         public const string RowCountOutputInvalid = "The RowsProcessed Output is invalid!";
+        public const string KeyOutputColumnsAreMissing = "The Key Output GUID Column is missing.";
+        public const string KeyRecordIncorrectNumberOfKeyColumns = "There is either more than one, or less than one Key Output GUID column.";
         #endregion
 
         #region Validation Strings
