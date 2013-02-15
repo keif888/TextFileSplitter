@@ -4,26 +4,26 @@ using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
 
 namespace Martin.SQLServer.Dts
 {
-    internal class ManageProperties
+    public class ManageProperties
     {
         public event PostErrorDelegate PostErrorEvent = null;
 
         // Component Properties
-        internal const string columnDelimiter = "columnDelimiter";
-        internal const string isTextDelmited = "isTextDelmited";
-        internal const string textDelmiter = "textDelmiter";
-        internal const string treatEmptyStringsAsNull = "treatEmptyStringsAsNull";
+        public const string columnDelimiter = "columnDelimiter";
+        public const string isTextDelmited = "isTextDelmited";
+        public const string textDelmiter = "textDelmiter";
+        public const string treatEmptyStringsAsNull = "treatEmptyStringsAsNull";
 
         // Output Properties
-        internal const string typeOfOutput = "typeOfOutput";
-        internal const string rowTypeValue = "rowTypeValue";
-        internal const string masterRecordID = "masterRecordID";
+        public const string typeOfOutput = "typeOfOutput";
+        public const string rowTypeValue = "rowTypeValue";
+        public const string masterRecordID = "masterRecordID";
 
         // Output Column Properties
-        internal const string usageOfColumn = "usageOfColumn";
-        internal const string keyOutputColumnID = "keyOutputColumnID";
-        internal const string dotNetFormatString = "dotNetFormatString";
-        internal const string isColumnOptional = "isColumnOptional";
+        public const string usageOfColumn = "usageOfColumn";
+        public const string keyOutputColumnID = "keyOutputColumnID";
+        public const string dotNetFormatString = "dotNetFormatString";
+        public const string isColumnOptional = "isColumnOptional";
 
         // Defaults
         const string DefaultDelimiter = ",";
@@ -404,5 +404,5 @@ namespace Martin.SQLServer.Dts
 
     }
 
-    internal delegate void PostErrorDelegate(string errorMessage);
+    public delegate void PostErrorDelegate(string errorMessage);
 }

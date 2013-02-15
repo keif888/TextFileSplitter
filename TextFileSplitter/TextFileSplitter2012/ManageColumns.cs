@@ -4,7 +4,7 @@ using System;
 
 namespace Martin.SQLServer.Dts
 {
-    class ManageColumns
+    public class ManageColumns
     {
         private const int DefaultStringColumnSize = 255;
 
@@ -43,7 +43,7 @@ namespace Martin.SQLServer.Dts
         /// Adds the columns that are required to the Number Of Rows output
         /// </summary>
         /// <param name="numberOfRows">the number of rows output</param>
-        internal static void AddNumberOfRowsOutputColumns(IDTSOutput100 numberOfRows)
+        public static void AddNumberOfRowsOutputColumns(IDTSOutput100 numberOfRows)
         {
             IDTSOutputColumnCollection100 outputColumnCollection = numberOfRows.OutputColumnCollection;
             IDTSOutputColumn100 outputColumn = outputColumnCollection.New();
@@ -63,7 +63,7 @@ namespace Martin.SQLServer.Dts
             ManageProperties.AddIgnorableColumnProperties(outputColumn.CustomPropertyCollection);
         }
 
-        internal static IDTSOutputColumn100 AddKeyOutputColumns(IDTSOutput100 keyRecords)
+        public static IDTSOutputColumn100 AddKeyOutputColumns(IDTSOutput100 keyRecords)
         {
             IDTSOutputColumnCollection100 outputColumnCollection = keyRecords.OutputColumnCollection;
             IDTSOutputColumn100 outputColumn = outputColumnCollection.NewAt(0);

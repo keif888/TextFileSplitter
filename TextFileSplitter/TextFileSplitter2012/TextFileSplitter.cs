@@ -2083,7 +2083,7 @@ namespace Martin.SQLServer.Dts
                                                     Object currentValue = null;
                                                     foreach (SSISOutputColumn errorOutputColumn in errorOutput.OutputColumnCollection)
                                                     {
-                                                        if (errorOutputColumn.CustomPropertyCollection.Count > 0)
+                                                        if (errorOutputColumn.CustomPropertyCollection.Count > 1)
                                                         {
                                                             if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                             {
