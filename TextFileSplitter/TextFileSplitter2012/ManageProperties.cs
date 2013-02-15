@@ -389,6 +389,31 @@ namespace Martin.SQLServer.Dts
         }
         #endregion
 
+        #region Contains
+
+        public static Boolean Contains(IDTSCustomPropertyCollection100 properties,  String propertyName)
+        {
+            Boolean found = false;
+
+            foreach (IDTSCustomProperty100 property in properties)
+            {
+                if (String.Compare(property.Name, propertyName, false) == 0)  // Case Sensitive!
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            return found;
+        }
+
+        public static Boolean Contains(Dictionary<String, SSISProperty> properties, String propertyName)
+        {
+            return properties.ContainsKey(propertyName);
+        }
+
+        #endregion
+
         #endregion
 
         private void PostError(string errorMessage)

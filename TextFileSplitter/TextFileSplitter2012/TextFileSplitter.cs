@@ -1202,7 +1202,7 @@ namespace Martin.SQLServer.Dts
                         // Need to set the "children"!
                         foreach (IDTSOutput output in this.ComponentMetaData.OutputCollection)
                         {
-                            if (output.CustomPropertyCollection.Count > 0)
+                            if (ManageProperties.Contains(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
                             {
                                 switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
                                 {
@@ -1961,7 +1961,7 @@ namespace Martin.SQLServer.Dts
                                         Object currentValue = null;
                                         foreach (SSISOutputColumn currentOutputColumn in errorOutput.OutputColumnCollection)
                                         {
-                                            if (currentOutputColumn.CustomPropertyCollection.ContainsKey(ManageProperties.keyOutputColumnID))
+                                            if (ManageProperties.Contains(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                                             {
                                                 if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                 {
@@ -2083,7 +2083,7 @@ namespace Martin.SQLServer.Dts
                                                     Object currentValue = null;
                                                     foreach (SSISOutputColumn errorOutputColumn in errorOutput.OutputColumnCollection)
                                                     {
-                                                        if (errorOutputColumn.CustomPropertyCollection.Count > 1)
+                                                        if (ManageProperties.Contains(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                                                         {
                                                             if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                             {
@@ -2125,7 +2125,7 @@ namespace Martin.SQLServer.Dts
                             Object currentValue = null;
                             foreach (SSISOutputColumn currentOutputColumn in errorOutput.OutputColumnCollection)
                             {
-                                if (currentOutputColumn.CustomPropertyCollection.Count > 0)
+                                if (ManageProperties.Contains(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                                 {
                                     if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                     {
@@ -2294,7 +2294,7 @@ namespace Martin.SQLServer.Dts
                 int IDToDelete = -1;
                 foreach (IDTSOutputColumn outputColumn in output.OutputColumnCollection)
                 {
-                    if (outputColumn.CustomPropertyCollection.Count > 1)
+                    if (ManageProperties.Contains(outputColumn.CustomPropertyCollection,  ManageProperties.keyOutputColumnID))
                     {
                         if (thisColumn.LineageID == (int)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                         {
