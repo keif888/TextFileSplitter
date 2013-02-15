@@ -233,6 +233,9 @@ namespace Martin.SQLServer.Dts
         public const string RowCountOutputInvalid = "The RowsProcessed Output is invalid!";
         public const string KeyOutputColumnsAreMissing = "The Key Output GUID Column is missing.";
         public const string KeyRecordIncorrectNumberOfKeyColumns = "There is either more than one, or less than one Key Output GUID column.";
+        public const string CantDeleteKeyColumn = "You can NOT delete the Key column.";
+        public const string CantSetKeyColumn = "You can NOT set any properties on a Key column.";
+        public const string CantUnSetKeyColumn = "You can NOT change a Key column to anything else.";
         #endregion
 
         #region Validation Strings

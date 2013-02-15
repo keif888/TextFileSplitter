@@ -95,6 +95,7 @@
     <Compile Include="TestSSISOutput.cs" />
     <Compile Include="TestErrorRecordOutput.cs" />
     <Compile Include="TestRowsProcessedOutput.cs" />
+    <Compile Include="TestKeyRecordOutput.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FileHelpers\FileHelpers.csproj">
