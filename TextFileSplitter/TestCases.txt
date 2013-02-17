@@ -20,19 +20,25 @@ Rows Processed
 	Set ANY Column property on ANY column (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
 	Set ANY Column data type values (Exception) - MessageStrings.CantChangeOutputProperties("RowsProcessed")
 	
-Key Records  ** Not Done Yet **
-	Delete Output (Exception) - MessageStrings.CannotDeleteKeyOutput
-	Change typeOfOutput to anything else (Exception) - MessageStrings.CantChangeOutputProperties("Key")
-	Change masterRecordID (Exception) - MessageStrings.CantChangeOutputProperties("Key")
-	Change rowTypeValue (Succeed)
-	Add Column (Succeed)
-	Delete Passthrough Column (Succeed)
-	Delete Key Column (Exception) - MessageStrings.CantDeleteKeyColumn
-	Set Column from Passthrough to Key (Exception) - MessageStrings.CantSetKeyColumn
-	Set Column from Key to Passthrough (Exception) - MessageStrings.CantUnsetKeyColumn
-	Set Column from Passthrough to Anything (Exception) - MessageStrings.InvalidPropertyValue(...)
-	Set Passthrough Column Data Types (Succeed)
+Key Records
+W	Delete Output (Exception) - MessageStrings.CannotDeleteKeyOutput
+W	Change typeOfOutput to anything else (Exception) - MessageStrings.CantChangeOutputProperties("Key")
+W	Change masterRecordID (Exception) - MessageStrings.CantChangeOutputProperties("Key")
+W	Change rowTypeValue (Succeed)
+W	Add Column (Succeed)
+W	Delete Passthrough Column (Succeed)
+W	Delete Key Column (Exception) - MessageStrings.CantDeleteKeyColumn
+	Set UsageOfColumn to any value From Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+	Set UsageOfColumn to any value From Passthrough (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+	Set keyOutputColumnID to any value (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+	Set dotNetFormatString on column with usageOfColumn = Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+	Set dotNetFormatString on column with usageOfColumn = passThrough (Succeed)
+	Set isColumnOptional on column with usageOfColumn = Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+	Set isColumnOptional on column with usageOfColumn = passThrough and NOT last non optional column (Exception) - MessageStrings.CanOnlySetOptionalOnLastNonOptionalColumn
+	Set isColumnOptional on column with usageOfColumn = passThrough and last column (Succeed)
+	Set isColumnOptional on column with usageOfColumn = passThrough and last non optional column (2nd last column) (Succeed)
 	Set Key Column Data Types (Exception) - MessageStrings.CantSetKeyColumn
+	Set Passthrough Column Data Types (Succeed)
 	
 Data Records
 Pass Through
@@ -40,3 +46,10 @@ Master Records
 Child Master Records
 Child Records
 
+usageOfColumnEnum
+RowType
+, RowData
+, Passthrough
+, Key
+, Ignore
+, MasterValue

@@ -5,10 +5,10 @@ namespace Martin.SQLServer.Dts
     internal static class MessageStrings
     {
         #region Dynamic Messages
-        private const string InvalidPropertyValuePattern = "Invalid value \"{1}\" for property {0}.";
+        private const string InvalidPropertyValuePattern2 = "Invalid value \"{1}\" for property {0}.";
         public static string InvalidPropertyValue(string propertyName, object propertyValue)
         {
-            return string.Format(InvalidPropertyValuePattern, propertyName, propertyValue);
+            return string.Format(InvalidPropertyValuePattern2, propertyName, propertyValue);
         }
 
         private const string PropertyStringTooLongPattern = "The string \"{1}\" is too long for property {0}.";
@@ -149,6 +149,12 @@ namespace Martin.SQLServer.Dts
             return String.Format(AKeyColumnIsMissingFromOutputPattern, outputName);
         }
 
+        private const string InvalidPropertyValuePattern4 = "You can not set the property {2} on column {1} on output {0} to the value {3}.";
+        public static string InvalidPropertyValue(string outputName, string columnName, string propertyName, string propertyValue)
+        {
+            return String.Format(InvalidPropertyValuePattern4, outputName, columnName, propertyName, propertyValue);
+        }
+
         #endregion
 
         #region Name Descriptions
@@ -245,5 +251,6 @@ namespace Martin.SQLServer.Dts
             return string.Format(UnsupportedDataTypePattern, dataTypeName);
         }
         #endregion
+
     }
 }
