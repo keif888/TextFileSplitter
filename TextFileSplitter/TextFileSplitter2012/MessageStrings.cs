@@ -155,6 +155,12 @@ namespace Martin.SQLServer.Dts
             return String.Format(InvalidPropertyValuePattern4, outputName, columnName, propertyName, propertyValue);
         }
 
+        private const string YouCanNotSetThatPropertyOnAColumnPattern = "You can not set the property {2} on column {1} on output {0}.";
+        public static string YouCanNotSetThatPropertyOnAColumn(string outputName, string columnName, string propertyName)
+        {
+            return String.Format(YouCanNotSetThatPropertyOnAColumnPattern, outputName, columnName, propertyName);
+        }
+
         #endregion
 
         #region Name Descriptions
@@ -242,6 +248,8 @@ namespace Martin.SQLServer.Dts
         public const string CantDeleteKeyColumn = "You can NOT delete the Key column.";
         public const string CantSetKeyColumn = "You can NOT set any properties on a Key column.";
         public const string CantUnSetKeyColumn = "You can NOT change a Key column to anything else.";
+        public const string CanOnlySetOptionalOnLastNonOptionalColumn = "You MUST ensure that all the columns after the one you are changing are already optional.";
+        public const string CanOnlySetNonOptionalOnLastOptionalColumn = "You MUST ensure that all the columns before the one you are changing are NON optional.";
         #endregion
 
         #region Validation Strings

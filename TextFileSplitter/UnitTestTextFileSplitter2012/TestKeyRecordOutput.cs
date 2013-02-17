@@ -14,6 +14,8 @@ namespace UnitTestTextFileSplitter2012
     [TestClass]
     public class TestKeyRecordOutput
     {
+        #region Delete Output (Exception)
+
         [TestMethod]
         public void TestDeleteKeyOutput()
         {
@@ -44,6 +46,8 @@ namespace UnitTestTextFileSplitter2012
 
             Assert.IsTrue(exceptionThrown, "Exception Not Thrown");
         }
+
+        #endregion
 
         #region Change typeOfOutput to anything else (Exception)
         [TestMethod]
@@ -383,7 +387,7 @@ namespace UnitTestTextFileSplitter2012
             Boolean exceptionThrown = false;
             try
             {
-                instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+                instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             }
             catch
             {
@@ -414,7 +418,7 @@ namespace UnitTestTextFileSplitter2012
             instance.ProvideComponentProperties();
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn =  instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn =  instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
                 instance.DeleteOutputColumn(textFileSplitter.OutputCollection[2].ID, newColumn.ID);
@@ -465,7 +469,7 @@ namespace UnitTestTextFileSplitter2012
         #region Set UsageOfColumn to any value From Key (Exception)
 
         [TestMethod]
-        public void TestChangeKeyOutputSetKeyToPassthrough()
+        public void TestChangeKeyOutputSetKeyToRowType()
         {
             Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
             Executable exec = package.Executables.Add("STOCK:PipelineTask");
@@ -485,15 +489,50 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
-                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.RowType);
             }
             catch (Exception ex)
             {
                 exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.CantUnSetKeyColumn, ex.Message, "Exception Message Wrong");
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.RowType)), ex.Message, "Exception Message Wrong");
+            }
+
+            Assert.IsTrue(exceptionThrown, "Exception Thrown");
+        }
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetKeyToRowData()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.RowData);
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.RowData)), ex.Message, "Exception Message Wrong");
             }
 
             Assert.IsTrue(exceptionThrown, "Exception Thrown");
@@ -520,7 +559,7 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
                 instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
@@ -528,14 +567,14 @@ namespace UnitTestTextFileSplitter2012
             catch (Exception ex)
             {
                 exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.CantUnSetKeyColumn, ex.Message, "Exception Message Wrong");
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Passthrough)), ex.Message, "Exception Message Wrong");
             }
 
             Assert.IsTrue(exceptionThrown, "Exception Thrown");
         }
 
         [TestMethod]
-        public void TestChangeKeyOutputSetKeyToPassthrough()
+        public void TestChangeKeyOutputSetKeyToKey()
         {
             Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
             Executable exec = package.Executables.Add("STOCK:PipelineTask");
@@ -555,22 +594,22 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
-                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
             }
             catch (Exception ex)
             {
                 exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.CantUnSetKeyColumn, ex.Message, "Exception Message Wrong");
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key)), ex.Message, "Exception Message Wrong");
             }
 
             Assert.IsTrue(exceptionThrown, "Exception Thrown");
         }
 
         [TestMethod]
-        public void TestChangeKeyOutputSetKeyToPassthrough()
+        public void TestChangeKeyOutputSetKeyToIgnore()
         {
             Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
             Executable exec = package.Executables.Add("STOCK:PipelineTask");
@@ -590,22 +629,22 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
-                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Ignore);
             }
             catch (Exception ex)
             {
                 exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.CantUnSetKeyColumn, ex.Message, "Exception Message Wrong");
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Ignore)), ex.Message, "Exception Message Wrong");
             }
 
             Assert.IsTrue(exceptionThrown, "Exception Thrown");
         }
 
         [TestMethod]
-        public void TestChangeKeyOutputSetKeyToPassthrough()
+        public void TestChangeKeyOutputSetKeyToMasterValue()
         {
             Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
             Executable exec = package.Executables.Add("STOCK:PipelineTask");
@@ -625,50 +664,15 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
-                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
             }
             catch (Exception ex)
             {
                 exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.CantUnSetKeyColumn, ex.Message, "Exception Message Wrong");
-            }
-
-            Assert.IsTrue(exceptionThrown, "Exception Thrown");
-        }
-        
-        [TestMethod]
-        public void TestChangeKeyOutputSetKeyToPassthrough()
-        {
-            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
-            Executable exec = package.Executables.Add("STOCK:PipelineTask");
-            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
-            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
-            ComponentEventHandler events = new ComponentEventHandler();
-            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
-
-            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
-            textFileSplitter.Name = "Row Splitter Test";
-            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
-            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
-
-            instance.ProvideComponentProperties();
-
-            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
-            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
-
-            Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
-            try
-            {
-                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Passthrough);
-            }
-            catch (Exception ex)
-            {
-                exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.CantUnSetKeyColumn, ex.Message, "Exception Message Wrong");
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.MasterValue)), ex.Message, "Exception Message Wrong");
             }
 
             Assert.IsTrue(exceptionThrown, "Exception Thrown");
@@ -676,10 +680,7 @@ namespace UnitTestTextFileSplitter2012
         
         #endregion
 
-
-
-
-        #region Set Passthrough
+        #region Set UsageOfColumn to any value From Passthrough (Exception)
 
         [TestMethod]
         public void TestChangeKeyOutputSetPassthroughToKey()
@@ -702,7 +703,7 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
                 instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
@@ -710,7 +711,7 @@ namespace UnitTestTextFileSplitter2012
             catch (Exception ex)
             {
                 exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.CantSetKeyColumn, ex.Message, "Exception Message Wrong");
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, newColumn.Name, ManageProperties.usageOfColumn, System.Enum.GetName(typeof(Utilities.usageOfColumnEnum), Utilities.usageOfColumnEnum.Key)), ex.Message, "Exception Message Wrong");
             }
 
             Assert.IsTrue(exceptionThrown, "Exception Thrown");
@@ -737,7 +738,7 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
                 instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Ignore);
@@ -772,7 +773,7 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
                 instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
@@ -807,7 +808,7 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
                 instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.RowData);
@@ -842,7 +843,7 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
 
             Boolean exceptionThrown = false;
-            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 0, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
             try
             {
                 instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.RowType);
@@ -858,8 +859,45 @@ namespace UnitTestTextFileSplitter2012
 
         #endregion
 
+        #region Set keyOutputColumnID to any value (Exception)
+
         [TestMethod]
-        public void TestChangeKeyOutputSetColumnProperty()
+        public void TestChangeKeyOutputSetkeyOutputColumnIDOnPassthrough()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.keyOutputColumnID, 10);
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, newColumn.Name, ManageProperties.keyOutputColumnID, "10"), ex.Message, "Exception Message Wrong");
+            }
+
+            Assert.IsTrue(exceptionThrown, "Exception Thrown");
+        }
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetkeyOutputColumnIDOnKey()
         {
             Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
             Executable exec = package.Executables.Add("STOCK:PipelineTask");
@@ -881,19 +919,339 @@ namespace UnitTestTextFileSplitter2012
             Boolean exceptionThrown = false;
             try
             {
-                instance.SetOutputColumnProperty(keyOutput.ID, keyOutput.OutputColumnCollection[0].ID, ManageProperties.dotNetFormatString, String.Empty);
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.keyOutputColumnID, 10);
             }
-            catch (COMException ex)
+            catch (Exception ex)
             {
-                Assert.AreEqual(MessageStrings.CantChangeOutputProperties("Key"), ex.Message, "Exception Message Wrong");
                 exceptionThrown = true;
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.keyOutputColumnID, "10"), ex.Message, "Exception Message Wrong");
+            }
+
+            Assert.IsTrue(exceptionThrown, "Exception Thrown");
+        }
+        #endregion
+
+        #region Set dotNetFormatString on column with usageOfColumn = Key (Exception)
+        [TestMethod]
+        public void TestChangeKeyOutputSetdotNetFormatStringOnKey()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.dotNetFormatString, "yyyyMMdd");
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.dotNetFormatString, "yyyyMMdd"), ex.Message, "Exception Message Wrong");
             }
 
             Assert.IsTrue(exceptionThrown, "Exception Not Thrown");
         }
+        #endregion
+
+        #region Set dotNetFormatString on column with usageOfColumn = passThrough (Succeed)
 
         [TestMethod]
-        public void TestChangeKeyOutputSetColumnDataType()
+        public void TestChangeKeyOutputSetdotNetFormatStringOnPassThrough()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.dotNetFormatString, "yyyyMMdd");
+            }
+            catch
+            {
+                exceptionThrown = true;
+            }
+
+            Assert.IsFalse(exceptionThrown, "Exception Thrown");
+            Assert.AreEqual("yyyyMMdd", (String)ManageProperties.GetPropertyValue(newColumn.CustomPropertyCollection, ManageProperties.dotNetFormatString), "Format NOT set");
+        }
+
+        #endregion
+
+        #region Set isColumnOptional on column with usageOfColumn = Key (Exception)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetisColumnOptionalOnKey()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].ID, ManageProperties.isColumnOptional, true);
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                Assert.AreEqual(MessageStrings.InvalidPropertyValue(textFileSplitter.OutputCollection[2].Name, textFileSplitter.OutputCollection[2].OutputColumnCollection[0].Name, ManageProperties.isColumnOptional, true.ToString()), ex.Message, "Exception Message Wrong");
+            }
+
+            Assert.IsTrue(exceptionThrown, "Exception NOT Thrown");
+        }
+
+        #endregion
+
+        #region Set isColumnOptional on column with usageOfColumn = passThrough and NOT last non optional column (Exception)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetisColumnOptionalOnPassThroughNotLastNonOptional()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn1 = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn2 = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 2, "New Error Message", String.Empty);
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn1.ID, ManageProperties.isColumnOptional, true);
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                Assert.AreEqual(MessageStrings.CanOnlySetOptionalOnLastNonOptionalColumn, ex.Message, "Exception Message Wrong");
+            }
+
+            Assert.IsTrue(exceptionThrown, "Exception NOT Thrown");
+        }
+
+        #endregion
+
+        #region Set isColumnOptional on column with usageOfColumn = passThrough and last column (Succeed)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetisColumnOptionalOnPassThroughLastColumn()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.isColumnOptional, true);
+            }
+            catch
+            {
+                exceptionThrown = true;
+            }
+
+            Assert.IsFalse(exceptionThrown, "Exception Thrown");
+            Assert.AreEqual(true, (bool)ManageProperties.GetPropertyValue(newColumn.CustomPropertyCollection, ManageProperties.isColumnOptional), "isOptional NOT set");
+        }
+
+        #endregion
+
+        #region Set isColumnOptional on column with usageOfColumn = passThrough and last non optional column (2nd last column) (Succeed)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetisColumnOptionalOnPassThroughLastNonOptionalOK()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn1 = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn2 = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 2, "New Error Message", String.Empty);
+            instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn2.ID, ManageProperties.isColumnOptional, true);
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn1.ID, ManageProperties.isColumnOptional, true);
+            }
+            catch
+            {
+                exceptionThrown = true;
+            }
+
+            Assert.IsFalse(exceptionThrown, "Exception Thrown");
+            Assert.AreEqual(true, (bool)ManageProperties.GetPropertyValue(newColumn1.CustomPropertyCollection, ManageProperties.isColumnOptional), "isOptional NOT set");
+        }
+
+        #endregion
+
+        #region Set isColumnOptional OFF on column with usageOfColumn = passThrough and last 2 columns optional (last column) (Exception)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetisColumnOptionalOFFOnPassThroughLastNonOptional()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn1 = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn2 = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 2, "New Error Message", String.Empty);
+            instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn2.ID, ManageProperties.isColumnOptional, true);
+            instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn1.ID, ManageProperties.isColumnOptional, true);
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn2.ID, ManageProperties.isColumnOptional, false);
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                Assert.AreEqual(MessageStrings.CanOnlySetNonOptionalOnLastOptionalColumn, ex.Message, "Exception Message Wrong");
+            }
+
+            Assert.IsTrue(exceptionThrown, "Exception NOT Thrown");
+        }
+
+        #endregion
+
+        #region Set isColumnOptional on column with usageOfColumn = passThrough and last non optional column (2nd last column) (Succeed)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetisColumnOptionalOFFOnPassThroughLastNonOptionalOK()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            ManageProperties.AddMissingOutputColumnProperties(keyOutput.OutputColumnCollection[0].CustomPropertyCollection);
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn1 = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+            IDTSOutputColumn100 newColumn2 = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 2, "New Error Message", String.Empty);
+            instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn2.ID, ManageProperties.isColumnOptional, true);
+            instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn1.ID, ManageProperties.isColumnOptional, true);
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn1.ID, ManageProperties.isColumnOptional, false);
+            }
+            catch
+            {
+                exceptionThrown = true;
+            }
+
+            Assert.IsFalse(exceptionThrown, "Exception Thrown");
+            Assert.AreEqual(false, (bool)ManageProperties.GetPropertyValue(newColumn1.CustomPropertyCollection, ManageProperties.isColumnOptional), "isOptional NOT set");
+        }
+
+        #endregion
+
+        #region Set Key Column Data Types (Exception)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetColumnDataTypeKey()
         {
             Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
             Executable exec = package.Executables.Add("STOCK:PipelineTask");
@@ -924,5 +1282,82 @@ namespace UnitTestTextFileSplitter2012
 
             Assert.IsTrue(exceptionThrown, "Exception Not Thrown");
         }
+
+        #endregion
+
+        #region Set Passthrough Column Data Types (Succeed)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetColumnDataTypePassthrough()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+
+            try
+            {
+                instance.SetOutputColumnDataTypeProperties(textFileSplitter.OutputCollection[2].ID, newColumn.ID, DataType.DT_DBDATE, 0, 0, 0, 0);
+            }
+            catch
+            {
+                exceptionThrown = true;
+            }
+
+            Assert.IsFalse(exceptionThrown, "Exception Thrown");
+            Assert.AreEqual(DataType.DT_DBDATE, textFileSplitter.OutputCollection[2].OutputColumnCollection[1].DataType, "Incorrect Column DataType");
+        }
+
+        #endregion
+
+        #region Set Invalid Property for a Column (Exception)
+
+        [TestMethod]
+        public void TestChangeKeyOutputSetInvalidProperty()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.Name = "Row Splitter Test";
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+
+            Boolean exceptionThrown = false;
+            IDTSOutputColumn100 newColumn = instance.InsertOutputColumnAt(textFileSplitter.OutputCollection[2].ID, 1, "New Error Message", String.Empty);
+
+            try
+            {
+                instance.SetOutputColumnProperty(textFileSplitter.OutputCollection[2].ID, newColumn.ID, ManageProperties.masterRecordID, 10);
+            }
+            catch (Exception ex)
+            {
+                exceptionThrown = true;
+                Assert.AreEqual(MessageStrings.YouCanNotSetThatPropertyOnAColumn(textFileSplitter.OutputCollection[2].Name, newColumn.Name, ManageProperties.masterRecordID), ex.Message, "Exception Message Wrong");
+            }
+
+            Assert.IsTrue(exceptionThrown, "Exception NOT Thrown");
+        }
+
+        #endregion
+
     }
 }

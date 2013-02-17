@@ -28,17 +28,20 @@ W	Change rowTypeValue (Succeed)
 W	Add Column (Succeed)
 W	Delete Passthrough Column (Succeed)
 W	Delete Key Column (Exception) - MessageStrings.CantDeleteKeyColumn
-	Set UsageOfColumn to any value From Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
-	Set UsageOfColumn to any value From Passthrough (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
-	Set keyOutputColumnID to any value (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
-	Set dotNetFormatString on column with usageOfColumn = Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
-	Set dotNetFormatString on column with usageOfColumn = passThrough (Succeed)
-	Set isColumnOptional on column with usageOfColumn = Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
-	Set isColumnOptional on column with usageOfColumn = passThrough and NOT last non optional column (Exception) - MessageStrings.CanOnlySetOptionalOnLastNonOptionalColumn
-	Set isColumnOptional on column with usageOfColumn = passThrough and last column (Succeed)
-	Set isColumnOptional on column with usageOfColumn = passThrough and last non optional column (2nd last column) (Succeed)
-	Set Key Column Data Types (Exception) - MessageStrings.CantSetKeyColumn
-	Set Passthrough Column Data Types (Succeed)
+W	Set UsageOfColumn to any value From Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+W	Set UsageOfColumn to any value From Passthrough (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+W	Set keyOutputColumnID to any value (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+W	Set dotNetFormatString on column with usageOfColumn = Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+W	Set dotNetFormatString on column with usageOfColumn = passThrough (Succeed)
+W	Set isColumnOptional on column with usageOfColumn = Key (Exception) - MessageStrings.InvalidPropertyValue(outputName, columnName, propertyName, propertyValue)
+W	Set isColumnOptional on column with usageOfColumn = passThrough and NOT last non optional column (Exception) - MessageStrings.CanOnlySetOptionalOnLastNonOptionalColumn
+W	Set isColumnOptional on column with usageOfColumn = passThrough and last column (Succeed)
+W	Set isColumnOptional on column with usageOfColumn = passThrough and last non optional column (2nd last column) (Succeed)
+W	Set isColumnOptional OFF on column with usageOfColumn = passThrough and last 2 columns optional (last column) (Exception) - MessageStrings.CanOnlySetNonOptionalOnLastOptionalColumn
+W	Set isColumnOptional OFF on column with usageOfColumn = passThrough and last 2 columns optional (2nd last column) (Succeed)
+W	Set Key Column Data Types (Exception) - MessageStrings.CantChangeOutputProperties("Key")
+W	Set Passthrough Column Data Types (Succeed)
+W	Set Invalid Property for a Column (Exception) - MessageStrings.YouCanNotSetThatPropertyOnAColumn(thisOutput.Name, thisColumn.Name, propertyName)
 	
 Data Records
 Pass Through
