@@ -46,6 +46,10 @@
     <AssemblyOriginatorKeyFile>TextFileSplitter.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Konesans.Dts.Pipeline.TrashDestination, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b2ab4a111192992b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SQL Server\110\DTS\PipelineComponents\Konesans.Dts.Pipeline.TrashDestination.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.SqlServer.Dts.Design, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\Microsoft SQL Server\110\SDK\Assemblies\Microsoft.SqlServer.Dts.Design.dll</HintPath>
@@ -88,6 +92,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ComponentEventHandler.cs" />
+    <Compile Include="PackageEventHandler.cs" />
     <Compile Include="TestTextFileSplitter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestManageColumns.cs" />
@@ -96,6 +101,7 @@
     <Compile Include="TestErrorRecordOutput.cs" />
     <Compile Include="TestRowsProcessedOutput.cs" />
     <Compile Include="TestKeyRecordOutput.cs" />
+    <Compile Include="TestPrimeOutput.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FileHelpers\FileHelpers.csproj">
@@ -109,6 +115,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="TextFileSplitter.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="KeyRecordsOnly.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SampleSourceFile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

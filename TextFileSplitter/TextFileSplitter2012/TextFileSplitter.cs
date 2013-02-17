@@ -1819,6 +1819,7 @@ namespace Martin.SQLServer.Dts
             Int64 recordsRead = 0;
             Boolean rowCountConnected = false;
             Boolean keyRecordFailure = false;
+            Boolean errorConnected = false;
             int keyColumnID = 0;
 
             columnDelimter = (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter);
@@ -1834,6 +1835,7 @@ namespace Martin.SQLServer.Dts
                             {
                                 errorBuffer = buffers[i];
                                 errorOutput = new SSISOutput(output, BufferManager);
+                                errorConnected = true;
                                 break;
                             }
                         }
@@ -2018,19 +2020,22 @@ namespace Martin.SQLServer.Dts
                                     currentEngine.ErrorManager.ClearErrors();
                                     break;
                                 case DTSRowDisposition.RD_RedirectRow:
-                                    foreach (ErrorInfo err in currentEngine.ErrorManager.Errors)
+                                    if (errorConnected)
                                     {
-                                        errorBuffer.AddRow();
-                                        errorBuffer[2] = TruncateStringTo4000(String.Format("Output {0} had error {1}", currentOutput.Name, err.ExceptionInfo.Message));
-                                        errorBuffer[4] = TruncateStringTo4000(err.RecordString);
-                                        Object currentValue = null;
-                                        foreach (SSISOutputColumn currentOutputColumn in errorOutput.OutputColumnCollection)
+                                        foreach (ErrorInfo err in currentEngine.ErrorManager.Errors)
                                         {
-                                            if (ManageProperties.Contains(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
+                                            errorBuffer.AddRow();
+                                            errorBuffer[2] = TruncateStringTo4000(String.Format("Output {0} had error {1}", currentOutput.Name, err.ExceptionInfo.Message));
+                                            errorBuffer[4] = TruncateStringTo4000(err.RecordString);
+                                            Object currentValue = null;
+                                            foreach (SSISOutputColumn currentOutputColumn in errorOutput.OutputColumnCollection)
                                             {
-                                                if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                                if (ManageProperties.Contains(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                                                 {
-                                                    errorBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                    if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                                    {
+                                                        errorBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                    }
                                                 }
                                             }
                                         }
@@ -2059,9 +2064,12 @@ namespace Martin.SQLServer.Dts
                                         case DTSRowDisposition.RD_NotUsed:
                                             break;
                                         case DTSRowDisposition.RD_RedirectRow:
-                                            errorBuffer.AddRow();
-                                            errorBuffer[2] = TruncateStringTo4000(String.Format("Key Record Failed Before Record {0}.", recordsRead));
-                                            errorBuffer[4] = TruncateStringTo4000(RowDataValue);
+                                            if (errorConnected)
+                                            {
+                                                errorBuffer.AddRow();
+                                                errorBuffer[2] = TruncateStringTo4000(String.Format("Key Record Failed Before Record {0}.", recordsRead));
+                                                errorBuffer[4] = TruncateStringTo4000(RowDataValue);
+                                            }
                                             break;
                                         default:
                                             break;
@@ -2141,18 +2149,21 @@ namespace Martin.SQLServer.Dts
                                                 case DTSRowDisposition.RD_NotUsed:
                                                     break;
                                                 case DTSRowDisposition.RD_RedirectRow:
-                                                    errorBuffer.AddRow();
-                                                    errorBuffer[2] = TruncateStringTo4000(String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name));
-                                                    errorBuffer[3] = TruncateStringTo4000(currentOutputColumn.FileHelperField.GetValue(result).ToString());
-                                                    errorBuffer[4] = TruncateStringTo4000(RowDataValue);
-                                                    Object currentValue = null;
-                                                    foreach (SSISOutputColumn errorOutputColumn in errorOutput.OutputColumnCollection)
+                                                    if (errorConnected)
                                                     {
-                                                        if (ManageProperties.Contains(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
+                                                        errorBuffer.AddRow();
+                                                        errorBuffer[2] = TruncateStringTo4000(String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name));
+                                                        errorBuffer[3] = TruncateStringTo4000(currentOutputColumn.FileHelperField.GetValue(result).ToString());
+                                                        errorBuffer[4] = TruncateStringTo4000(RowDataValue);
+                                                        Object currentValue = null;
+                                                        foreach (SSISOutputColumn errorOutputColumn in errorOutput.OutputColumnCollection)
                                                         {
-                                                            if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                                            if (ManageProperties.Contains(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                                                             {
-                                                                errorBuffer[errorOutputColumn.OutputBufferID] = currentValue;
+                                                                if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                                                {
+                                                                    errorBuffer[errorOutputColumn.OutputBufferID] = currentValue;
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -2184,17 +2195,20 @@ namespace Martin.SQLServer.Dts
                             this.ComponentMetaData.FireError(999, this.ComponentMetaData.Name, String.Format("Unexpected Row Type Value {0} found on Record {1}.", RowTypeValue, recordsRead), string.Empty, 0, out pbCancel);
                             throw new COMException(String.Format("Parsing Exception raised on or around input file line {0}.", recordsRead), E_FAIL);
                         case DTSRowDisposition.RD_RedirectRow:
-                            errorBuffer.AddRow();
-                            errorBuffer[2] = TruncateStringTo4000(String.Format("Unexpected Row Type Value {0} found on Record {1}.", RowTypeValue, recordsRead));
-                            errorBuffer[4] = TruncateStringTo4000(String.Format("{0}{1}{2}", RowTypeValue, columnDelimter, RowDataValue));
-                            Object currentValue = null;
-                            foreach (SSISOutputColumn currentOutputColumn in errorOutput.OutputColumnCollection)
+                            if (errorConnected)
                             {
-                                if (ManageProperties.Contains(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
+                                errorBuffer.AddRow();
+                                errorBuffer[2] = TruncateStringTo4000(String.Format("Unexpected Row Type Value {0} found on Record {1}.", RowTypeValue, recordsRead));
+                                errorBuffer[4] = TruncateStringTo4000(String.Format("{0}{1}{2}", RowTypeValue, columnDelimter, RowDataValue));
+                                Object currentValue = null;
+                                foreach (SSISOutputColumn currentOutputColumn in errorOutput.OutputColumnCollection)
                                 {
-                                    if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                    if (ManageProperties.Contains(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
                                     {
-                                        errorBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                        if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
+                                        {
+                                            errorBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                        }
                                     }
                                 }
                             }
@@ -2211,7 +2225,7 @@ namespace Martin.SQLServer.Dts
                     else
                     {
                         int numberOfColumns = RowDataValue.Split(new String[] { (String)ManageProperties.GetPropertyValue(this.ComponentMetaData.CustomPropertyCollection, ManageProperties.columnDelimiter) }, StringSplitOptions.None).Count();
-                        this.ComponentMetaData.FireWarning(0, this.ComponentMetaData.Name, String.Format("The RowType value of {0} was not expected and as {1} columns!", RowTypeValue, numberOfColumns), string.Empty, 0);
+                        this.ComponentMetaData.FireWarning(0, this.ComponentMetaData.Name, String.Format("The RowType value of {0} was not expected and has {1} columns!", RowTypeValue, numberOfColumns), string.Empty, 0);
                         badRecords.Add(RowTypeValue, 1);
                     }
                 }

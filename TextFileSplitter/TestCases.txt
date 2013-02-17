@@ -42,12 +42,20 @@ W	Set isColumnOptional OFF on column with usageOfColumn = passThrough and last 2
 W	Set Key Column Data Types (Exception) - MessageStrings.CantChangeOutputProperties("Key")
 W	Set Passthrough Column Data Types (Succeed)
 W	Set Invalid Property for a Column (Exception) - MessageStrings.YouCanNotSetThatPropertyOnAColumn(thisOutput.Name, thisColumn.Name, propertyName)
+	rowType Not Set Validation (Exception) - Warning of some type.
+	
 	
 Data Records
 Pass Through
 Master Records
 Child Master Records
 Child Records
+
+
+Test Data Tests
+	Key Records Only (Succeed)
+
+
 
 usageOfColumnEnum
 RowType
