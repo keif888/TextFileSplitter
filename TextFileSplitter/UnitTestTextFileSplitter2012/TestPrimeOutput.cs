@@ -7,11 +7,66 @@ using Microsoft.SqlServer.Dts.Runtime.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
 using System.Collections.Generic;
 
+using System.Data.SqlServerCe;
+using System.IO;
+using System.Data;
+using System.Diagnostics;
+
+
 namespace UnitTestTextFileSplitter2012
 {
     [TestClass]
     public class TestPrimeOutput
     {
+
+        const string sqlCEDatabaseName = @".\TestPrimeOutput.sdf";
+        const string sqlCEPassword = "MartinSource";
+        SqlCeEngine sqlCEEngine = null;
+
+        private static string connectionString()
+        {
+            return String.Format("DataSource=\"{0}\"; Password='{1}'", sqlCEDatabaseName, sqlCEPassword);
+        }
+
+        [TestInitialize]
+        public void SetupSQLCEDatabase()
+        {
+            if (File.Exists(sqlCEDatabaseName))
+            {
+                File.Delete(sqlCEDatabaseName);
+            }
+
+            sqlCEEngine = new SqlCeEngine(connectionString());
+            sqlCEEngine.CreateDatabase();
+
+            SqlCeConnection connection = new SqlCeConnection(connectionString());
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+            }
+
+            String tableCreate = "CREATE TABLE [RowCount] ([KeyValue] nvarchar(255), [NumberOfRows] bigint, [KeyValueStatus] nvarchar(255))";
+            SqlCeCommand command = new SqlCeCommand(tableCreate, connection);
+            command.ExecuteNonQuery();
+
+            tableCreate = "CREATE TABLE [KeyRecords] ([KeyColumn1] uniqueidentifier, [KeyColumn2] integer, [KeyColumn3] nvarchar(255))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
+            connection.Close();
+            sqlCEEngine.Dispose();
+        }
+
+        //[TestCleanup]
+        //public void CleanupSQLCEDatabase()
+        //{
+        //    if (File.Exists(sqlCEDatabaseName))
+        //    {
+        //        File.Delete(sqlCEDatabaseName);
+        //    }
+        //}
+
+
         [TestMethod]
         public void TestPrimeOutput_KeyRecordsOnly()
         {
@@ -166,20 +221,64 @@ namespace UnitTestTextFileSplitter2012
 
             // Setup keyOutput with 2 columns
             instance.SetOutputProperty(keyID, ManageProperties.rowTypeValue, "001");
-            IDTSOutputColumn100 keyColumn1 = instance.InsertOutputColumnAt(keyID, 0, "KeyColumn1", String.Empty);
-            IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
+            IDTSOutputColumn100 keyColumn1 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
+            IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
+            keyOutput.OutputColumnCollection[0].Name = "KeyColumn1";
 
-            IDTSComponentMetaData100 trashDestination = dataFlowTask.ComponentMetaDataCollection.New();
-            trashDestination.ComponentClassID = typeof(Konesans.Dts.Pipeline.TrashDestination.Trash).AssemblyQualifiedName;
-            CManagedComponentWrapper trashInstance = trashDestination.Instantiate();
-            trashInstance.ProvideComponentProperties();
+            //IDTSComponentMetaData100 trashDestination = dataFlowTask.ComponentMetaDataCollection.New();
+            //trashDestination.ComponentClassID = typeof(Konesans.Dts.Pipeline.TrashDestination.Trash).AssemblyQualifiedName;
+            //CManagedComponentWrapper trashInstance = trashDestination.Instantiate();
+            //trashInstance.ProvideComponentProperties();
 
-            IDTSPath100 newPath = dataFlowTask.PathCollection.New();
-            newPath.AttachPathAndPropagateNotifications(textFileSplitter.OutputCollection[2], trashDestination.InputCollection[0]);
+            //IDTSPath100 newPath = dataFlowTask.PathCollection.New();
+            //newPath.AttachPathAndPropagateNotifications(textFileSplitter.OutputCollection[2], trashDestination.InputCollection[0]);
+
+            // Add SQL CE Connection
+            ConnectionManager sqlCECM = package.Connections.Add("SQLMOBILE");
+            sqlCECM.ConnectionString = connectionString();
+            sqlCECM.Name = "SQLCE Destination";
+
+            IDTSComponentMetaData100 sqlCETarget = dataFlowTask.ComponentMetaDataCollection.New();
+            sqlCETarget.ComponentClassID = typeof(Microsoft.SqlServer.Dts.Pipeline.SqlCEDestinationAdapter).AssemblyQualifiedName; //"{874F7595-FB5F-40FF-96AF-FBFF8250E3EF}"; // SQL Compact
+            CManagedComponentWrapper sqlCEInstance = sqlCETarget.Instantiate();
+            sqlCEInstance.ProvideComponentProperties();
+            sqlCETarget.Name = "SQLCE Target";
+            sqlCETarget.RuntimeConnectionCollection[0].ConnectionManager = DtsConvert.GetExtendedInterface(sqlCECM);
+            sqlCETarget.RuntimeConnectionCollection[0].ConnectionManagerID = sqlCECM.ID;
+
+            Debug.WriteLine(String.Format("Count is {0}", sqlCETarget.CustomPropertyCollection.Count));
+            foreach (IDTSCustomProperty100 property in sqlCETarget.CustomPropertyCollection)
+            {
+                Debug.WriteLine(String.Format("Property Name {0} has value {1}", property.Name, property.Value));
+            }
+            sqlCETarget.CustomPropertyCollection["Table Name"].Value = "KeyRecords";
+            sqlCEInstance.AcquireConnections(null);
+            sqlCEInstance.ReinitializeMetaData();
+            sqlCEInstance.ReleaseConnections();
+
+            // Create the path from source to destination.
+            IDTSPath100 path = dataFlowTask.PathCollection.New();
+            path.AttachPathAndPropagateNotifications(keyOutput, sqlCETarget.InputCollection[0]);
+
+            // Get the destination's default input and virtual input.
+            IDTSInput100 input = sqlCETarget.InputCollection[0];
+            IDTSVirtualInput100 vInput = input.GetVirtualInput();
+
+            // Iterate through the virtual input column collection.
+            foreach (IDTSVirtualInputColumn100 vColumn in vInput.VirtualInputColumnCollection)
+            {
+                // Call the SetUsageType method of the destination
+                //  to add each available virtual input column as an input column.
+                sqlCEInstance.SetUsageType(input.ID, vInput, vColumn.LineageID, DTSUsageType.UT_READONLY);
+            }
 
             PackageEventHandler packageEvents = new PackageEventHandler();
 
             Microsoft.SqlServer.Dts.Runtime.DTSExecResult result = package.Execute(null, null, packageEvents as IDTSEvents, null, null);
+            foreach (String message in packageEvents.eventMessages)
+            {
+                Debug.WriteLine(message);
+            }
             Assert.AreEqual(Microsoft.SqlServer.Dts.Runtime.DTSExecResult.Success, result, "Execution Failed");
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Warning] 0: Row Splitter Test: The RowType value of 002 was not expected and has 3 columns!"), "[Warning] 0: Row Splitter Test: The RowType value of 002 was not expected and has 3 columns!");
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Warning] 0: Row Splitter Test: The RowType value of 003 was not expected and has 4 columns!"), "[Warning] 0: Row Splitter Test: The RowType value of 003 was not expected and has 4 columns!");
