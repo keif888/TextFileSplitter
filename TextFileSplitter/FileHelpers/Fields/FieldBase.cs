@@ -843,6 +843,7 @@ namespace FileHelpers
             res.IsNullableType = IsNullableType;
             res.Discarded = Discarded;
             res.FieldFriendlyName = FieldFriendlyName;
+            res.NullFieldOnError = NullFieldOnError;
 
             return res;
         }

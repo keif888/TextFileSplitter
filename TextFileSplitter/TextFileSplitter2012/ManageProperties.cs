@@ -24,6 +24,7 @@ namespace Martin.SQLServer.Dts
         public const string keyOutputColumnID = "keyOutputColumnID";
         public const string dotNetFormatString = "dotNetFormatString";
         public const string isColumnOptional = "isColumnOptional";
+        public const string nullResultOnConversionError = "nullResultOnConversionError";
 
         // Defaults
         const string DefaultDelimiter = ",";
@@ -54,6 +55,7 @@ namespace Martin.SQLServer.Dts
             this.propertyValidationTable.Add(keyOutputColumnID, new ValidateProperty(ValidateIntegerProperty));
             this.propertyValidationTable.Add(dotNetFormatString, new ValidateProperty(ValidateStringProperty));
             this.propertyValidationTable.Add(isColumnOptional, new ValidateProperty(ValidateBooleanProperty));
+            this.propertyValidationTable.Add(nullResultOnConversionError, new ValidateProperty(ValidateBooleanProperty));
         }
 
         private DTSValidationStatus ValidateRowTypeProperty(string propertyName, object propertyValue)
@@ -230,6 +232,7 @@ namespace Martin.SQLServer.Dts
             resultStatus = ValidatePropertyExists(customPropertyCollection, keyOutputColumnID, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, dotNetFormatString, resultStatus);
             resultStatus = ValidatePropertyExists(customPropertyCollection, isColumnOptional, resultStatus);
+            resultStatus = ValidatePropertyExists(customPropertyCollection, nullResultOnConversionError, resultStatus);
             return resultStatus;
         }
 
@@ -298,6 +301,7 @@ namespace Martin.SQLServer.Dts
             AddCustomProperty(propertyCollection, keyOutputColumnID, MessageStrings.KeyOutputColumnIDPropDescription, -1, true);
             AddCustomProperty(propertyCollection, dotNetFormatString, MessageStrings.DotNetFormatStringPropDescription, String.Empty);
             AddCustomProperty(propertyCollection, isColumnOptional, MessageStrings.IsColumnOptionalPropDescription, false);
+            AddCustomProperty(propertyCollection, nullResultOnConversionError, MessageStrings.NullResultOnConversionErrorDescription, false);
         }
 
         public static void AddIgnorableColumnProperties(IDTSCustomPropertyCollection100 propertyCollection)
@@ -322,6 +326,10 @@ namespace Martin.SQLServer.Dts
             if (GetPropertyValue(propertyCollection, isColumnOptional) == null)
             {
                 AddCustomProperty(propertyCollection, isColumnOptional, MessageStrings.IsColumnOptionalPropDescription, false);
+            }
+            if (GetPropertyValue(propertyCollection, nullResultOnConversionError) == null)
+            {
+                AddCustomProperty(propertyCollection, nullResultOnConversionError, MessageStrings.NullResultOnConversionErrorDescription, false);
             }
         }
 

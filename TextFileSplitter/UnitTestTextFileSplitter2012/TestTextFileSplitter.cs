@@ -30,7 +30,7 @@ namespace UnitTestTextFileSplitter2012
 
             instance.ProvideComponentProperties();
 
-            Assert.AreEqual(4, textFileSplitter.Version);
+            Assert.AreEqual(5, textFileSplitter.Version);
             Assert.AreEqual(true, textFileSplitter.UsesDispositions);
             Assert.AreEqual("http://TextFileSplitter.codeplex.com/", textFileSplitter.ContactInfo);
             Assert.AreEqual(true, (Boolean)textFileSplitter.CustomPropertyCollection[ManageProperties.isTextDelmited].Value);
@@ -73,7 +73,7 @@ namespace UnitTestTextFileSplitter2012
                 }
             }
 
-            Assert.AreEqual(4, textFileSplitter.Version);
+            Assert.AreEqual(5, textFileSplitter.Version);
             textFileSplitter.Version = 0;
 
             string packageXML, package2XML;
@@ -91,7 +91,7 @@ namespace UnitTestTextFileSplitter2012
             thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
             dataFlowTask = thMainPipe.InnerObject as MainPipe;
             textFileSplitter = dataFlowTask.ComponentMetaDataCollection[0];
-            Assert.AreEqual(4, textFileSplitter.Version, "Version failed to match on reload");
+            Assert.AreEqual(5, textFileSplitter.Version, "Version failed to match on reload");
             foreach (IDTSOutput100 output in textFileSplitter.OutputCollection)
             {
                 if ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput) == Utilities.typeOfOutputEnum.KeyRecords)

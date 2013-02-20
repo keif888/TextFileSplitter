@@ -147,6 +147,10 @@ namespace Martin.SQLServer.Dts
                     {
                         classString += "[FieldOptional()]\r\n";
                     }
+                    if ((Boolean)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.nullResultOnConversionError))
+                    {
+                        classString += "[FieldNullOnError()]\r\n";
+                    }
                     switch (outputColumn.SSISDataType)
                     {
                         case DataType.DT_BOOL:

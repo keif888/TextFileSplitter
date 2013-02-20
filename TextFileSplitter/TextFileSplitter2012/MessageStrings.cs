@@ -184,6 +184,7 @@ namespace Martin.SQLServer.Dts
         public const string KeyValueStatusColumnDescription = "The status that this output held when being processed.";
         public const string IsColumnOptionalPropDescription = "Stores a True/False that shows if this column is optional within the delimited text.";
         public const string KeyRecordKeyColumnDescription = "The GUID value that uniquely identifies this Key record.";
+        public const string NullResultOnConversionErrorDescription = "When true a conversion error on the source data will result in a NULL, not an error.";
         #endregion
 
         #region Key Value Status Values

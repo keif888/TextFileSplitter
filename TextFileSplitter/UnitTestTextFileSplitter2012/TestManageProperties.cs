@@ -636,11 +636,12 @@ namespace UnitTestTextFileSplitter2012
             DTSValidationStatus actual = propertyManager.ValidateOutputColumnProperties(output.CustomPropertyCollection, DTSValidationStatus.VS_ISVALID);
 
             Assert.AreEqual(expected, actual, "Validation Status Wrong");
-            Assert.AreEqual(4, errorMessages.Count, "Number of error messages wrong");
+            Assert.AreEqual(5, errorMessages.Count, "Number of error messages wrong");
             Assert.IsTrue(errorMessages.Contains(MessageStrings.MissingProperty(ManageProperties.usageOfColumn)), "Error message is wrong");
             Assert.IsTrue(errorMessages.Contains(MessageStrings.MissingProperty(ManageProperties.keyOutputColumnID)), "Error message is wrong");
             Assert.IsTrue(errorMessages.Contains(MessageStrings.MissingProperty(ManageProperties.dotNetFormatString)), "Error message is wrong");
             Assert.IsTrue(errorMessages.Contains(MessageStrings.MissingProperty(ManageProperties.isColumnOptional)), "Error message is wrong");
+            Assert.IsTrue(errorMessages.Contains(MessageStrings.MissingProperty(ManageProperties.nullResultOnConversionError)), "Error message is wrong");
         }
 
         #endregion
@@ -807,7 +808,7 @@ namespace UnitTestTextFileSplitter2012
 
             ManageProperties.AddMissingOutputColumnProperties(output.CustomPropertyCollection);
 
-            Assert.AreEqual(4, output.CustomPropertyCollection.Count, "CustomPropertyCollection.Count is wrong");
+            Assert.AreEqual(5, output.CustomPropertyCollection.Count, "CustomPropertyCollection.Count is wrong");
         }       
         #endregion
 

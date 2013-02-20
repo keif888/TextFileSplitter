@@ -17,7 +17,7 @@ using FileHelpers;
 namespace Martin.SQLServer.Dts
 {
     [DtsPipelineComponent(DisplayName = "Text File Splitter Source",
-        CurrentVersion = 4 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
+        CurrentVersion = 5 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
         , Description = "Extract many outputs from a single Text File"
         , IconResource = "Martin.SQLServer.Dts.Resources.TextFileSplitter.ico"
 #if SQL2012
@@ -52,7 +52,7 @@ namespace Martin.SQLServer.Dts
         public override void ProvideComponentProperties()
         {
             this.RemoveAllInputsOutputsAndCustomProperties();
-            this.ComponentMetaData.Version = 4;  // NB.  Always keep this in sync with the CurrentVersion!!!
+            this.ComponentMetaData.Version = 5;  // NB.  Always keep this in sync with the CurrentVersion!!!
             this.ComponentMetaData.UsesDispositions = true;
             this.ComponentMetaData.ContactInfo = "http://TextFileSplitter.codeplex.com/";
             ManageProperties.AddComponentProperties(this.ComponentMetaData.CustomPropertyCollection);
@@ -275,9 +275,35 @@ namespace Martin.SQLServer.Dts
                         }
                     }
                 }
+                if (metadataVersion < 5)
+                {
+                    foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
+                    {
+                        switch ((Utilities.typeOfOutputEnum)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.typeOfOutput))
+                        {
+                            case Utilities.typeOfOutputEnum.KeyRecords:
+                            case Utilities.typeOfOutputEnum.DataRecords:
+                            case Utilities.typeOfOutputEnum.PassThrough:
+                            case Utilities.typeOfOutputEnum.MasterRecord:
+                            case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                            case Utilities.typeOfOutputEnum.ChildRecord:
+                                foreach (IDTSOutputColumn100 outputColumn in output.OutputColumnCollection)
+                                {
+                                    ManageProperties.AddMissingOutputColumnProperties(outputColumn.CustomPropertyCollection);
+                                    PostInformation(String.Format("Output {0}'s column {1} has been updated to add missing properties.", output.Name, outputColumn.Name));
+                                }
+                                break;
+                            case Utilities.typeOfOutputEnum.ErrorRecords:
+                            case Utilities.typeOfOutputEnum.RowsProcessed:
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
 
             }
-            this.ComponentMetaData.Version = 4;  // NB.  Always keep this in sync with the CurrentVersion!!!
+            this.ComponentMetaData.Version = 5;  // NB.  Always keep this in sync with the CurrentVersion!!!
         }
 
         #endregion
@@ -1004,6 +1030,7 @@ namespace Martin.SQLServer.Dts
                 // We need to add/remove the key columns to the outputs...
                 if (propertyName == ManageProperties.usageOfColumn)
                 {
+                    #region usageOfColumn
                     switch (thisOutputType)
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -1126,9 +1153,11 @@ namespace Martin.SQLServer.Dts
                         default:
                             break;
                     }
+                    #endregion
                 }
                 else if (propertyName == ManageProperties.dotNetFormatString)
                 {
+                    #region dotNetFormatString
                     switch (thisOutputType)
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -1154,9 +1183,11 @@ namespace Martin.SQLServer.Dts
                         default:
                             break;
                     }
+                    #endregion
                 }
                 else if (propertyName == ManageProperties.isColumnOptional)
                 {
+                    #region isColumnOptional
                     switch (thisOutputType)
                     {
                         case Utilities.typeOfOutputEnum.ErrorRecords:
@@ -1206,10 +1237,41 @@ namespace Martin.SQLServer.Dts
                         default:
                             break;
                     }
+                    #endregion
                 }
                 else if (propertyName == ManageProperties.keyOutputColumnID)
                 {
                     throw new COMException(MessageStrings.InvalidPropertyValue(thisOutput.Name, thisColumn.Name, propertyName, propertyValue.ToString()), E_FAIL);
+                }
+                else if (propertyName == ManageProperties.nullResultOnConversionError)
+                {
+                    #region nullResultOnConversionError
+                    switch (thisOutputType)
+                    {
+                        case Utilities.typeOfOutputEnum.ErrorRecords:
+                            throw new COMException(MessageStrings.InvalidPropertyValue(thisOutput.Name, thisColumn.Name, propertyName, propertyValue.ToString()), E_FAIL);
+                        case Utilities.typeOfOutputEnum.KeyRecords:
+                            if (thisColumnUsage == Utilities.usageOfColumnEnum.Key)
+                            {
+                                throw new COMException(MessageStrings.InvalidPropertyValue(thisOutput.Name, thisColumn.Name, propertyName, propertyValue.ToString()), E_FAIL);
+                            }
+                            break;
+                        case Utilities.typeOfOutputEnum.DataRecords:
+                            break;
+                        case Utilities.typeOfOutputEnum.PassThrough:
+                            throw new COMException(MessageStrings.InvalidPropertyValue(thisOutput.Name, thisColumn.Name, propertyName, propertyValue.ToString()), E_FAIL);
+                        case Utilities.typeOfOutputEnum.MasterRecord:
+                            break;
+                        case Utilities.typeOfOutputEnum.ChildMasterRecord:
+                            break;
+                        case Utilities.typeOfOutputEnum.ChildRecord:
+                            break;
+                        case Utilities.typeOfOutputEnum.RowsProcessed:
+                            throw new COMException(MessageStrings.InvalidPropertyValue(thisOutput.Name, thisColumn.Name, propertyName, propertyValue.ToString()), E_FAIL);
+                        default:
+                            break;
+                    }
+                    #endregion
                 }
                 else
                 {
