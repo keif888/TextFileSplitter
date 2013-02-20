@@ -145,6 +145,11 @@ namespace FileHelpers
         /// </summary>
         internal string FieldFriendlyName { get; set; }
 
+        /// <summary>
+        /// Set to true of a field conversion error is to generate a NULL instead of an error.
+        /// </summary>
+        internal bool NullFieldOnError { get; set; }
+
         // --------------------------------------------------------------
         // WARNING !!!
         //    Remember to add each of these fields to the clone method !!
@@ -309,6 +314,9 @@ namespace FileHelpers
                     });
                 }
 
+                // NullFieldOnError
+                res.NullFieldOnError = fi.IsDefined(typeof(FieldNullOnErrorAttribute), false);
+
             }
 
             if (fi.IsDefined(typeof(CompilerGeneratedAttribute), false))
@@ -360,6 +368,7 @@ namespace FileHelpers
             CharsToDiscard = 0;
             FieldInfo = fi;
             FieldType = FieldInfo.FieldType;
+            NullFieldOnError = false;
 
             if (FieldType.IsArray)
                 FieldTypeInternal = FieldType.GetElementType();
@@ -601,10 +610,17 @@ namespace FileHelpers
             }
             catch (ConvertException ex)
             {
-                ex.FieldName = FieldInfo.Name;
-                ex.LineNumber = line.mReader.LineNumber;
-                ex.ColumnNumber = fieldString.ExtractedFrom + 1;
-                throw;
+                if (this.NullFieldOnError)
+                {
+                    return new AssignResult { Value = GetNullValue(line), NullValueUsed = true };
+                }
+                else
+                {
+                    ex.FieldName = FieldInfo.Name;
+                    ex.LineNumber = line.mReader.LineNumber;
+                    ex.ColumnNumber = fieldString.ExtractedFrom + 1;
+                    throw;
+                }
             }
             catch (BadUsageException)
             {
