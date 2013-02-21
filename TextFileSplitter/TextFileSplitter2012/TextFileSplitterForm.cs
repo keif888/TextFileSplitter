@@ -935,6 +935,7 @@ namespace Martin.SQLServer.Dts
 
                                 dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
                                 dgvOutputColumns.Rows[rowNumber].Cells[8].Value = (bool)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.isColumnOptional);
+                                dgvOutputColumns.Rows[rowNumber].Cells[9].Value = (bool)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.nullResultOnConversionError);
                                 SetOutputColumnsReadOnly(dgvOutputColumns.Rows[rowNumber]);
                             }
                             break;
@@ -994,6 +995,7 @@ namespace Martin.SQLServer.Dts
                                 dgvOutputColumns.Rows[rowNumber].Cells[7].Value = outputColumn.Scale;
 
                                 dgvOutputColumns.Rows[rowNumber].Cells[8].Value = (bool)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.isColumnOptional);
+                                dgvOutputColumns.Rows[rowNumber].Cells[9].Value = (bool)ManageProperties.GetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.nullResultOnConversionError);
                                 SetOutputColumnsReadOnly(dgvOutputColumns.Rows[rowNumber]);
                             }
                             break;
@@ -1269,6 +1271,9 @@ namespace Martin.SQLServer.Dts
                             break;
                         case 8: // Optional
                             designtimeComponent.SetOutputColumnProperty(outputID, outputColumnID, ManageProperties.isColumnOptional, (bool)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+                            break;
+                        case 9: // Optional
+                            designtimeComponent.SetOutputColumnProperty(outputID, outputColumnID, ManageProperties.nullResultOnConversionError, (bool)dgvOutputColumns.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
                             break;
                         default:
                             break;

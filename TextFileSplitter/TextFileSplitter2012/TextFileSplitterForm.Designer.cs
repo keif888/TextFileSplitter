@@ -71,6 +71,15 @@
             this.tpOutputs = new System.Windows.Forms.TabPage();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.dgvOutputColumns = new System.Windows.Forms.DataGridView();
+            this.clmOCColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.clmOCUsage = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.clmOCdotNetFormatString = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.clmOCCodePage = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.clmOCDataType = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.clmOCLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.clmOCPrecision = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.clmOCScale = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.clmOCOptional = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.panel8 = new System.Windows.Forms.Panel();
             this.btnAddColumn = new System.Windows.Forms.Button();
             this.btnRemoveColumn = new System.Windows.Forms.Button();
@@ -100,15 +109,7 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.ttSplitter = new System.Windows.Forms.ToolTip(this.components);
-            this.clmOCColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.clmOCUsage = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.clmOCdotNetFormatString = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.clmOCCodePage = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.clmOCDataType = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.clmOCLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.clmOCPrecision = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.clmOCScale = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.clmOCOptional = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.NullOnError = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.panel1.SuspendLayout();
             this.tcMain.SuspendLayout();
             this.tpConnection.SuspendLayout();
@@ -592,7 +593,8 @@
             this.clmOCLength,
             this.clmOCPrecision,
             this.clmOCScale,
-            this.clmOCOptional});
+            this.clmOCOptional,
+            this.NullOnError});
             this.dgvOutputColumns.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvOutputColumns.Location = new System.Drawing.Point(0, 0);
             this.dgvOutputColumns.Name = "dgvOutputColumns";
@@ -600,6 +602,51 @@
             this.dgvOutputColumns.TabIndex = 3;
             this.dgvOutputColumns.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvOutputColumns_CellValueChanged);
             this.dgvOutputColumns.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvOutputColumns_DataError);
+            // 
+            // clmOCColumnName
+            // 
+            this.clmOCColumnName.HeaderText = "Column Name";
+            this.clmOCColumnName.Name = "clmOCColumnName";
+            // 
+            // clmOCUsage
+            // 
+            this.clmOCUsage.HeaderText = "Usage";
+            this.clmOCUsage.Name = "clmOCUsage";
+            // 
+            // clmOCdotNetFormatString
+            // 
+            this.clmOCdotNetFormatString.HeaderText = "Format String";
+            this.clmOCdotNetFormatString.Name = "clmOCdotNetFormatString";
+            // 
+            // clmOCCodePage
+            // 
+            this.clmOCCodePage.HeaderText = "CodePage";
+            this.clmOCCodePage.Name = "clmOCCodePage";
+            // 
+            // clmOCDataType
+            // 
+            this.clmOCDataType.HeaderText = "Data Type";
+            this.clmOCDataType.Name = "clmOCDataType";
+            // 
+            // clmOCLength
+            // 
+            this.clmOCLength.HeaderText = "Length";
+            this.clmOCLength.Name = "clmOCLength";
+            // 
+            // clmOCPrecision
+            // 
+            this.clmOCPrecision.HeaderText = "Precision";
+            this.clmOCPrecision.Name = "clmOCPrecision";
+            // 
+            // clmOCScale
+            // 
+            this.clmOCScale.HeaderText = "Scale";
+            this.clmOCScale.Name = "clmOCScale";
+            // 
+            // clmOCOptional
+            // 
+            this.clmOCOptional.HeaderText = "Optional";
+            this.clmOCOptional.Name = "clmOCOptional";
             // 
             // panel8
             // 
@@ -912,50 +959,10 @@
             this.pictureBox2.TabIndex = 13;
             this.pictureBox2.TabStop = false;
             // 
-            // clmOCColumnName
+            // NullOnError
             // 
-            this.clmOCColumnName.HeaderText = "Column Name";
-            this.clmOCColumnName.Name = "clmOCColumnName";
-            // 
-            // clmOCUsage
-            // 
-            this.clmOCUsage.HeaderText = "Usage";
-            this.clmOCUsage.Name = "clmOCUsage";
-            // 
-            // clmOCdotNetFormatString
-            // 
-            this.clmOCdotNetFormatString.HeaderText = "Format String";
-            this.clmOCdotNetFormatString.Name = "clmOCdotNetFormatString";
-            // 
-            // clmOCCodePage
-            // 
-            this.clmOCCodePage.HeaderText = "CodePage";
-            this.clmOCCodePage.Name = "clmOCCodePage";
-            // 
-            // clmOCDataType
-            // 
-            this.clmOCDataType.HeaderText = "Data Type";
-            this.clmOCDataType.Name = "clmOCDataType";
-            // 
-            // clmOCLength
-            // 
-            this.clmOCLength.HeaderText = "Length";
-            this.clmOCLength.Name = "clmOCLength";
-            // 
-            // clmOCPrecision
-            // 
-            this.clmOCPrecision.HeaderText = "Precision";
-            this.clmOCPrecision.Name = "clmOCPrecision";
-            // 
-            // clmOCScale
-            // 
-            this.clmOCScale.HeaderText = "Scale";
-            this.clmOCScale.Name = "clmOCScale";
-            // 
-            // clmOCOptional
-            // 
-            this.clmOCOptional.HeaderText = "Optional";
-            this.clmOCOptional.Name = "clmOCOptional";
+            this.NullOnError.HeaderText = "Null On Data Error";
+            this.NullOnError.Name = "NullOnError";
             // 
             // TextFileSplitterForm
             // 
@@ -1086,5 +1093,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCPrecision;
         private System.Windows.Forms.DataGridViewTextBoxColumn clmOCScale;
         private System.Windows.Forms.DataGridViewCheckBoxColumn clmOCOptional;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn NullOnError;
     }
 }
