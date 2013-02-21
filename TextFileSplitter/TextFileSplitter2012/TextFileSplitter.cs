@@ -848,9 +848,37 @@ namespace Martin.SQLServer.Dts
             {
                 ConnectionManager cm = Microsoft.SqlServer.Dts.Runtime.DtsConvert.GetWrapper(ComponentMetaData.RuntimeConnectionCollection[0].ConnectionManager);
                 IDTSConnectionManagerFlatFile100 connectionFlatFile = cm.InnerObject as IDTSConnectionManagerFlatFile100;
+                if (connectionFlatFile.Columns.Count > passThroughOutput.OutputColumnCollection.Count)
+                {
+                    for (int i = passThroughOutput.OutputColumnCollection.Count; i < connectionFlatFile.Columns.Count; i++)
+                    {
+                        IDTSConnectionManagerFlatFileColumn100 FFcolumn = connectionFlatFile.Columns[i];
+                        IDTSOutputColumn100 outColumn = passThroughOutput.OutputColumnCollection.New();
+                        ManageColumns.SetOutputColumnDefaults(outColumn, connectionFlatFile.CodePage);
+                        ManageProperties.AddOutputColumnProperties(outColumn.CustomPropertyCollection);
+                        outColumn.Name = ((IDTSName100)FFcolumn).Name;
+                        outColumn.SetDataTypeProperties(FFcolumn.DataType, FFcolumn.MaximumWidth, FFcolumn.DataPrecision, FFcolumn.DataScale, connectionFlatFile.CodePage);
+                        IDTSExternalMetadataColumn100 eColumn = passThroughOutput.ExternalMetadataColumnCollection.New();
+                        eColumn.Name = outColumn.Name;
+                        eColumn.DataType = outColumn.DataType;
+                        eColumn.Precision = outColumn.Precision;
+                        eColumn.Scale = outColumn.Scale;
+                        eColumn.Length = outColumn.Length;
+                        outColumn.ExternalMetadataColumnID = eColumn.ID;
+                    }
+                }
+                else if (connectionFlatFile.Columns.Count < passThroughOutput.OutputColumnCollection.Count)
+                {
+                    while (connectionFlatFile.Columns.Count < passThroughOutput.OutputColumnCollection.Count)
+                    {
+                        passThroughOutput.OutputColumnCollection.RemoveObjectByIndex(passThroughOutput.OutputColumnCollection.Count - 1);
+                        passThroughOutput.ExternalMetadataColumnCollection.RemoveObjectByIndex(passThroughOutput.OutputColumnCollection.Count - 1);
+                    }
+                }
                 for (int i = 0; i < connectionFlatFile.Columns.Count; i++)
                 {
                     IDTSOutputColumn100 outColumn = passThroughOutput.OutputColumnCollection[i];
+                    IDTSExternalMetadataColumn100 eColumn = passThroughOutput.ExternalMetadataColumnCollection[i];
                     IDTSConnectionManagerFlatFileColumn100 FFcolumn = connectionFlatFile.Columns[i];
                     if ((FFcolumn.MaximumWidth != outColumn.Length)
                         || (FFcolumn.DataType != outColumn.DataType)
@@ -861,6 +889,13 @@ namespace Martin.SQLServer.Dts
                     {
                         outColumn.SetDataTypeProperties(FFcolumn.DataType, FFcolumn.MaximumWidth, FFcolumn.DataPrecision, FFcolumn.DataScale, connectionFlatFile.CodePage);
                         outColumn.Name = ((IDTSName100)FFcolumn).Name;
+                        eColumn.Name = ((IDTSName100)FFcolumn).Name;
+                        eColumn.Name = outColumn.Name;
+                        eColumn.DataType = outColumn.DataType;
+                        eColumn.Precision = outColumn.Precision;
+                        eColumn.Scale = outColumn.Scale;
+                        eColumn.Length = outColumn.Length;
+                        outColumn.ExternalMetadataColumnID = eColumn.ID;
                     }
                 }
             }
