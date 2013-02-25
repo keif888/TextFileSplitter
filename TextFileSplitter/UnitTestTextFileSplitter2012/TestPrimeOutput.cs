@@ -676,12 +676,32 @@ namespace UnitTestTextFileSplitter2012
                 Assert.AreEqual(2, sqlData.GetInt32(0), "Number of Delimiter Not Found incorrect");
             }
 
+            rowCount = 0;
+            sqlCommand.CommandText = "SELECT * FROM [ErrorResults] WHERE ErrorMessage LIKE '%not found after field%' AND RowData = 'IAMBAD'";
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.IsTrue(sqlData.IsDBNull(5), "KeyColumn1 has a value for IAMBAD");
+                rowCount++;
+            }
+            Assert.AreEqual(1, rowCount, "2nd IAMBAD Error Missing");
+
             sqlCommand.CommandText = "SELECT COUNT(*) FROM [ErrorResults] WHERE ErrorMessage LIKE '%The value is too large to fit in the column data area of the buffer%'";
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
             while (sqlData.Read())
             {
                 Assert.AreEqual(2, sqlData.GetInt32(0), "Number of To Big incorrect");
             }
+
+            rowCount = 0;
+            sqlCommand.CommandText = "SELECT * FROM [ErrorResults] WHERE ErrorMessage LIKE '%The value is too large to fit in the column data area of the buffer%' AND ColumnData = '2nd Start Invoice Record'";
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.IsTrue(sqlData.IsDBNull(5), "KeyColumn1 has a value for ValueToLarge");
+                rowCount++;
+            }
+            Assert.AreEqual(1, rowCount, "2nd Start Invoice Record Error Missing");
 
             sqlCommand.CommandText = "SELECT COUNT(*) FROM [ErrorResults] WHERE ErrorMessage LIKE '%Int32%'";
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
@@ -709,7 +729,7 @@ namespace UnitTestTextFileSplitter2012
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
             while (sqlData.Read())
             {
-                Assert.AreEqual(2, sqlData.GetInt32(1), "Number of 001 incorrect");
+                Assert.AreEqual(1, sqlData.GetInt32(1), "Number of 001 incorrect");
                 Assert.AreEqual("Connected and Processed", sqlData.GetString(2), "KeyValue Status on 001 incorrect");
             }
 
@@ -726,7 +746,7 @@ namespace UnitTestTextFileSplitter2012
             while (sqlData.Read())
             {
                 Assert.AreEqual(5, sqlData.GetInt32(1), "Number of 003 incorrect");
-                Assert.AreEqual("Connected and Processed", sqlData.GetString(2), "KeyValue Status on 003 incorrect");
+                Assert.AreEqual("Not configured", sqlData.GetString(2), "KeyValue Status on 003 incorrect");
             }
 
 

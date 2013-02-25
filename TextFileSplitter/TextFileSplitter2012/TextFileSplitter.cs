@@ -2366,7 +2366,8 @@ namespace Martin.SQLServer.Dts
                                                             Object currentValue = null;
                                                             foreach (SSISOutputColumn errorOutputColumn in errorOutput.OutputColumnCollection)
                                                             {
-                                                                if (ManageProperties.Contains(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
+                                                                if ((ManageProperties.Contains(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID))
+                                                                    && (typeOfOutput != Utilities.typeOfOutputEnum.KeyRecords))
                                                                 {
                                                                     if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                                     {
@@ -2386,7 +2387,19 @@ namespace Martin.SQLServer.Dts
                                             if (errorFound)
                                                 break;
                                         }
-                                        currentSplitOutput.IncrementRowCount();
+                                        if (!errorFound)
+                                            currentSplitOutput.IncrementRowCount();
+                                        else
+                                        {
+                                            if (typeOfOutput == Utilities.typeOfOutputEnum.KeyRecords)
+                                            {
+                                                keyRecordFailure = true;
+                                                foreach (int keyID in keyMasterValues.Keys.ToList())
+                                                {
+                                                    keyMasterValues[keyID] = null;
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
