@@ -127,6 +127,9 @@
     <None Include="TextFileSplitter.snk" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BadDataFile.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="KeyRecordsOnly.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

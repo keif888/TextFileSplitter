@@ -73,6 +73,22 @@ namespace Martin.SQLServer.Dts
             ManageProperties.AddOutputColumnProperties(outputColumn.CustomPropertyCollection);
             ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
             ManageProperties.SetPropertyValue(outputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, -2);
+
+            return outputColumn;
+        }
+
+        public static IDTSOutputColumn100 AddKeyOutputColumns(IDTSOutput100 keyRecords, IDTSOutput100 errorOutput)
+        {
+            IDTSOutputColumn100 outputColumn = AddKeyOutputColumns(keyRecords);
+
+            IDTSOutputColumn100 errorOutputColumn = errorOutput.OutputColumnCollection.New();
+            errorOutputColumn.Name = MessageStrings.KeyRecordKeyColumnName;
+            errorOutputColumn.SetDataTypeProperties(DataType.DT_GUID, 0, 0, 0, 0);
+            errorOutputColumn.Description = MessageStrings.KeyRecordKeyColumnDescription;
+            ManageProperties.AddOutputColumnProperties(errorOutputColumn.CustomPropertyCollection);
+            ManageProperties.SetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
+            ManageProperties.SetPropertyValue(errorOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID, outputColumn.ID);
+
             return outputColumn;
         }
     }
