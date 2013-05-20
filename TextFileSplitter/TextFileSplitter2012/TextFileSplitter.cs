@@ -2302,23 +2302,22 @@ namespace Martin.SQLServer.Dts
                                                     {
                                                         if (keyMasterValues.TryGetValue(keyColumnID, out currentValue))
                                                         {
-                                                            //currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                            if (currentValue != null)
+                                                            {
+                                                                currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                            }
+                                                            else
+                                                            {
+                                                                throw new ArgumentNullException(currentOutputColumn.Name, String.Format("Key Value was NOT found for record number {0} of type {1}", recordsRead, RowTypeValue));
+                                                            }
                                                         }
                                                     }
                                                     else
                                                     {
                                                         if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                         {
-                                                            //currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                            currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
                                                         }
-                                                    }
-                                                    if (currentValue != null)
-                                                    {
-                                                        currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
-                                                    }
-                                                    else
-                                                    {
-                                                        throw new ArgumentNullException(currentOutputColumn.Name, String.Format("Key Value was NOT found for record number {0} of type {1}", recordsRead, RowTypeValue));
                                                     }
                                                 }
                                                 else
