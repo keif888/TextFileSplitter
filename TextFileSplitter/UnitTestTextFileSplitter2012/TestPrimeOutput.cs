@@ -64,7 +64,11 @@ namespace UnitTestTextFileSplitter2012
             tableCreate = "CREATE TABLE [RowCountOutput] ([KeyValue] nvarchar(255), [NumberOfRows] integer, [KeyValueStatus] nvarchar(255))";
             command.CommandText = tableCreate;
             command.ExecuteNonQuery();
-            
+
+            tableCreate = "CREATE TABLE [Output099] ([KeyColumn1] uniqueidentifier, [output099Column1] nvarchar(50), [output099Column2] nvarchar(50), [output099Column3] nvarchar(50))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
 
             connection.Close();
             sqlCEEngine.Dispose();
@@ -620,10 +624,27 @@ namespace UnitTestTextFileSplitter2012
             instance.SetOutputProperty(keyID, ManageProperties.rowTypeValue, "001");
             IDTSOutputColumn100 keyColumn1 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
             instance.SetOutputColumnDataTypeProperties(keyID, keyColumn1.ID, DataType.DT_I4, 0, 0, 0, 0);
+            //instance.SetOutputColumnProperty(keyID, keyColumn1.ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.Key);
             IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
             instance.SetOutputColumnDataTypeProperties(keyID, keyColumn2.ID, DataType.DT_WSTR, 20, 0, 0, 0);
             keyOutput.OutputColumnCollection[0].Name = "KeyColumn1";
             errorOutput.OutputColumnCollection[5].Name = "KeyColumn1";
+
+            // 002|2001-01-01|Joe Bloggs|Missing Key Value
+
+            IDTSOutput100 output002 = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);//textFileSplitter.OutputCollection.New();
+            int outputID = output002.ID;
+            instance.SetOutputProperty(outputID, ManageProperties.rowTypeValue, "099");
+            instance.SetOutputProperty(outputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.DataRecords);
+            output002.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            output002.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            IDTSOutputColumn100 output099Column1 = instance.InsertOutputColumnAt(outputID, 1, "output099Column1", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(outputID, output099Column1.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output099Column2 = instance.InsertOutputColumnAt(outputID, 2, "output099Column2", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(outputID, output099Column2.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output099Column3 = instance.InsertOutputColumnAt(outputID, 3, "output099Column3", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(outputID, output099Column3.ID, DataType.DT_STR, 50, 0, 0, 1252);
+
 
             // Add SQL CE Connection
             ConnectionManager sqlCECM = null;
@@ -637,6 +658,9 @@ namespace UnitTestTextFileSplitter2012
 
             CreateSQLCEComponent(package, dataFlowTask, "RowCountOutput", out sqlCECM, out sqlCETarget, out sqlCEInstance);
             CreatePath(dataFlowTask, numberOfRowsOutput, sqlCETarget, sqlCEInstance);
+
+            CreateSQLCEComponent(package, dataFlowTask, "Output099", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+            CreatePath(dataFlowTask, output002, sqlCETarget, sqlCEInstance);
 
             PackageEventHandler packageEvents = new PackageEventHandler();
 
@@ -653,14 +677,14 @@ namespace UnitTestTextFileSplitter2012
                 connection.Open();
             }
 
-            SqlCeCommand sqlCommand = new SqlCeCommand("SELECT * FROM [ErrorResults] WHERE ErrorMessage = 'Unexpected Row Type Value 002 found on Record 2.'", connection);
+            SqlCeCommand sqlCommand = new SqlCeCommand("SELECT * FROM [ErrorResults] WHERE ErrorMessage = 'Unexpected Row Type Value 002 found on Record 3.'", connection);
             SqlCeDataReader sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
             int rowCount = 0;
             while (sqlData.Read())
             {
                 rowCount++;
             }
-            Assert.AreEqual(1, rowCount, "Record 2 Error Missing");
+            Assert.AreEqual(1, rowCount, "Record 3 Error Missing");
 
             sqlCommand.CommandText = "SELECT COUNT(*) FROM [ErrorResults] WHERE ErrorMessage LIKE 'Unexpected Row Type Value%'";
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
@@ -714,14 +738,14 @@ namespace UnitTestTextFileSplitter2012
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
             while (sqlData.Read())
             {
-                Assert.AreEqual(6, sqlData.GetInt32(0), "Number of RowCountOutput Rows incorrect");
+                Assert.AreEqual(7, sqlData.GetInt32(0), "Number of RowCountOutput Rows incorrect");
             }
 
             sqlCommand.CommandText = "SELECT * FROM [RowCountOutput] WHERE KeyValue = 'Total Records'";
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
             while (sqlData.Read())
             {
-                Assert.AreEqual(15, sqlData.GetInt32(1), "Number of Total Records incorrect");
+                Assert.AreEqual(16, sqlData.GetInt32(1), "Number of Total Records incorrect");
                 Assert.AreEqual("Disconnected", sqlData.GetString(2), "KeyValue Status on Total Records incorrect");
             }
 
@@ -737,7 +761,7 @@ namespace UnitTestTextFileSplitter2012
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
             while (sqlData.Read())
             {
-                Assert.AreEqual(14, sqlData.GetInt32(1), "Number of Error Records incorrect");
+                Assert.AreEqual(15, sqlData.GetInt32(1), "Number of Error Records incorrect");
                 Assert.AreEqual("Connected and Processed", sqlData.GetString(2), "KeyValue Status on Error Records incorrect");
             }
 
@@ -747,6 +771,13 @@ namespace UnitTestTextFileSplitter2012
             {
                 Assert.AreEqual(5, sqlData.GetInt32(1), "Number of 003 incorrect");
                 Assert.AreEqual("Not configured", sqlData.GetString(2), "KeyValue Status on 003 incorrect");
+            }
+
+            sqlCommand.CommandText = "SELECT COUNT(*) FROM [ErrorResults] WHERE ErrorMessage LIKE 'Exception Key Value%'";
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.AreEqual(1, sqlData.GetInt32(0), "099 Value before Key Not Detected.");
             }
 
 

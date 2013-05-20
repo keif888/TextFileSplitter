@@ -2302,15 +2302,23 @@ namespace Martin.SQLServer.Dts
                                                     {
                                                         if (keyMasterValues.TryGetValue(keyColumnID, out currentValue))
                                                         {
-                                                            currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                            //currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
                                                         }
                                                     }
                                                     else
                                                     {
                                                         if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                         {
-                                                            currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                            //currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
                                                         }
+                                                    }
+                                                    if (currentValue != null)
+                                                    {
+                                                        currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                    }
+                                                    else
+                                                    {
+                                                        throw new ArgumentNullException(currentOutputColumn.Name, String.Format("Key Value was NOT found for record number {0} of type {1}", recordsRead, RowTypeValue));
                                                     }
                                                 }
                                                 else
@@ -2361,7 +2369,10 @@ namespace Martin.SQLServer.Dts
                                                         {
                                                             errorBuffer.AddRow();
                                                             errorBuffer[2] = TruncateStringTo4000(String.Format("Exception {0} thrown on Record {1} for field {2}.", ex.Message, recordsRead, currentOutputColumn.Name));
-                                                            errorBuffer[3] = TruncateStringTo4000(currentOutputColumn.FileHelperField.GetValue(result).ToString());
+                                                            if (currentOutputColumn.FileHelperField != null)
+                                                            {
+                                                                errorBuffer[3] = TruncateStringTo4000(currentOutputColumn.FileHelperField.GetValue(result).ToString());
+                                                            }
                                                             errorBuffer[4] = TruncateStringTo4000(RowDataValue);
                                                             Object currentValue = null;
                                                             foreach (SSISOutputColumn errorOutputColumn in errorOutput.OutputColumnCollection)

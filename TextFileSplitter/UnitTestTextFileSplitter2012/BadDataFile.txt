@@ -1,4 +1,5 @@
-﻿001|12345|Start Invoice Record
+﻿099|2001-01-01|Joe Bloggs|Missing Key Value
+001|12345|Start Invoice Record
 002|2001-01-01|Joe Bloggs|Header Record
 003|15.00|1.00|Purchase of 15 $1 Items|Data Record
 003|16.00|1.00|Purchase of 16 $1 Items|Data Record
