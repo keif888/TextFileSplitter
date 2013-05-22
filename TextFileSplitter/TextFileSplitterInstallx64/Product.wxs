@@ -18,7 +18,8 @@
              InstallerVersion="300" 
              Manufacturer="$(var.Manufacturer)" 
              Compressed="yes" 
-             InstallScope="perMachine" />
+             InstallScope="perMachine"
+             Platform="x64"/>
 
     <Media Id="1" Cabinet="TextFileSplitter.cab" EmbedCab="yes" />
     

@@ -432,7 +432,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Engines\Examples.xml" />
+    <Content Include="Engines\FileHelperAsyncEngine.docs.xml" />
+    <Content Include="Engines\FileHelperEngine.docs.xml" />
+    <Content Include="Engines\MultiRecordEngine.docs.xml" />
     <Content Include="License - BSD.txt" />
+    <Content Include="MasterDetail\Examples.xml" />
+    <Content Include="MasterDetail\MasterDetailEngine.docs.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
