@@ -6,6 +6,7 @@
 003|17.00|1.00|Purchase of 17 $1 Items|Data Record
 003|18.00|1.00|Purchase of 18 $1 Items|Data Record
 004|66.00|2004-01-01|1234567890156|CreditCard|Approved|Payment Record
+099|2001-01-01|Joe Bloggs|Good Record
 001|12346|2nd Start Invoice Record
 002|2001-01-02|Joe Bloggs|Header Record
 003|165.50|0.75|Purchase of 165.5 meters of rope at 75c per meter|Data Record

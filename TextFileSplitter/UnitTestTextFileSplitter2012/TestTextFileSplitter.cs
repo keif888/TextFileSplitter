@@ -964,7 +964,7 @@ namespace UnitTestTextFileSplitter2012
             catch (System.Runtime.InteropServices.COMException ex)
             {
                 exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.ThereAreChildRecordsForMaster(masterOutput.Name), ex.Message);
+                Assert.AreEqual(MessageStrings.ThereAreChildRecordsForMaster(masterOutput.Name, childOutput.Name), ex.Message);
             }
 
             Assert.IsTrue(exceptionThrown, "Exception was NOT thrown!");
@@ -1085,7 +1085,7 @@ namespace UnitTestTextFileSplitter2012
             catch (System.Runtime.InteropServices.COMException ex)
             {
                 exceptionThrown = true;
-                Assert.AreEqual(MessageStrings.ThereAreChildRecordsForMaster(masterOutput.Name), ex.Message);
+                Assert.AreEqual(MessageStrings.ThereAreChildRecordsForMaster(masterOutput.Name, masterChildOutput.Name), ex.Message);
             }
 
             Assert.IsTrue(exceptionThrown, "Exception was NOT thrown!");

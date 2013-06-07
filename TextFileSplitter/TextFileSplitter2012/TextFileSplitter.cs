@@ -1529,6 +1529,7 @@ namespace Martin.SQLServer.Dts
         public override IDTSCustomProperty100 SetOutputProperty(int outputID, string propertyName, object propertyValue)
         {
             IDTSOutput100 currentOutput = null;
+            String childOutputNames = String.Empty;
             // Make sure that the the property is valid...
             if (this.propertyManager.ValidatePropertyValue(propertyName, propertyValue, DTSValidationStatus.VS_ISVALID) != DTSValidationStatus.VS_ISVALID)
             {
@@ -1690,17 +1691,19 @@ namespace Martin.SQLServer.Dts
                                 case Utilities.typeOfOutputEnum.ChildRecord:
                                     // Have to Prevent if there are already Child Records!
                                     Boolean childRecords = false;
+                                    childOutputNames = String.Empty;
                                         foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
                                         {
                                             if ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == outputID)
                                             {
                                                 childRecords = true;
                                                 this.PostError(MessageStrings.MasterHasChild(currentOutput.Name, output.Name));
+                                                childOutputNames += String.IsNullOrEmpty(childOutputNames) ? output.Name : ", " + output.Name;
                                             }
                                         }
                                         if (childRecords)
                                         {
-                                            throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(currentOutput.Name), E_FAIL);
+                                            throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(currentOutput.Name, childOutputNames), E_FAIL);
                                         }
                                     // Ok, so there weren't any children (Throw!)
                                     // Set any Master Columns to Passthrough
@@ -1755,13 +1758,16 @@ namespace Martin.SQLServer.Dts
                                     break;
                                 case Utilities.typeOfOutputEnum.DataRecords:
                                     // Have to Prevent if there are already Child Records!
+                                    childOutputNames = String.Empty;
                                     foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
                                     {
                                         if ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == outputID)
                                         {
-                                            throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(output.Name), E_FAIL);
+                                            childOutputNames += String.IsNullOrEmpty(childOutputNames) ? output.Name : ", " + output.Name;
                                         }
                                     }
+                                    if (!String.IsNullOrEmpty(childOutputNames))
+                                        throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(currentOutput.Name, childOutputNames), E_FAIL);
                                     // Ok, so there weren't any children (Throw!)
                                     // Set any Master Columns to Passthrough, or delete if they came from a Master up the tree.
                                     foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
@@ -1792,13 +1798,16 @@ namespace Martin.SQLServer.Dts
                                     break;
                                 case Utilities.typeOfOutputEnum.ChildRecord:
                                     // Have to Prevent if there are already Child Records!
+                                    childOutputNames = String.Empty;
                                     foreach (IDTSOutput100 output in this.ComponentMetaData.OutputCollection)
                                     {
                                         if ((int)ManageProperties.GetPropertyValue(output.CustomPropertyCollection, ManageProperties.masterRecordID) == outputID)
                                         {
-                                            throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(output.Name), E_FAIL);
+                                            childOutputNames += String.IsNullOrEmpty(childOutputNames) ? output.Name : ", " + output.Name;
                                         }
                                     }
+                                    if (!String.IsNullOrEmpty(childOutputNames))
+                                        throw new COMException(MessageStrings.ThereAreChildRecordsForMaster(currentOutput.Name, childOutputNames), E_FAIL);
                                     // Ok, so there weren't any children (Throw!)
                                     // Set any Master Columns to Passthrough
                                     foreach (IDTSOutputColumn100 outputColumn in currentOutput.OutputColumnCollection)
@@ -2316,7 +2325,11 @@ namespace Martin.SQLServer.Dts
                                                     {
                                                         if (keyMasterValues.TryGetValue((int)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.keyOutputColumnID), out currentValue))
                                                         {
-                                                            currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                            if (((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
+                                                                && currentValue != null)
+                                                                currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                            else
+                                                                throw new ArgumentNullException(currentOutputColumn.Name, String.Format("Key Value was NOT found for record number {0} of type {1}", recordsRead, RowTypeValue));
                                                         }
                                                     }
                                                 }

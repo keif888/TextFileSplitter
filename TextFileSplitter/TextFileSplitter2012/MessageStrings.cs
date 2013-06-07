@@ -107,10 +107,10 @@ namespace Martin.SQLServer.Dts
             return String.Format(MasterColumnHasKeyOutputIDPattern, columnName, outputName);
         }
 
-        private const string ThereAreChildRecordsForMasterPattern = "The Output {0} has a child.  You can not change it's type.";
-        public static string ThereAreChildRecordsForMaster(string outputName)
+        private const string ThereAreChildRecordsForMasterPattern = "The Output {0} has one or more children.\r\nTheir names are {1}\r\nYou can not change it's type until the children are changed.";
+        public static string ThereAreChildRecordsForMaster(string outputName, string childNames)
         {
-            return String.Format(ThereAreChildRecordsForMasterPattern, outputName);
+            return String.Format(ThereAreChildRecordsForMasterPattern, outputName, childNames);
         }
 
         private const string MissingPropertyPattern = "The custom property {0} is missing.";

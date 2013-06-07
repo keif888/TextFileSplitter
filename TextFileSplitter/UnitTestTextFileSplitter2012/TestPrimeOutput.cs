@@ -745,7 +745,7 @@ namespace UnitTestTextFileSplitter2012
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
             while (sqlData.Read())
             {
-                Assert.AreEqual(16, sqlData.GetInt32(1), "Number of Total Records incorrect");
+                Assert.AreEqual(17, sqlData.GetInt32(1), "Number of Total Records incorrect");
                 Assert.AreEqual("Disconnected", sqlData.GetString(2), "KeyValue Status on Total Records incorrect");
             }
 
