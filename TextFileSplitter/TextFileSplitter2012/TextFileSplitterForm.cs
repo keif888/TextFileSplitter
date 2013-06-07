@@ -401,7 +401,23 @@ namespace Martin.SQLServer.Dts
                                     eColumn.Scale = outColumn.Scale;
                                     eColumn.Length = outColumn.Length;
                                     outColumn.ExternalMetadataColumnID = eColumn.ID;
+                                    // Get the column delimiter from the first column, as that's probably what's in use for the rest of the file.
+                                    if (passthroughOutput.OutputColumnCollection.Count == 1)
+                                    {
+                                        tbColumnDelimiter.Text = FFcolumn.ColumnDelimiter;
+                                    }
                                 }
+                            }
+
+                            if (connectionFlatFile.TextQualifier == "<none>")
+                            {
+                                cbDelimitedText.Checked = false;
+                                tbTextDelimiter.Text = String.Empty;
+                            }
+                            else
+                            {
+                                cbDelimitedText.Checked = true;
+                                tbTextDelimiter.Text = connectionFlatFile.TextQualifier;
                             }
                             this.cbPTErrorDisposition.SelectedItem = passthroughOutput.ErrorRowDisposition;
                             dgvPassThrough.Rows.Clear();
