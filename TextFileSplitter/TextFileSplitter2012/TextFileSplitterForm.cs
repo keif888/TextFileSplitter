@@ -1535,14 +1535,22 @@ namespace Martin.SQLServer.Dts
                     dgvOutputPreview.Rows.Clear();
                     string classString = Utilities.DynamicClassStringFromOutput(ssisOutput, false, String.Empty, tbColumnDelimiter.Text);
                     Type classBuffer = ClassBuilder.ClassFromString(classString);
+                    int numberOfColumnsAdded = 0;
                     foreach (SSISOutputColumn ssisColumn in ssisOutput.OutputColumnCollection)
                     {
                         ssisColumn.FileHelperField = classBuffer.GetField(ssisColumn.Name);
                         if (!ssisColumn.IsDerived)
                         {
                             dgvOutputPreview.Columns.Add(ssisColumn.Name, ssisColumn.Name);
+                            numberOfColumnsAdded++;
                         }
                     }
+
+                    for (int i = numberOfColumnsAdded; i < 2; i++)
+                    {
+                        dgvOutputPreview.Columns.Add(String.Format("Preview Column {0}", i), String.Format("Preview Column {0}", i));
+                    }
+
                     FileHelperEngine engine = new FileHelperEngine(classBuffer);
                     engine.ErrorManager.ErrorMode = ErrorMode.SaveAndContinue;
                     if (sampleDatas[tbRowTypeValue.Text].Count == 0)
