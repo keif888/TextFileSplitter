@@ -15,6 +15,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TextFileSplitterInstallx64"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFileSplitter2008", "TextFileSplitter2008\TextFileSplitter2008.csproj", "{92EF89AC-2E05-4208-AE92-5EC67437713F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFileSplitter2014", "TextFileSplitter2014\TextFileSplitter2014.csproj", "{92EF89AD-2E05-4208-AE92-5EC67437713F}"
+EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TextFileSplitterInstallx86", "TextFileSplitterInstallx86\TextFileSplitterInstallx86.wixproj", "{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestTextFileSplitter2012", "UnitTestTextFileSplitter2012\UnitTestTextFileSplitter2012.csproj", "{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}"
@@ -25,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestTextFileSplitter201
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 7
+		SccNumberOfProjects = 8
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://martin-source.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -47,6 +49,9 @@ Global
 		SccProjectUniqueName6 = UnitTestTextFileSplitter2012\\UnitTestTextFileSplitter2012.csproj
 		SccProjectName6 = UnitTestTextFileSplitter2012
 		SccLocalPath6 = UnitTestTextFileSplitter2012
+		SccProjectUniqueName7 = TextFileSplitter2014\\TextFileSplitter2014.csproj
+		SccProjectName7 = TextFileSplitter2014
+		SccLocalPath7 = TextFileSplitter2014
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -144,6 +149,26 @@ Global
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.UnitTest|Mixed Platforms.Build.0 = Release|Any CPU
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.UnitTest|x64.ActiveCfg = Release|Any CPU
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.UnitTest|x86.ActiveCfg = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Debug|x64.Build.0 = Debug|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Debug|x86.Build.0 = Debug|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Release|x64.ActiveCfg = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.Release|x86.ActiveCfg = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.UnitTest|Any CPU.ActiveCfg = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.UnitTest|Any CPU.Build.0 = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.UnitTest|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.UnitTest|Mixed Platforms.Build.0 = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.UnitTest|x64.ActiveCfg = Release|Any CPU
+		{92EF89AD-2E05-4208-AE92-5EC67437713F}.UnitTest|x86.ActiveCfg = Release|Any CPU
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|Mixed Platforms.Build.0 = Debug|x86

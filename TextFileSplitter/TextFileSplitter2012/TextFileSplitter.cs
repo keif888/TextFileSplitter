@@ -20,6 +20,9 @@ namespace Martin.SQLServer.Dts
         CurrentVersion = 5 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
         , Description = "Extract many outputs from a single Text File"
         , IconResource = "Martin.SQLServer.Dts.Resources.TextFileSplitter.ico"
+#if SQL2014
+    , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2014, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+#endif
 #if SQL2012
        , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2012, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
 #endif
