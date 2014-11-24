@@ -168,8 +168,16 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>"%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v7.0A\Bin\GACUtil.exe" -u $(TargetName)
+DEL "%25ProgramFiles(x86)%25\Microsoft SQL Server\100\DTS\PipelineComponents\$(TargetName).*" /Q
+rem DEL "%25ProgramFiles(x86)%25\Microsoft SQL Server\100\Tools\Binn\VSShell\Common7\IDE\$(TargetName).*" /Q
+rem if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio 11.0\Team Tools\Performance Tools\vsinstr" -coverage "$(TargetDir)$(TargetName).dll"
+if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio 12.0\Team Tools\Performance Tools\vsinstr" "$(TargetDir)$(TargetName).dll" /ExcludeSmallFuncs
+if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v7.0A\bin\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\TextFileSplitter.snk"
+COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\100\DTS\PipelineComponents\" /Y
+rem COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\100\Tools\Binn\VSShell\Common7\IDE\" /Y
+"%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v7.0A\Bin\GACUtil.exe" -i "%25ProgramFiles(x86)%25\Microsoft SQL Server\100\DTS\PipelineComponents\$(TargetName).DLL"
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
