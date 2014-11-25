@@ -69,6 +69,17 @@ namespace UnitTestTextFileSplitter2012
             command.CommandText = tableCreate;
             command.ExecuteNonQuery();
 
+            tableCreate = "CREATE TABLE [Output002] ([KeyColumn1] uniqueidentifier, [output002Column1] nvarchar(50), [MasterKeyColumn2] nvarchar(50), [output002Column3] nvarchar(50))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
+            tableCreate = "CREATE TABLE [Output003] ([KeyColumn1] uniqueidentifier, [MasterKeyColumn2] nvarchar(50), [output003Column1] nvarchar(50),  [output003Column2] nvarchar(50),  [output003Column3] nvarchar(50),  [output003Column4] nvarchar(50))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
+            tableCreate = "CREATE TABLE [Output004] ([KeyColumn1] uniqueidentifier, [MasterKeyColumn2] nvarchar(50), [output004Column1] nvarchar(50), [output004Column2] nvarchar(50), [output004Column3] nvarchar(50), [output004Column4] nvarchar(50), [output004Column5] nvarchar(50), [output004Column6] nvarchar(50))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
 
             connection.Close();
             sqlCEEngine.Dispose();
@@ -82,7 +93,6 @@ namespace UnitTestTextFileSplitter2012
         //        File.Delete(sqlCEDatabaseName);
         //    }
         //}
-
 
         [TestMethod]
         public void TestPrimeOutput_KeyRecordsOnly()
@@ -169,7 +179,6 @@ namespace UnitTestTextFileSplitter2012
             Assert.AreEqual(Microsoft.SqlServer.Dts.Runtime.DTSExecResult.Success, result, "Execution Failed");
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: Total Number of records read is 4."), "record count message missing");
         }
-
 
 
         [TestMethod]
@@ -263,9 +272,8 @@ namespace UnitTestTextFileSplitter2012
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Warning] 0: Row Splitter Test: The RowType value of 003 was not expected and has 4 columns!"), "[Warning] 0: Row Splitter Test: The RowType value of 003 was not expected and has 4 columns!");
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Warning] 0: Row Splitter Test: The RowType value of 004 was not expected and has 6 columns!"), "[Warning] 0: Row Splitter Test: The RowType value of 004 was not expected and has 6 columns!");
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 002 was found 2 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 002 was found 2 times.");
-            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 003 was found 5 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 003 was found 5 times.");
-            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times.");
-            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times.");
+            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 003 was found 6 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 003 was found 5 times.");
+            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 3 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times.");
 
             SqlCeConnection connection = new SqlCeConnection(connectionString());
             if (connection.State == ConnectionState.Closed)
@@ -284,15 +292,20 @@ namespace UnitTestTextFileSplitter2012
                     Assert.AreEqual(12345, sqlData.GetInt32(1), "Row 1 KeyColumn2");
                     Assert.AreEqual("Start Invoice Record", sqlData.GetString(2), "Row 1 KeyColumn3");
                 }
-                else
+                else if (rowCount == 2)
                 {
                     Assert.AreEqual(12346, sqlData.GetInt32(1), "Row 2 KeyColumn2");
                     Assert.AreEqual("2nd Start Invoice Record", sqlData.GetString(2), "Row 2 KeyColumn3");
                 }
+                else if (rowCount == 3)
+                {
+                    Assert.AreEqual(12347, sqlData.GetInt32(1), "Row 3 KeyColumn2");
+                    Assert.AreEqual("3rd Start Invoice Record", sqlData.GetString(2), "Row 3 KeyColumn3");
+                }
             }
 
             connection.Close();
-            Assert.AreEqual(2, rowCount, "Rows in KeyRecords");
+            Assert.AreEqual(3, rowCount, "Rows in KeyRecords");
         }
 
         [TestMethod]
@@ -385,10 +398,9 @@ namespace UnitTestTextFileSplitter2012
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Warning] 0: Row Splitter Test: The RowType value of 002 was not expected and has 3 columns!"), "[Warning] 0: Row Splitter Test: The RowType value of 002 was not expected and has 3 columns!");
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Warning] 0: Row Splitter Test: The RowType value of 003 was not expected and has 4 columns!"), "[Warning] 0: Row Splitter Test: The RowType value of 003 was not expected and has 4 columns!");
             Assert.IsTrue(packageEvents.eventMessages.Contains("[Warning] 0: Row Splitter Test: The RowType value of 004 was not expected and has 6 columns!"), "[Warning] 0: Row Splitter Test: The RowType value of 004 was not expected and has 6 columns!");
-            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 002 was found 2 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 002 was found 2 times.");
-            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 003 was found 5 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 003 was found 5 times.");
-            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times.");
-            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times."), "[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 2 times.");
+            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 002 was found 2 times."), "RowType value of 002");
+            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 003 was found 6 times."), "RowType value of 003");
+            Assert.IsTrue(packageEvents.eventMessages.Contains("[Information] 0: Row Splitter Test: The Unexpected RowType value of 004 was found 3 times."), "RowType value of 004");
 
             SqlCeConnection connection = new SqlCeConnection(connectionString());
             if (connection.State == ConnectionState.Closed)
@@ -407,17 +419,261 @@ namespace UnitTestTextFileSplitter2012
                     Assert.AreEqual(12345, sqlData.GetInt32(1), "Row 1 KeyColumn2");
                     Assert.AreEqual("Start Invoice Record", sqlData.GetString(2), "Row 1 KeyColumn3");
                 }
-                else
+                else if (rowCount == 2)
                 {
                     Assert.AreEqual(12346, sqlData.GetInt32(1), "Row 2 KeyColumn2");
                     Assert.AreEqual("2nd Start Invoice Record", sqlData.GetString(2), "Row 2 KeyColumn3");
                 }
+                else if (rowCount == 3)
+                {
+                    Assert.AreEqual(12347, sqlData.GetInt32(1), "Row 3 KeyColumn2");
+                    Assert.AreEqual("3rd Start Invoice Record", sqlData.GetString(2), "Row 3 KeyColumn3");
+                }
             }
 
             connection.Close();
-            Assert.AreEqual(2, rowCount, "Rows in KeyRecords");
+            Assert.AreEqual(3, rowCount, "Rows in KeyRecords");
         }
 
+        [TestMethod]
+        public void TestPrimeOutput_AllMappingsOutput()
+        {
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            thMainPipe.Name = "Pipeline Task";
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            // Create a flat file source
+            ConnectionManager flatFileConnectionManager = package.Connections.Add("FLATFILE");
+            flatFileConnectionManager.Properties["Format"].SetValue(flatFileConnectionManager, "Delimited");
+            flatFileConnectionManager.Properties["Name"].SetValue(flatFileConnectionManager, "Flat File Connection");
+            flatFileConnectionManager.Properties["ConnectionString"].SetValue(flatFileConnectionManager, @".\SampleSourceFile.txt");
+            flatFileConnectionManager.Properties["ColumnNamesInFirstDataRow"].SetValue(flatFileConnectionManager, false);
+            flatFileConnectionManager.Properties["HeaderRowDelimiter"].SetValue(flatFileConnectionManager, "\r\n");
+            flatFileConnectionManager.Properties["TextQualifier"].SetValue(flatFileConnectionManager, "\"");
+            flatFileConnectionManager.Properties["DataRowsToSkip"].SetValue(flatFileConnectionManager, 0);
+            flatFileConnectionManager.Properties["Unicode"].SetValue(flatFileConnectionManager, false);
+            flatFileConnectionManager.Properties["CodePage"].SetValue(flatFileConnectionManager, 1252);
+
+            // Create the columns in the flat file
+            IDTSConnectionManagerFlatFile100 flatFileConnection = flatFileConnectionManager.InnerObject as IDTSConnectionManagerFlatFile100;
+            IDTSConnectionManagerFlatFileColumn100 rowTypeColumn = flatFileConnection.Columns.Add();
+            rowTypeColumn.ColumnDelimiter = @"|";
+            rowTypeColumn.ColumnType = "Delimited";
+            rowTypeColumn.DataType = DataType.DT_STR;
+            rowTypeColumn.DataPrecision = 0;
+            rowTypeColumn.DataScale = 0;
+            rowTypeColumn.MaximumWidth = 10;
+            ((IDTSName100)rowTypeColumn).Name = "rowType";
+            IDTSConnectionManagerFlatFileColumn100 dataColumn = flatFileConnection.Columns.Add();
+            dataColumn.ColumnDelimiter = "\r\n";
+            dataColumn.ColumnType = "Delimited";
+            dataColumn.DataType = DataType.DT_TEXT;
+            dataColumn.DataPrecision = 0;
+            dataColumn.DataScale = 0;
+            ((IDTSName100)dataColumn).Name = "Data";
+
+
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+
+            instance.ProvideComponentProperties();
+            textFileSplitter.Name = "Text File Splitter Data Source";
+            instance.SetComponentProperty(ManageProperties.columnDelimiter, @"|");
+            textFileSplitter.RuntimeConnectionCollection[0].ConnectionManager = DtsConvert.GetExtendedInterface(flatFileConnectionManager);
+            textFileSplitter.RuntimeConnectionCollection[0].ConnectionManagerID = flatFileConnectionManager.ID;
+            instance.AcquireConnections(null);
+            instance.ReinitializeMetaData();
+            instance.ReleaseConnections();
+
+            IDTSOutput100 passthroughOutput = textFileSplitter.OutputCollection[0];
+            instance.SetOutputColumnProperty(passthroughOutput.ID, passthroughOutput.OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.RowType);
+            instance.SetOutputColumnProperty(passthroughOutput.ID, passthroughOutput.OutputColumnCollection[1].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.RowData);
+            passthroughOutput.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            IDTSOutput100 errorOutput = textFileSplitter.OutputCollection[1];
+            errorOutput.Name = "ErrorOutput";
+            IDTSOutput100 keyOutput = textFileSplitter.OutputCollection[2];
+            int keyID = keyOutput.ID;
+            keyOutput.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            keyOutput.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            keyOutput.Name = "KeyOutput";
+            IDTSOutput100 numberOfRowsOutput = textFileSplitter.OutputCollection[3];
+
+            // Setup keyOutput with 2 columns
+            instance.SetOutputProperty(keyID, ManageProperties.rowTypeValue, "001");
+            IDTSOutputColumn100 keyColumn1 = instance.InsertOutputColumnAt(keyID, 1, "KeyColumn2", String.Empty);
+            IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
+            keyOutput.OutputColumnCollection[0].Name = "KeyColumn1";
+
+            IDTSOutput100 output002 = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);
+            output002.Name = "output_002";
+            int output002ID = output002.ID;
+            instance.SetOutputProperty(output002ID, ManageProperties.rowTypeValue, "002");
+            instance.SetOutputProperty(output002ID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.MasterRecord);
+            output002.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            output002.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            IDTSOutputColumn100 output002Column1 = instance.InsertOutputColumnAt(output002ID, 1, "output002Column1", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output002ID, output002Column1.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output002Column2 = instance.InsertOutputColumnAt(output002ID, 2, "MasterKeyColumn2", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output002ID, output002Column2.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            ManageProperties.SetPropertyValue(output002Column2.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
+            IDTSOutputColumn100 output002Column3 = instance.InsertOutputColumnAt(output002ID, 3, "output002Column3", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output002ID, output002Column3.ID, DataType.DT_STR, 50, 0, 0, 1252);
+
+            IDTSOutput100 output003 = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);
+            output003.Name = "output_003";
+            int output003ID = output003.ID;
+            instance.SetOutputProperty(output003ID, ManageProperties.rowTypeValue, "003");
+            instance.SetOutputProperty(output003ID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildRecord);
+            instance.SetOutputProperty(output003ID, ManageProperties.masterRecordID, output002ID);
+            output003.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            output003.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            IDTSOutputColumn100 output003Column1 = instance.InsertOutputColumnAt(output003ID, 2, "output003Column1", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output003ID, output003Column1.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output003Column2 = instance.InsertOutputColumnAt(output003ID, 3, "output003Column2", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output003ID, output003Column2.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output003Column3 = instance.InsertOutputColumnAt(output003ID, 4, "output003Column3", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output003ID, output003Column3.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output003Column4 = instance.InsertOutputColumnAt(output003ID, 5, "output003Column4", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output003ID, output003Column4.ID, DataType.DT_STR, 50, 0, 0, 1252);
+
+            IDTSOutput100 output004 = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);
+            output004.Name = "output_004";
+            int output004ID = output004.ID;
+            instance.SetOutputProperty(output004ID, ManageProperties.rowTypeValue, "004");
+            instance.SetOutputProperty(output004ID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildRecord);
+            instance.SetOutputProperty(output004ID, ManageProperties.masterRecordID, output002ID);
+            output004.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            output004.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            IDTSOutputColumn100 output004Column1 = instance.InsertOutputColumnAt(output004ID, 2, "output004Column1", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output004ID, output004Column1.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output004Column2 = instance.InsertOutputColumnAt(output004ID, 3, "output004Column2", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output004ID, output004Column2.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output004Column3 = instance.InsertOutputColumnAt(output004ID, 4, "output004Column3", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output004ID, output004Column3.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output004Column4 = instance.InsertOutputColumnAt(output004ID, 5, "output004Column4", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output004ID, output004Column4.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output004Column5 = instance.InsertOutputColumnAt(output004ID, 6, "output004Column5", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output004ID, output004Column4.ID, DataType.DT_STR, 50, 0, 0, 1252);
+            IDTSOutputColumn100 output004Column6 = instance.InsertOutputColumnAt(output004ID, 7, "output004Column6", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(output004ID, output004Column4.ID, DataType.DT_STR, 50, 0, 0, 1252);
+
+
+            // Add SQL CE Connection
+            ConnectionManager sqlCECM = null;
+            IDTSComponentMetaData100 sqlCETarget = null;
+            CManagedComponentWrapper sqlCEInstance = null;
+            CreateSQLCEComponent(package, dataFlowTask, "KeyRecords", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, keyOutput, sqlCETarget, sqlCEInstance);
+
+            // Create the SQL Ce Target.
+            CreateSQLCEComponent(package, dataFlowTask, "Output002", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, output002, sqlCETarget, sqlCEInstance);
+
+            // Create the SQL Ce Target.
+            CreateSQLCEComponent(package, dataFlowTask, "Output003", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, output003, sqlCETarget, sqlCEInstance);
+
+            // Create the SQL Ce Target.
+            CreateSQLCEComponent(package, dataFlowTask, "Output004", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, output004, sqlCETarget, sqlCEInstance);
+
+            CreateSQLCEComponent(package, dataFlowTask, "ErrorResults", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+            CreatePath(dataFlowTask, errorOutput, sqlCETarget, sqlCEInstance);
+
+
+            PackageEventHandler packageEvents = new PackageEventHandler();
+
+            
+            Microsoft.SqlServer.Dts.Runtime.Application application = new Microsoft.SqlServer.Dts.Runtime.Application();
+            application.SaveToXml(@"D:\Temp\TestPackage.dtsx", package, null);
+            Microsoft.SqlServer.Dts.Runtime.DTSExecResult result = package.Execute(null, null, packageEvents as IDTSEvents, null, null);
+            foreach (String message in packageEvents.eventMessages)
+            {
+                Debug.WriteLine(message);
+            }
+            Assert.AreEqual(Microsoft.SqlServer.Dts.Runtime.DTSExecResult.Success, result, "Execution Failed");
+
+            SqlCeConnection connection = new SqlCeConnection(connectionString());
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+            }
+
+            SqlCeCommand sqlCommand = new SqlCeCommand("SELECT * FROM [KeyRecords] ORDER BY [KeyColumn2]", connection);
+            SqlCeDataReader sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            int rowCount = 0;
+            while (sqlData.Read())
+            {
+                rowCount++;
+                if (rowCount == 1)
+                {
+                    Assert.AreEqual(12345, sqlData.GetInt32(1), "Row 1 KeyColumn2");
+                    Assert.AreEqual("Start Invoice Record", sqlData.GetString(2), "Row 1 KeyColumn3");
+                }
+                else if (rowCount == 2)
+                {
+                    Assert.AreEqual(12346, sqlData.GetInt32(1), "Row 2 KeyColumn2");
+                    Assert.AreEqual("2nd Start Invoice Record", sqlData.GetString(2), "Row 2 KeyColumn3");
+                }
+                else if (rowCount == 3)
+                {
+                    Assert.AreEqual(12347, sqlData.GetInt32(1), "Row 3 KeyColumn2");
+                    Assert.AreEqual("3rd Start Invoice Record", sqlData.GetString(2), "Row 3 KeyColumn3");
+                }
+            }
+            Assert.AreEqual(3, rowCount, "Rows in KeyRecords");
+
+            sqlCommand = new SqlCeCommand("SELECT COUNT(*) FROM [ErrorResults]", connection);
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.AreEqual(0, sqlData.GetInt32(0), "Number of Errors Not Zero");
+            }
+
+            sqlCommand = new SqlCeCommand("SELECT COUNT(*) FROM [Output002]", connection);
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.AreEqual(2, sqlData.GetInt32(0), "Number of Output002 Records Wrong");
+            }
+
+            sqlCommand = new SqlCeCommand("SELECT COUNT(*) FROM [Output003]", connection);
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.AreEqual(6, sqlData.GetInt32(0), "Number of Output003 Records Wrong");
+            }
+
+            sqlCommand = new SqlCeCommand("SELECT COUNT(*) FROM [Output003] WHERE [MasterKeyColumn2] IS NULL", connection);
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.AreEqual(1, sqlData.GetInt32(0), "Number of Output003 Records That are NULL for MasterKeyColumn2 is Wrong");
+            }
+
+            sqlCommand = new SqlCeCommand("SELECT COUNT(*) FROM [Output004]", connection);
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.AreEqual(3, sqlData.GetInt32(0), "Number of Output004 Records Wrong");
+            }
+
+
+            connection.Close();
+        }
 
 
         [TestMethod]

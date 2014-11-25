@@ -146,7 +146,7 @@
 DEL "%25ProgramFiles(x86)%25\Microsoft SQL Server\110\DTS\PipelineComponents\$(TargetName).*" /Q
 rem DEL "%25ProgramFiles(x86)%25\Microsoft SQL Server\110\Tools\Binn\VSShell\Common7\IDE\$(TargetName).*" /Q
 rem if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio 11.0\Team Tools\Performance Tools\vsinstr" -coverage "$(TargetDir)$(TargetName).dll"
-if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio 11.0\Team Tools\Performance Tools\vsinstr" "$(TargetDir)$(TargetName).dll" /ExcludeSmallFuncs
+if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio 12.0\Team Tools\Performance Tools\vsinstr" "$(TargetDir)$(TargetName).dll" /ExcludeSmallFuncs
 if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v7.0A\bin\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\TextFileSplitter.snk"
 COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\110\DTS\PipelineComponents\" /Y
 rem COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\110\Tools\Binn\VSShell\Common7\IDE\" /Y

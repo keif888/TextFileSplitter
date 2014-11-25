@@ -32,69 +32,69 @@ namespace Martin.SQLServer.Dts
             , MasterValue
         }
 
-        public static string XmlSerializeToString(this object objectInstance)
-        {
-            var serializer = new XmlSerializer(objectInstance.GetType());
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            ns.Add("", "");
-            var sb = new StringBuilder();
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Indent = false;
-            settings.Encoding = new UnicodeEncoding(false, false); // little-endian, omit byte order mark
-            settings.OmitXmlDeclaration = false;
+        //public static string XmlSerializeToString(this object objectInstance)
+        //{
+        //    var serializer = new XmlSerializer(objectInstance.GetType());
+        //    XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+        //    ns.Add("", "");
+        //    var sb = new StringBuilder();
+        //    XmlWriterSettings settings = new XmlWriterSettings();
+        //    settings.Indent = false;
+        //    settings.Encoding = new UnicodeEncoding(false, false); // little-endian, omit byte order mark
+        //    settings.OmitXmlDeclaration = false;
 
-            using (XmlWriter writer = XmlWriter.Create(sb, settings))
-            {
-                serializer.Serialize(writer, objectInstance, ns);
-            }
+        //    using (XmlWriter writer = XmlWriter.Create(sb, settings))
+        //    {
+        //        serializer.Serialize(writer, objectInstance, ns);
+        //    }
 
-            return sb.ToString();
-        }
+        //    return sb.ToString();
+        //}
 
-        public static T XmlDeserializeFromString<T>(string objectData)
-        {
-            return (T)XmlDeserializeFromString(objectData, typeof(T));
-        }
+        //public static T XmlDeserializeFromString<T>(string objectData)
+        //{
+        //    return (T)XmlDeserializeFromString(objectData, typeof(T));
+        //}
 
-        public static object XmlDeserializeFromString(string objectData, Type type)
-        {
-            var serializer = new XmlSerializer(type);
-            object result;
+        //public static object XmlDeserializeFromString(string objectData, Type type)
+        //{
+        //    var serializer = new XmlSerializer(type);
+        //    object result;
 
-            using (TextReader reader = new StringReader(objectData))
-            {
-                result = serializer.Deserialize(reader);
-            }
+        //    using (TextReader reader = new StringReader(objectData))
+        //    {
+        //        result = serializer.Deserialize(reader);
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
 
-        public static String XmlDecodeFromString(string encodedString)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("<data>");
-            sb.Append(encodedString);
-            sb.Append("</data>");
+        //public static String XmlDecodeFromString(string encodedString)
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    sb.Append("<data>");
+        //    sb.Append(encodedString);
+        //    sb.Append("</data>");
 
-            XmlReaderSettings readerSettings = new XmlReaderSettings();
-            readerSettings.ConformanceLevel = ConformanceLevel.Fragment;
+        //    XmlReaderSettings readerSettings = new XmlReaderSettings();
+        //    readerSettings.ConformanceLevel = ConformanceLevel.Fragment;
 
-            XmlReader xmlSource = XmlReader.Create(new StringReader(sb.ToString()));
-            xmlSource.MoveToContent();
-            return xmlSource.ReadElementContentAsString();
-        }
+        //    XmlReader xmlSource = XmlReader.Create(new StringReader(sb.ToString()));
+        //    xmlSource.MoveToContent();
+        //    return xmlSource.ReadElementContentAsString();
+        //}
 
-        public static String XmlEncodeToString(string decodedString)
-        {
-            StringBuilder sb = new StringBuilder();
-            XmlWriterSettings writerSettings = new XmlWriterSettings();
-            writerSettings.ConformanceLevel = ConformanceLevel.Fragment;
-            writerSettings.Indent = false;
-            XmlWriter xmlTarget = XmlWriter.Create(sb, writerSettings);
-            xmlTarget.WriteString(decodedString);
-            xmlTarget.Close();
-            return sb.ToString();
-        }
+        //public static String XmlEncodeToString(string decodedString)
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    XmlWriterSettings writerSettings = new XmlWriterSettings();
+        //    writerSettings.ConformanceLevel = ConformanceLevel.Fragment;
+        //    writerSettings.Indent = false;
+        //    XmlWriter xmlTarget = XmlWriter.Create(sb, writerSettings);
+        //    xmlTarget.WriteString(decodedString);
+        //    xmlTarget.Close();
+        //    return sb.ToString();
+        //}
 
         public static DTSValidationStatus CompareValidationValues(DTSValidationStatus oldStatus, DTSValidationStatus newStatus)
         {
