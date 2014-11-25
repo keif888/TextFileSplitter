@@ -27,11 +27,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestTextFileSplitter201
 		{EB8633FF-CEED-40EE-8D1A-CA1BF5678C42} = {EB8633FF-CEED-40EE-8D1A-CA1BF5678C42}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestTextFileSplitter2014", "UnitTestTextFileSplitter2014\UnitTestTextFileSplitter2014.csproj", "{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}"
-EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 9
+		SccNumberOfProjects = 8
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://martin-source.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -56,9 +54,6 @@ Global
 		SccProjectUniqueName7 = TextFileSplitter2014\\TextFileSplitter2014.csproj
 		SccProjectName7 = TextFileSplitter2014
 		SccLocalPath7 = TextFileSplitter2014
-		SccProjectUniqueName8 = UnitTestTextFileSplitter2014\\UnitTestTextFileSplitter2014.csproj
-		SccProjectName8 = UnitTestTextFileSplitter2014
-		SccLocalPath8 = UnitTestTextFileSplitter2014
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -213,26 +208,11 @@ Global
 		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|Mixed Platforms.Build.0 = Release|Any CPU
 		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|x64.ActiveCfg = Release|Any CPU
 		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|x86.ActiveCfg = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Release|x64.ActiveCfg = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.Release|x86.ActiveCfg = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.UnitTest|Any CPU.ActiveCfg = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.UnitTest|Any CPU.Build.0 = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.UnitTest|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.UnitTest|Mixed Platforms.Build.0 = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.UnitTest|x64.ActiveCfg = Release|Any CPU
-		{B025F5E3-6667-42D4-8F6A-621F7BFEEB36}.UnitTest|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
