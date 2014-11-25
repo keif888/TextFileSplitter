@@ -81,6 +81,27 @@ namespace UnitTestTextFileSplitter2012
             command.CommandText = tableCreate;
             command.ExecuteNonQuery();
 
+            tableCreate = "CREATE TABLE [Account] ([AccountKey] uniqueidentifier, [AccountCode] integer, [AccountName] nvarchar(255))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
+            tableCreate = "CREATE TABLE [Invoice] ([AccountKey] uniqueidentifier, [InvoiceID] integer, [Quantity] numeric(18,2), [Cost] numeric(18,2), [Description] nvarchar(255))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
+            tableCreate = "CREATE TABLE [InvoiceItem] ([AccountKey] uniqueidentifier, [InvoiceID] integer, [Quantity] numeric(18,2), [Cost] numeric(18,2), [Description] nvarchar(255))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
+            tableCreate = "CREATE TABLE [InvoiceSubItem] ([AccountKey] uniqueidentifier, [InvoiceID] integer, [ItemDescription] nvarchar(255), [Quantity] numeric(18,2), [Cost] numeric(18,2), [Description] nvarchar(255))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
+            tableCreate = "CREATE TABLE [InvoiceTail] ([AccountKey] uniqueidentifier, [InvoiceID] integer, [Total] numeric(18,2), [Tax] numeric(18,2))";
+            command.CommandText = tableCreate;
+            command.ExecuteNonQuery();
+
+
             connection.Close();
             sqlCEEngine.Dispose();
         }
@@ -671,6 +692,268 @@ namespace UnitTestTextFileSplitter2012
                 Assert.AreEqual(3, sqlData.GetInt32(0), "Number of Output004 Records Wrong");
             }
 
+
+            connection.Close();
+        }
+
+        [TestMethod]
+        public void TestPrimeOutput_KeyMasterAndChildMaster()
+        {
+            // Create an SSIS Package
+            Microsoft.SqlServer.Dts.Runtime.Package package = new Microsoft.SqlServer.Dts.Runtime.Package();
+            // Add a Pipeline Task called Pipeline Task
+            Executable exec = package.Executables.Add("STOCK:PipelineTask");
+            Microsoft.SqlServer.Dts.Runtime.TaskHost thMainPipe = exec as Microsoft.SqlServer.Dts.Runtime.TaskHost;
+            thMainPipe.Name = "Pipeline Task";
+            MainPipe dataFlowTask = thMainPipe.InnerObject as MainPipe;
+
+            // Add an Event Handler
+            ComponentEventHandler events = new ComponentEventHandler();
+            dataFlowTask.Events = DtsConvert.GetExtendedInterface(events as IDTSComponentEvents);
+
+            // Create a flat file source
+            ConnectionManager flatFileConnectionManager = package.Connections.Add("FLATFILE");
+            flatFileConnectionManager.Properties["Format"].SetValue(flatFileConnectionManager, "Delimited");
+            flatFileConnectionManager.Properties["Name"].SetValue(flatFileConnectionManager, "Flat File Connection");
+            flatFileConnectionManager.Properties["ConnectionString"].SetValue(flatFileConnectionManager, @".\KeyMasterAndChildMaster.txt");
+            flatFileConnectionManager.Properties["ColumnNamesInFirstDataRow"].SetValue(flatFileConnectionManager, false);
+            flatFileConnectionManager.Properties["HeaderRowDelimiter"].SetValue(flatFileConnectionManager, "\r\n");
+            flatFileConnectionManager.Properties["TextQualifier"].SetValue(flatFileConnectionManager, "\"");
+            flatFileConnectionManager.Properties["DataRowsToSkip"].SetValue(flatFileConnectionManager, 0);
+            flatFileConnectionManager.Properties["Unicode"].SetValue(flatFileConnectionManager, false);
+            flatFileConnectionManager.Properties["CodePage"].SetValue(flatFileConnectionManager, 1252);
+
+            // Create the columns in the flat file
+            IDTSConnectionManagerFlatFile100 flatFileConnection = flatFileConnectionManager.InnerObject as IDTSConnectionManagerFlatFile100;
+            IDTSConnectionManagerFlatFileColumn100 rowTypeColumn = flatFileConnection.Columns.Add();
+            rowTypeColumn.ColumnDelimiter = @"|";
+            rowTypeColumn.ColumnType = "Delimited";
+            rowTypeColumn.DataType = DataType.DT_STR;
+            rowTypeColumn.DataPrecision = 0;
+            rowTypeColumn.DataScale = 0;
+            rowTypeColumn.MaximumWidth = 3;
+            ((IDTSName100)rowTypeColumn).Name = "rowType";
+            IDTSConnectionManagerFlatFileColumn100 dataColumn = flatFileConnection.Columns.Add();
+            dataColumn.ColumnDelimiter = "\r\n";
+            dataColumn.ColumnType = "Delimited";
+            dataColumn.DataType = DataType.DT_TEXT;
+            dataColumn.DataPrecision = 0;
+            dataColumn.DataScale = 0;
+            ((IDTSName100)dataColumn).Name = "Data";
+
+            // Create the Text File Splitter component
+            IDTSComponentMetaData100 textFileSplitter = dataFlowTask.ComponentMetaDataCollection.New();
+            textFileSplitter.ComponentClassID = typeof(Martin.SQLServer.Dts.TextFileSplitter).AssemblyQualifiedName;
+            CManagedComponentWrapper instance = textFileSplitter.Instantiate();
+            
+            // Setup the text file splitter component's base properties, and assign the file connection manager
+            instance.ProvideComponentProperties();
+            textFileSplitter.Name = "Text File Splitter Data Source";
+            instance.SetComponentProperty(ManageProperties.columnDelimiter, @"|");
+            textFileSplitter.RuntimeConnectionCollection[0].ConnectionManager = DtsConvert.GetExtendedInterface(flatFileConnectionManager);
+            textFileSplitter.RuntimeConnectionCollection[0].ConnectionManagerID = flatFileConnectionManager.ID;
+            instance.AcquireConnections(null);
+            instance.ReinitializeMetaData();
+            instance.ReleaseConnections();
+
+            // Define the Pass Through Output, and it's column types
+            IDTSOutput100 passthroughOutput = textFileSplitter.OutputCollection[0];
+            instance.SetOutputColumnProperty(passthroughOutput.ID, passthroughOutput.OutputColumnCollection[0].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.RowType);
+            instance.SetOutputColumnProperty(passthroughOutput.ID, passthroughOutput.OutputColumnCollection[1].ID, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.RowData);
+            passthroughOutput.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+
+            // Setup the Error Output
+            IDTSOutput100 errorOutput = textFileSplitter.OutputCollection[1];
+            errorOutput.Name = "ErrorOutput";
+
+            // Setup the Key Value output (Account)
+            IDTSOutput100 accountOutput = textFileSplitter.OutputCollection[2];
+            int keyID = accountOutput.ID;
+            accountOutput.Name = "Account";
+            accountOutput.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            accountOutput.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            instance.SetOutputProperty(keyID, ManageProperties.rowTypeValue, "001");
+
+            // Setup accountOutput's 3 columns (AccountKey, AccountCode and AccountName
+            accountOutput.OutputColumnCollection[0].Name = "AccountKey";
+            IDTSOutputColumn100 keyColumn1 = instance.InsertOutputColumnAt(keyID, 1, "AccountCode", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(keyID, keyColumn1.ID, DataType.DT_I4, 0, 0, 0, 0);
+            IDTSOutputColumn100 keyColumn2 = instance.InsertOutputColumnAt(keyID, 2, "AccountName", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(keyID, keyColumn2.ID, DataType.DT_STR, 255, 0, 0, 1252);
+
+            // Setup the number of Rows output, but leave the default name.
+            IDTSOutput100 numberOfRowsOutput = textFileSplitter.OutputCollection[3];
+
+            // Setup the Invoice output as a Master Record
+            IDTSOutput100 invoiceOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);
+            invoiceOutput.Name = "Invoice";
+            int invoiceOutputID = invoiceOutput.ID;
+            instance.SetOutputProperty(invoiceOutputID, ManageProperties.rowTypeValue, "002");
+            instance.SetOutputProperty(invoiceOutputID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.MasterRecord);
+            invoiceOutput.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            invoiceOutput.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+
+            // Setup invoiceOutput's columns, with the InvoiceID as the MasterValue
+            IDTSOutputColumn100 invoiceIDOutput = instance.InsertOutputColumnAt(invoiceOutputID, 1, "InvoiceID", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceOutputID, invoiceIDOutput.ID, DataType.DT_I4, 0, 0, 0, 0);
+            ManageProperties.SetPropertyValue(invoiceIDOutput.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
+            IDTSOutputColumn100 invoiceDateOutput = instance.InsertOutputColumnAt(invoiceOutputID, 2, "InvoiceDate", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceOutputID, invoiceDateOutput.ID, DataType.DT_DBDATE, 0, 0, 0, 0);
+            IDTSOutputColumn100 invoiceStoreOutput = instance.InsertOutputColumnAt(invoiceOutputID, 3, "InvoiceStore", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceOutputID, invoiceStoreOutput.ID, DataType.DT_STR, 255, 0, 0, 1252);
+
+            // Setup invoiceItemOutput as a ChildMasterRecord, with Invoice as the Master
+            IDTSOutput100 invoiceItemOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);
+            invoiceItemOutput.Name = "InvoiceItem";
+            int invoiceItemID = invoiceItemOutput.ID;
+            instance.SetOutputProperty(invoiceItemID, ManageProperties.rowTypeValue, "003");
+            instance.SetOutputProperty(invoiceItemID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildMasterRecord);
+            instance.SetOutputProperty(invoiceItemID, ManageProperties.masterRecordID, invoiceOutputID);
+            invoiceItemOutput.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            invoiceItemOutput.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+
+            // Setup invoiceITemOutput columns, with Description as the Master Value
+            IDTSOutputColumn100 quantityOutput = instance.InsertOutputColumnAt(invoiceItemID, 2, "Quantity", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceItemID, quantityOutput.ID, DataType.DT_NUMERIC, 0, 18, 2, 0);
+            IDTSOutputColumn100 costOutput = instance.InsertOutputColumnAt(invoiceItemID, 3, "Cost", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceItemID, costOutput.ID, DataType.DT_NUMERIC, 0, 18, 2, 0);
+            IDTSOutputColumn100 descriptionOutput = instance.InsertOutputColumnAt(invoiceItemID, 4, "Description", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceItemID, descriptionOutput.ID, DataType.DT_STR, 255, 0, 0, 1252);
+            ManageProperties.SetPropertyValue(descriptionOutput.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
+
+            // Setup invoiceItemOutput as a ChildMasterRecord, with Invoice as the Master
+            IDTSOutput100 invoiceSubItemOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);
+            invoiceSubItemOutput.Name = "InvoiceSubItem";
+            int invoiceSubItemID = invoiceSubItemOutput.ID;
+            instance.SetOutputProperty(invoiceSubItemID, ManageProperties.rowTypeValue, "004");
+            instance.SetOutputProperty(invoiceSubItemID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildRecord);
+            instance.SetOutputProperty(invoiceSubItemID, ManageProperties.masterRecordID, invoiceItemID);
+            invoiceSubItemOutput.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            invoiceSubItemOutput.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+
+            // Setup invoiceItemOutput columns, with Description as the Master Value
+            invoiceSubItemOutput.OutputColumnCollection[2].Name = "ItemDescription"; // Rename the Parent Description column
+            IDTSOutputColumn100 quantityOutput2 = instance.InsertOutputColumnAt(invoiceSubItemID, 3, "Quantity", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceSubItemID, quantityOutput2.ID, DataType.DT_NUMERIC, 0, 18, 2, 0);
+            IDTSOutputColumn100 costOutput2 = instance.InsertOutputColumnAt(invoiceSubItemID, 4, "Cost", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceSubItemID, costOutput2.ID, DataType.DT_NUMERIC, 0, 18, 2, 0);
+            IDTSOutputColumn100 descriptionOutput2 = instance.InsertOutputColumnAt(invoiceSubItemID, 5, "Description", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceSubItemID, descriptionOutput2.ID, DataType.DT_STR, 255, 0, 0, 1252);
+
+            // Setup invoiceTailOutput as a Child, with Invoice as the Master
+            IDTSOutput100 invoiceTailOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);
+            invoiceTailOutput.Name = "InvoiceTail";
+            int invoiceTailID = invoiceTailOutput.ID;
+            instance.SetOutputProperty(invoiceTailID, ManageProperties.rowTypeValue, "005");
+            instance.SetOutputProperty(invoiceTailID, ManageProperties.typeOfOutput, Utilities.typeOfOutputEnum.ChildRecord);
+            instance.SetOutputProperty(invoiceTailID, ManageProperties.masterRecordID, invoiceOutputID);
+            invoiceTailOutput.ErrorRowDisposition = DTSRowDisposition.RD_RedirectRow;
+            invoiceTailOutput.TruncationRowDisposition = DTSRowDisposition.RD_RedirectRow;
+
+            // Setup invoiceTailOutput columns
+            IDTSOutputColumn100 totalOutput = instance.InsertOutputColumnAt(invoiceTailID, 2, "Total", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceTailID, totalOutput.ID, DataType.DT_NUMERIC, 0, 18, 2, 0);
+            IDTSOutputColumn100 taxOutput = instance.InsertOutputColumnAt(invoiceTailID, 3, "Tax", String.Empty);
+            instance.SetOutputColumnDataTypeProperties(invoiceTailID, taxOutput.ID, DataType.DT_NUMERIC, 0, 18, 2, 0);
+
+
+            // Add SQL CE Connection
+            ConnectionManager sqlCECM = null;
+            IDTSComponentMetaData100 sqlCETarget = null;
+            CManagedComponentWrapper sqlCEInstance = null;
+            CreateSQLCEComponent(package, dataFlowTask, "Account", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, accountOutput, sqlCETarget, sqlCEInstance);
+
+            // Create the SQL Ce Target.
+            CreateSQLCEComponent(package, dataFlowTask, "Invoice", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, invoiceOutput, sqlCETarget, sqlCEInstance);
+
+            // Create the SQL Ce Target.
+            CreateSQLCEComponent(package, dataFlowTask, "InvoiceItem", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, invoiceItemOutput, sqlCETarget, sqlCEInstance);
+
+            // Create the SQL Ce Target.
+            CreateSQLCEComponent(package, dataFlowTask, "InvoiceSubItem", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, invoiceSubItemOutput, sqlCETarget, sqlCEInstance);
+
+            // Create the SQL Ce Target.
+            CreateSQLCEComponent(package, dataFlowTask, "InvoiceTail", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+
+            // Create the path from source to destination.
+            CreatePath(dataFlowTask, invoiceTailOutput, sqlCETarget, sqlCEInstance);
+
+            // Create the Error Output connection
+            CreateSQLCEComponent(package, dataFlowTask, "ErrorResults", out sqlCECM, out sqlCETarget, out sqlCEInstance);
+            CreatePath(dataFlowTask, errorOutput, sqlCETarget, sqlCEInstance);
+
+            // Create a package events handler, to catch the output when running.
+            PackageEventHandler packageEvents = new PackageEventHandler();
+
+            // Create an application object, to enable saving the package
+            Microsoft.SqlServer.Dts.Runtime.Application application = new Microsoft.SqlServer.Dts.Runtime.Application();
+            // Save the package
+            application.SaveToXml(@"D:\Temp\TestPackage.dtsx", package, null);
+
+            // Execute the package
+            Microsoft.SqlServer.Dts.Runtime.DTSExecResult result = package.Execute(null, null, packageEvents as IDTSEvents, null, null);
+            foreach (String message in packageEvents.eventMessages)
+            {
+                Debug.WriteLine(message);
+            }
+            // Make sure the package worked.
+            Assert.AreEqual(Microsoft.SqlServer.Dts.Runtime.DTSExecResult.Success, result, "Execution Failed");
+
+            SqlCeConnection connection = new SqlCeConnection(connectionString());
+            if (connection.State == ConnectionState.Closed)
+            {
+                connection.Open();
+            }
+
+            SqlCeCommand sqlCommand = new SqlCeCommand("SELECT * FROM [Account] ORDER BY [AccountCode]", connection);
+            SqlCeDataReader sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            int rowCount = 0;
+            while (sqlData.Read())
+            {
+                rowCount++;
+                switch (rowCount)
+                {
+                    case 1: 
+                        Assert.AreEqual(12345, sqlData.GetInt32(1), "AccountCode <> 12345");
+                        Assert.AreEqual("Joe Smith", sqlData.GetString(2), "AccountName <> Joe Smith");
+                        break;
+                    case 2:
+                        Assert.AreEqual(12346, sqlData.GetInt32(1), "AccountCode <> 12346");
+                        Assert.AreEqual("James Smith", sqlData.GetString(2), "AccountName <> James Smith");
+                        break;
+                    case 3:
+                        Assert.AreEqual(12356, sqlData.GetInt32(1), "Account Code <> 12356");
+                        Assert.AreEqual("Mike Smith", sqlData.GetString(2), "AccountName <> Mike Smith");
+                        break;
+                    case 4:
+                        Assert.AreEqual(12856, sqlData.GetInt32(1), "Account Code <> 12856");
+                        Assert.AreEqual("John Smith", sqlData.GetString(2), "AccountName <> John Smith");
+                        break;
+                    default:
+                        Assert.Fail(string.Format("Account has to many records AccountCode {0}, AccountName {1}", sqlData.GetInt32(1), sqlData.GetString(2)));
+                        break;
+                }
+            }
+            Assert.AreEqual(4, rowCount, "Rows in Account");
+
+            sqlCommand = new SqlCeCommand("SELECT COUNT(*) FROM [ErrorResults]", connection);
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            while (sqlData.Read())
+            {
+                Assert.AreEqual(0, sqlData.GetInt32(0), "Number of Errors Not Zero");
+            }
 
             connection.Close();
         }
