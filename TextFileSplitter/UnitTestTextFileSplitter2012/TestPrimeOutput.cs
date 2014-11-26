@@ -85,7 +85,7 @@ namespace UnitTestTextFileSplitter2012
             command.CommandText = tableCreate;
             command.ExecuteNonQuery();
 
-            tableCreate = "CREATE TABLE [Invoice] ([AccountKey] uniqueidentifier, [InvoiceID] integer, [Quantity] numeric(18,2), [Cost] numeric(18,2), [Description] nvarchar(255))";
+            tableCreate = "CREATE TABLE [Invoice] ([AccountKey] uniqueidentifier, [InvoiceID] integer, [InvoiceDate] datetime, [InvoiceStore] nvarchar(255))";
             command.CommandText = tableCreate;
             command.ExecuteNonQuery();
 
@@ -959,6 +959,97 @@ namespace UnitTestTextFileSplitter2012
                 Debug.WriteLine(String.Format("ErrorCode = {0}, ErrorColumn = {1}, ErrorMessage = {2}, ColumnData = {3}, RowData = {4}, KeyColumn1 = {5}", (sqlData.IsDBNull(0)) ? -1 : sqlData.GetInt32(0), (sqlData.IsDBNull(1)) ? -1 : sqlData.GetInt32(1), (sqlData.IsDBNull(2)) ? "NULL" : sqlData.GetString(2), (sqlData.IsDBNull(3)) ? "NULL" : sqlData.GetString(3), (sqlData.IsDBNull(4)) ? "NULL" : sqlData.GetString(4), (sqlData.IsDBNull(5)) ? new Guid() : sqlData.GetSqlGuid(5)));
             }
             Assert.AreEqual(0, rowCount, "Number of Errors Not Zero");
+
+            sqlCommand = new SqlCeCommand("SELECT [Account].[AccountKey], [AccountCode], [InvoiceID], [InvoiceDate], [InvoiceStore] FROM [Invoice] LEFT OUTER JOIN [Account] ON [Invoice].[AccountKey] = [Account].[AccountKey] ORDER BY [InvoiceID]", connection);
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            rowCount = 0;
+            while (sqlData.Read())
+            {
+                rowCount++;
+                switch (rowCount)
+                {
+                    case 1:
+                        Assert.AreEqual(12345, sqlData.GetInt32(1), "AccountCode <> 12345");
+                        Assert.AreEqual(34566, sqlData.GetInt32(2), "InvoiceID <> 34566");
+                        Assert.AreEqual(new DateTime(2014, 11, 20), sqlData.GetDateTime(3), "InvoiceDate <> 2014-11-20");
+                        Assert.AreEqual("Brisbane", sqlData.GetString(4), "InvoiceStore <> Brisbane");
+                        break;
+                    case 2:
+                        Assert.AreEqual(12345, sqlData.GetInt32(1), "AccountCode <> 12345");
+                        Assert.AreEqual(34567, sqlData.GetInt32(2), "InvoiceID <> 34567");
+                        Assert.AreEqual(new DateTime(2014, 11, 25), sqlData.GetDateTime(3), "InvoiceDate <> 2014-11-25");
+                        Assert.AreEqual("Milton", sqlData.GetString(4), "InvoiceStore <> Milton");
+                        break;
+                    case 3:
+                        Assert.AreEqual(12346, sqlData.GetInt32(1), "Account Code <> 12346");
+                        Assert.AreEqual(34568, sqlData.GetInt32(2), "InvoiceID <> 34568");
+                        Assert.AreEqual(new DateTime(2014, 11, 26), sqlData.GetDateTime(3), "InvoiceDate <> 2014-11-26");
+                        Assert.AreEqual("Gold Coast", sqlData.GetString(4), "InvoiceStore <> Gold Coast");
+                        break;
+                    default:
+                        Assert.Fail(string.Format("Invoice has to many records InvoiceID {0}, InvoiceStore {1}", sqlData.GetInt32(2), sqlData.GetString(4)));
+                        break;
+                }
+            }
+            Assert.AreEqual(3, rowCount, "Number of Invoices Not Three");
+
+            sqlCommand = new SqlCeCommand("SELECT [Account].[AccountKey], [AccountCode], [InvoiceID], [Cost], [Quantity], [Description] FROM [InvoiceItem] LEFT OUTER JOIN [Account] ON [InvoiceItem].[AccountKey] = [Account].[AccountKey] ORDER BY [AccountCode], [Cost]", connection);
+            sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            rowCount = 0;
+            while (sqlData.Read())
+            {
+                rowCount++;
+                switch (rowCount)
+                {
+                    case 1:
+                        Assert.AreEqual(12345, sqlData.GetInt32(1), "AccountCode <> 12345");
+                        Assert.AreEqual(34566, sqlData.GetInt32(2), "InvoiceID <> 34566");
+                        Assert.AreEqual(1.0m, sqlData.GetDecimal(3), "Cost <> 1.0");
+                        Assert.AreEqual(1.0m, sqlData.GetDecimal(4), "Quantity <> 1.0");
+                        Assert.AreEqual("Generic Item 1", sqlData.GetString(5), "Description <> Generic Item 1");
+                        break;
+                    case 2:
+                        Assert.AreEqual(12345, sqlData.GetInt32(1), "AccountCode <> 12345");
+                        Assert.AreEqual(34566, sqlData.GetInt32(2), "InvoiceID <> 34566");
+                        Assert.AreEqual(2.0m, sqlData.GetDecimal(3), "Cost <> 2.0");
+                        Assert.AreEqual(2.0m, sqlData.GetDecimal(4), "Quantity <> 2.0");
+                        Assert.AreEqual("Generic Item 2", sqlData.GetString(5), "Description <> Generic Item 2");
+                        break;
+                    case 3:
+                        Assert.AreEqual(12345, sqlData.GetInt32(1), "AccountCode <> 12345");
+                        Assert.AreEqual(34567, sqlData.GetInt32(2), "InvoiceID <> 34566");
+                        Assert.AreEqual(3.0m, sqlData.GetDecimal(3), "Cost <> 3.0");
+                        Assert.AreEqual(1.0m, sqlData.GetDecimal(4), "Quantity <> 1.0");
+                        Assert.AreEqual("Generic Item 1 I2", sqlData.GetString(5), "Description <> Generic Item 1 I2");
+                        break;
+                    case 4:
+                        Assert.AreEqual(12345, sqlData.GetInt32(1), "AccountCode <> 12345");
+                        Assert.AreEqual(34567, sqlData.GetInt32(2), "InvoiceID <> 34566");
+                        Assert.AreEqual(4.0m, sqlData.GetDecimal(3), "Cost <> 4.0");
+                        Assert.AreEqual(5.0m, sqlData.GetDecimal(4), "Quantity <> 5.0");
+                        Assert.AreEqual("Generic Item 2 I2", sqlData.GetString(5), "Description <> Generic Item 2 I2");
+                        break;
+                    case 5:
+                        Assert.AreEqual(12856, sqlData.GetInt32(1), "AccountCode <> 12856");
+                        Assert.IsTrue(sqlData.IsDBNull(2), "InvoiceID was not null");
+                        Assert.AreEqual(5.0m, sqlData.GetDecimal(3), "Cost <> 5.0");
+                        Assert.AreEqual(1.0m, sqlData.GetDecimal(4), "Quantity <> 1.0");
+                        Assert.AreEqual("Item 1 No Invoice", sqlData.GetString(5), "Description <> Item 1 No Invoice");
+                        break;
+                    case 6:
+                        Assert.AreEqual(12856, sqlData.GetInt32(1), "AccountCode <> 12856");
+                        Assert.IsTrue(sqlData.IsDBNull(2), "InvoiceID was not null");
+                        Assert.AreEqual(6.0m, sqlData.GetDecimal(3), "Cost <> 6.0");
+                        Assert.AreEqual(4.0m, sqlData.GetDecimal(4), "Quantity <> 4.0");
+                        Assert.AreEqual("Item 2 No Invoice", sqlData.GetString(5), "Description <> Item 2 No Invoice");
+                        break;
+                    default:
+                        Assert.Fail(string.Format("Invoice has to many records InvoiceID {0}, InvoiceStore {1}", sqlData.GetInt32(2), sqlData.GetString(4)));
+                        break;
+                }
+            }
+            Assert.AreEqual(6, rowCount, "Number of InvoiceItems Not Six");
+
 
             connection.Close();
         }

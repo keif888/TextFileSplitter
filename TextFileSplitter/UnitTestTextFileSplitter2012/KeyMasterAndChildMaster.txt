@@ -1,13 +1,13 @@
 ﻿001|12345|Joe Smith
 002|34566|2014-11-20|Brisbane
-003|1.0|13.45|Generic Item 1
-003|2.0|5.00|Generic Item 2
+003|1.0|1.00|Generic Item 1
+003|2.0|2.00|Generic Item 2
 004|3.0|6.0|Sub Item 1
 004|4.0|7.0|Sub Item 2
 005|29.45|7.89
-002|34567|2014-11-25|Brisbane
-003|1.0|12.45|Generic Item 1
-003|5.0|5.00|Generic Item 2
+002|34567|2014-11-25|Milton
+003|1.0|3.00|Generic Item 1 I2
+003|5.0|4.00|Generic Item 2 I2
 004|1.0|1.0|Sub Item 1
 004|1.0|1.0|Sub Item 2
 004|1.0|1.0|Sub Item 3
@@ -15,7 +15,7 @@
 004|1.0|1.0|Sub Item 5
 005|27.45|3.45
 001|12346|James Smith
-002|34568|2014-11-25|Brisbane
+002|34568|2014-11-26|Gold Coast
 004|1.0|1.0|Sub Item 1
 004|1.0|1.0
 005|9988.33|453.76
@@ -23,5 +23,5 @@
 004|1.0|1.0|Sub Item 1 No Invoice
 004|1.0|1.0|Sub Item 2 No Invoice
 001|12856|John Smith
-003|1.0|2.0|Item 1 No Invoice
-003|4.0|3.0|Item 2 No Invoice
+003|1.0|5.0|Item 1 No Invoice
+003|4.0|6.0|Item 2 No Invoice

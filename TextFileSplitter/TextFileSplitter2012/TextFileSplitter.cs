@@ -2330,7 +2330,10 @@ namespace Martin.SQLServer.Dts
                                                         {
                                                             if ((((Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.Key)
                                                                 && currentValue != null) || (Utilities.usageOfColumnEnum)ManageProperties.GetPropertyValue(currentOutputColumn.CustomPropertyCollection, ManageProperties.usageOfColumn) == Utilities.usageOfColumnEnum.MasterValue)
-                                                                currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
+                                                                if (currentValue == null)
+                                                                    currentBuffer.SetNull(currentOutputColumn.OutputBufferID);  // **** Potential Breaking Change ****
+                                                                else
+                                                                    currentBuffer[currentOutputColumn.OutputBufferID] = currentValue;
                                                             else
                                                                 throw new ArgumentNullException(currentOutputColumn.Name, String.Format("Key Value was NOT found for record number {0} of type {1}", recordsRead, RowTypeValue));
                                                         }
