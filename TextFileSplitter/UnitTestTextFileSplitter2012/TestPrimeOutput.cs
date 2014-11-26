@@ -799,6 +799,7 @@ namespace UnitTestTextFileSplitter2012
             ManageProperties.SetPropertyValue(invoiceIDOutput.CustomPropertyCollection, ManageProperties.usageOfColumn, Utilities.usageOfColumnEnum.MasterValue);
             IDTSOutputColumn100 invoiceDateOutput = instance.InsertOutputColumnAt(invoiceOutputID, 2, "InvoiceDate", String.Empty);
             instance.SetOutputColumnDataTypeProperties(invoiceOutputID, invoiceDateOutput.ID, DataType.DT_DBDATE, 0, 0, 0, 0);
+            ManageProperties.SetPropertyValue(invoiceDateOutput.CustomPropertyCollection, ManageProperties.dotNetFormatString, "yyyy-MM-dd");
             IDTSOutputColumn100 invoiceStoreOutput = instance.InsertOutputColumnAt(invoiceOutputID, 3, "InvoiceStore", String.Empty);
             instance.SetOutputColumnDataTypeProperties(invoiceOutputID, invoiceStoreOutput.ID, DataType.DT_STR, 255, 0, 0, 1252);
 
@@ -839,6 +840,7 @@ namespace UnitTestTextFileSplitter2012
             instance.SetOutputColumnDataTypeProperties(invoiceSubItemID, costOutput2.ID, DataType.DT_NUMERIC, 0, 18, 2, 0);
             IDTSOutputColumn100 descriptionOutput2 = instance.InsertOutputColumnAt(invoiceSubItemID, 5, "Description", String.Empty);
             instance.SetOutputColumnDataTypeProperties(invoiceSubItemID, descriptionOutput2.ID, DataType.DT_STR, 255, 0, 0, 1252);
+            ManageProperties.SetPropertyValue(descriptionOutput2.CustomPropertyCollection, ManageProperties.isColumnOptional, true);
 
             // Setup invoiceTailOutput as a Child, with Invoice as the Master
             IDTSOutput100 invoiceTailOutput = instance.InsertOutput(DTSInsertPlacement.IP_AFTER, keyID);
@@ -948,12 +950,15 @@ namespace UnitTestTextFileSplitter2012
             }
             Assert.AreEqual(4, rowCount, "Rows in Account");
 
-            sqlCommand = new SqlCeCommand("SELECT COUNT(*) FROM [ErrorResults]", connection);
+            sqlCommand = new SqlCeCommand("SELECT * FROM [ErrorResults]", connection);
             sqlData = sqlCommand.ExecuteReader(CommandBehavior.Default);
+            rowCount = 0;
             while (sqlData.Read())
             {
-                Assert.AreEqual(0, sqlData.GetInt32(0), "Number of Errors Not Zero");
+                rowCount++;
+                Debug.WriteLine(String.Format("ErrorCode = {0}, ErrorColumn = {1}, ErrorMessage = {2}, ColumnData = {3}, RowData = {4}, KeyColumn1 = {5}", (sqlData.IsDBNull(0)) ? -1 : sqlData.GetInt32(0), (sqlData.IsDBNull(1)) ? -1 : sqlData.GetInt32(1), (sqlData.IsDBNull(2)) ? "NULL" : sqlData.GetString(2), (sqlData.IsDBNull(3)) ? "NULL" : sqlData.GetString(3), (sqlData.IsDBNull(4)) ? "NULL" : sqlData.GetString(4), (sqlData.IsDBNull(5)) ? new Guid() : sqlData.GetSqlGuid(5)));
             }
+            Assert.AreEqual(0, rowCount, "Number of Errors Not Zero");
 
             connection.Close();
         }
