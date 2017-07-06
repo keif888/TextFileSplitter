@@ -28,33 +28,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestTextFileSplitter201
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 8
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://martin-source.visualstudio.com/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = TextFileSplitter2012\\TextFileSplitter2012.csproj
-		SccProjectName1 = TextFileSplitter2012
-		SccLocalPath1 = TextFileSplitter2012
-		SccProjectUniqueName2 = FileHelpers\\FileHelpers.csproj
-		SccProjectName2 = FileHelpers
-		SccLocalPath2 = FileHelpers
-		SccProjectUniqueName3 = TextFileSplitter2008\\TextFileSplitter2008.csproj
-		SccProjectName3 = TextFileSplitter2008
-		SccLocalPath3 = TextFileSplitter2008
-		SccProjectUniqueName4 = TextFileSplitterInstallx64\\TextFileSplitterInstallx64.wixproj
-		SccProjectName4 = TextFileSplitterInstallx64
-		SccLocalPath4 = TextFileSplitterInstallx64
-		SccProjectUniqueName5 = TextFileSplitterInstallx86\\TextFileSplitterInstallx86.wixproj
-		SccProjectName5 = TextFileSplitterInstallx86
-		SccLocalPath5 = TextFileSplitterInstallx86
-		SccProjectUniqueName6 = UnitTestTextFileSplitter2012\\UnitTestTextFileSplitter2012.csproj
-		SccProjectName6 = UnitTestTextFileSplitter2012
-		SccLocalPath6 = UnitTestTextFileSplitter2012
-		SccProjectUniqueName7 = TextFileSplitter2014\\TextFileSplitter2014.csproj
-		SccProjectName7 = TextFileSplitter2014
-		SccLocalPath7 = TextFileSplitter2014
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
