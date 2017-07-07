@@ -5,12 +5,27 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
+#if SQL2016
+[assembly: AssemblyTitle("TextFileSplitter2016")]
+[assembly: AssemblyProduct("TextFileSplitter2016")]
+#endif
+#if SQL2014
+[assembly: AssemblyTitle("TextFileSplitter2014")]
+[assembly: AssemblyProduct("TextFileSplitter2014")]
+#endif
+#if SQL2012
 [assembly: AssemblyTitle("TextFileSplitter2012")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("TextFileSplitter2012")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+#endif
+#if SQL2008
+[assembly: AssemblyTitle("TextFileSplitter2008")]
+[assembly: AssemblyProduct("TextFileSplitter2008")]
+#endif
+
+[assembly: AssemblyDescription("SSIS Component to split a text file into many outputs")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("None")]
+[assembly: AssemblyCopyright("Copyright © Keith Martin 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -84,6 +84,9 @@
     <Compile Include="..\TextFileSplitter2012\MessageStrings.cs">
       <Link>MessageStrings.cs</Link>
     </Compile>
+    <Compile Include="..\TextFileSplitter2012\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="..\TextFileSplitter2012\Properties\Resources.Designer.cs">
       <Link>Properties\Resources.Designer.cs</Link>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -119,7 +122,6 @@
     <Compile Include="..\TextFileSplitter2012\Utilities.cs">
       <Link>Utilities.cs</Link>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TextFileSplitter2014.snk" />

@@ -71,7 +71,7 @@
     </Reference>
     <Reference Include="NullDestination, Version=13.0.0.0, Culture=neutral, PublicKeyToken=51c551904274ab44, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\Microsoft SQL Server\120\DTS\PipelineComponents\NullDestination.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Microsoft SQL Server\130\DTS\PipelineComponents\NullDestination.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -114,9 +114,9 @@
       <Project>{eb8633ff-ceed-40ee-8d1a-ca1bf5678c42}</Project>
       <Name>FileHelpers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TextFileSplitter2012\TextFileSplitter2012.csproj">
-      <Project>{51b00b6a-f94a-4c7e-860a-487c9893fc9a}</Project>
-      <Name>TextFileSplitter2012</Name>
+    <ProjectReference Include="..\TextFileSplitter2016\TextFileSplitter2016.csproj">
+      <Project>{3f6db102-213e-4b0a-83d8-3e309197b8b8}</Project>
+      <Name>TextFileSplitter2016</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

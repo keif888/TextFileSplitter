@@ -619,7 +619,7 @@ namespace UnitTestTextFileSplitter
 
             
             Microsoft.SqlServer.Dts.Runtime.Application application = new Microsoft.SqlServer.Dts.Runtime.Application();
-            application.SaveToXml(@"D:\Temp\TestPackage.dtsx", package, null);
+            application.SaveToXml(@"D:\Test\TestPackage.dtsx", package, null);
             Microsoft.SqlServer.Dts.Runtime.DTSExecResult result = package.Execute(null, null, packageEvents as IDTSEvents, null, null);
             foreach (String message in packageEvents.eventMessages)
             {
@@ -902,7 +902,7 @@ namespace UnitTestTextFileSplitter
             // Create an application object, to enable saving the package
             Microsoft.SqlServer.Dts.Runtime.Application application = new Microsoft.SqlServer.Dts.Runtime.Application();
             // Save the package
-            application.SaveToXml(@"D:\Temp\TestPackage.dtsx", package, null);
+            application.SaveToXml(@"D:\Test\TestPackage.dtsx", package, null);
 
             // Execute the package
             Microsoft.SqlServer.Dts.Runtime.DTSExecResult result = package.Execute(null, null, packageEvents as IDTSEvents, null, null);
