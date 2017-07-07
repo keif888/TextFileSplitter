@@ -129,7 +129,10 @@
         </Directory>
         <Directory Id="SQL2014x64Upgrade" Name="UpgradeMappings">
           <Component Id="SQL2014x64UpgradeMapping" Guid="C7EDA573-834D-4EB1-8D0F-EB7325CF264E" Win64="yes">
-            <File Id="SQL2014x64UpgradeFile" Name="TextFileSplitter.xml" Source="$(var.TextFileSplitter2014.ProjectDir)\TextFileSplitter.xml" Checksum="yes"/>
+            <File Id="SQL2014x64UpgradeFile" Name="TextFileSplitter2014.xml" Source="$(var.TextFileSplitter2014.ProjectDir)\TextFileSplitter2014.xml" Checksum="yes"/>
+          </Component>
+          <Component Id="SQL2014x64UpgradeMappingExtension" Guid="00B931D6-C589-4C81-8D4F-EB7325CF264F" Win64="no">
+            <File Id="SQL2014x64UpgradeFileExtension" Name="TextFileSplitter2014.extensions.xml" Source="$(var.TextFileSplitter2014.ProjectDir)\TextFileSplitter2014.extensions.xml" Checksum="yes"/>
           </Component>
         </Directory>
       </Directory>
@@ -142,7 +145,10 @@
         </Directory>
         <Directory Id="SQL2014x32Upgrade" Name="UpgradeMappings">
           <Component Id="SQL2014x32UpgradeMapping" Guid="FC8EB7E4-193C-4F4D-84C8-77D4543A5605" Win64="no">
-            <File Id="SQL2014x32UpgradeFile" Name="TextFileSplitter.xml" Source="$(var.TextFileSplitter2014.ProjectDir)\TextFileSplitter.xml" Checksum="yes"/>
+            <File Id="SQL2014x32UpgradeFile" Name="TextFileSplitter2014.xml" Source="$(var.TextFileSplitter2014.ProjectDir)\TextFileSplitter2014.xml" Checksum="yes"/>
+          </Component>
+          <Component Id="SQL2014x32UpgradeMappingExtension" Guid="00B931D6-C589-4C81-8D4F-9B4B38A31B79" Win64="no">
+            <File Id="SQL2014x32UpgradeFileExtension" Name="TextFileSplitter2014.extensions.xml" Source="$(var.TextFileSplitter2014.ProjectDir)\TextFileSplitter2014.extensions.xml" Checksum="yes"/>
           </Component>
         </Directory>
       </Directory>
@@ -155,7 +161,7 @@
         </Directory>
         <Directory Id="SQL2012x64Upgrade" Name="UpgradeMappings">
           <Component Id="SQL2012x64UpgradeMapping" Guid="17C57F1E-EABE-42E3-BFF8-F565DE98F5AA" Win64="yes">
-            <File Id="SQL2012x64UpgradeFile" Name="TextFileSplitter.xml" Source="$(var.TextFileSplitter2012.ProjectDir)\TextFileSplitter.xml" Checksum="yes"/>
+            <File Id="SQL2012x64UpgradeFile" Name="TextFileSplitter2012.xml" Source="$(var.TextFileSplitter2012.ProjectDir)\TextFileSplitter2012.xml" Checksum="yes"/>
           </Component>
         </Directory>
       </Directory>
@@ -168,7 +174,7 @@
         </Directory>
         <Directory Id="SQL2012x32Upgrade" Name="UpgradeMappings">
           <Component Id="SQL2012x32UpgradeMapping" Guid="00B931D6-C589-4C81-8D4F-9B4B38A31B78" Win64="no">
-            <File Id="SQL2012x32UpgradeFile" Name="TextFileSplitter.xml" Source="$(var.TextFileSplitter2012.ProjectDir)\TextFileSplitter.xml" Checksum="yes"/>
+            <File Id="SQL2012x32UpgradeFile" Name="TextFileSplitter2012.xml" Source="$(var.TextFileSplitter2012.ProjectDir)\TextFileSplitter2012.xml" Checksum="yes"/>
           </Component>
         </Directory>
       </Directory>
@@ -195,11 +201,13 @@
         <Feature Id="SQL2014x64" Level="1" Title="x64"  ConfigurableDirectory="SSIS64_2014_PATH">
           <ComponentRef Id="SQL2014x64DLL"/>
           <ComponentRef Id="SQL2014x64UpgradeMapping"/>
+          <ComponentRef Id="SQL2014x64UpgradeMappingExtension"/>
           <Condition Level="0">NOT SSIS64_2014</Condition>
         </Feature>
         <Feature Id="SQL2014x32" Level="1" Title="x86" ConfigurableDirectory="SSIS32_2014_PATH">
           <ComponentRef Id="SQL2014x32DLL"/>
           <ComponentRef Id="SQL2014x32UpgradeMapping"/>
+          <ComponentRef Id="SQL2014x32UpgradeMappingExtension"/>
           <Condition Level="0">NOT SSIS32_2014</Condition>
         </Feature>
         <ComponentRef Id="SQL2014GAC" />

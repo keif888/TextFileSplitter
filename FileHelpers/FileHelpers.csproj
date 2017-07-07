@@ -444,11 +444,11 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>"%25ProgramFiles%25\Microsoft SDKs\Windows\v8.0A\bin\NETFX 4.0 Tools\GACUtil.exe" -u $(TargetName)
-rem if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio 11.0\Team Tools\Performance Tools\vsinstr" -coverage "$(TargetDir)$(TargetName).dll"
-if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio 11.0\Team Tools\Performance Tools\vsinstr" "$(TargetDir)$(TargetName).dll" /ExcludeSmallFuncs
-if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v7.0A\bin\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\FileHelpers.snk"
-"%25ProgramFiles%25\Microsoft SDKs\Windows\v8.0A\bin\NETFX 4.0 Tools\GACUtil.exe" -i "$(TargetDir)$(TargetName).dll"
+    <PostBuildEvent>ECHO [$(ConfigurationName)]
+if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GACUtil.exe" -u $(TargetName)
+if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio\2017\Enterprise\Team Tools\Performance Tools\x64\vsinstr" "$(TargetDir)$(TargetName).dll" /ExcludeSmallFuncs
+if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\$(TargetName).snk"
+if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GacUtil.exe" -i "$(TargetDir)$(TargetName).dll"
 </PostBuildEvent>
   </PropertyGroup>
 </Project>
