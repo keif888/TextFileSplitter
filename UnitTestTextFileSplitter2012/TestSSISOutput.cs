@@ -7,7 +7,7 @@ using Microsoft.SqlServer.Dts.Runtime.Wrapper;
 using Microsoft.SqlServer.Dts.Runtime;
 using System.Collections.Generic;
 
-namespace UnitTestTextFileSplitter2012
+namespace UnitTestTextFileSplitter
 {
     [TestClass]
     public class TestSSISOutput

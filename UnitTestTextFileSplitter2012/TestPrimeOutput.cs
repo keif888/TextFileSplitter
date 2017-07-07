@@ -13,7 +13,7 @@ using System.Data;
 using System.Diagnostics;
 
 
-namespace UnitTestTextFileSplitter2012
+namespace UnitTestTextFileSplitter
 {
     [TestClass]
     public class TestPrimeOutput
@@ -187,7 +187,7 @@ namespace UnitTestTextFileSplitter2012
             IDTSOutputColumn100 keyColumn3 = instance.InsertOutputColumnAt(keyID, 2, "KeyColumn3", String.Empty);
 
             IDTSComponentMetaData100 trashDestination = dataFlowTask.ComponentMetaDataCollection.New();
-            trashDestination.ComponentClassID = typeof(Konesans.Dts.Pipeline.TrashDestination.Trash).AssemblyQualifiedName;
+            trashDestination.ComponentClassID = typeof(Martin.SQLServer.Dts.NullDestination).AssemblyQualifiedName;
             CManagedComponentWrapper trashInstance = trashDestination.Instantiate();
             trashInstance.ProvideComponentProperties();
 

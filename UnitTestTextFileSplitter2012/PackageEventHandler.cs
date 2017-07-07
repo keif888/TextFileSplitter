@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace UnitTestTextFileSplitter2012
+namespace UnitTestTextFileSplitter
 {
     public class PackageEventHandler : DefaultEvents
     {

@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace UnitTestTextFileSplitter2012
+namespace UnitTestTextFileSplitter
 {
     [TestClass]
     public class TestErrorRecordOutput

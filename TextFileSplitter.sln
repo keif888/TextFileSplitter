@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFileSplitter2012", "TextFileSplitter2012\TextFileSplitter2012.csproj", "{51B00B6A-F94A-4C7E-860A-487C9893FC9A}"
 EndProject
@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFileSplitter2014", "Tex
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TextFileSplitterInstallx86", "TextFileSplitterInstallx86\TextFileSplitterInstallx86.wixproj", "{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestTextFileSplitter2012", "UnitTestTextFileSplitter2012\UnitTestTextFileSplitter2012.csproj", "{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestTextFileSplitter", "UnitTestTextFileSplitter2012\UnitTestTextFileSplitter.csproj", "{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}"
 	ProjectSection(ProjectDependencies) = postProject
 		{51B00B6A-F94A-4C7E-860A-487C9893FC9A} = {51B00B6A-F94A-4C7E-860A-487C9893FC9A}
 		{EB8633FF-CEED-40EE-8D1A-CA1BF5678C42} = {EB8633FF-CEED-40EE-8D1A-CA1BF5678C42}
@@ -85,7 +85,6 @@ Global
 		{EB8633FF-CEED-40EE-8D1A-CA1BF5678C42}.UnitTest|x86.ActiveCfg = Release|Any CPU
 		{36B4B188-EAC8-477B-9596-B762F4920494}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{36B4B188-EAC8-477B-9596-B762F4920494}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{36B4B188-EAC8-477B-9596-B762F4920494}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{36B4B188-EAC8-477B-9596-B762F4920494}.Debug|x64.ActiveCfg = Debug|x64
 		{36B4B188-EAC8-477B-9596-B762F4920494}.Debug|x64.Build.0 = Debug|x64
 		{36B4B188-EAC8-477B-9596-B762F4920494}.Debug|x86.ActiveCfg = Debug|x64
@@ -107,7 +106,6 @@ Global
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{92EF89AC-2E05-4208-AE92-5EC67437713F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.Debug|x64.Build.0 = Debug|Any CPU
 		{92EF89AC-2E05-4208-AE92-5EC67437713F}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -146,7 +144,6 @@ Global
 		{92EF89AD-2E05-4208-AE92-5EC67437713F}.UnitTest|x86.ActiveCfg = Release|Any CPU
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|x64.ActiveCfg = Debug|x86
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|x64.Build.0 = Debug|x86
 		{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}.Debug|x86.ActiveCfg = Debug|x86
