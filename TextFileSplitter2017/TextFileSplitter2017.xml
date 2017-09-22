@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Mappings xmlns="http://www.microsoft.com/SqlServer/Dts/UpgradeMapping.xsd">
+  <ExtensionMapping
+tag="SSIS Text File Splitter 2008"
+oldAssemblyStrongName="TextFileSplitter2008, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+newAssemblyStrongName="TextFileSplitter2017, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"/>
+  <ExtensionMapping
+tag="SSIS Text File Splitter 2012"
+oldAssemblyStrongName="TextFileSplitter2012, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+newAssemblyStrongName="TextFileSplitter2017, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"/>
+  <ExtensionMapping
+tag="SSIS Text File Splitter 2014"
+oldAssemblyStrongName="TextFileSplitter2014, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+newAssemblyStrongName="TextFileSplitter2017, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"/>
+  <ExtensionMapping
+tag="SSIS Text File Splitter 2016"
+oldAssemblyStrongName="TextFileSplitter2016, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+newAssemblyStrongName="TextFileSplitter2017, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"/>
+</Mappings>

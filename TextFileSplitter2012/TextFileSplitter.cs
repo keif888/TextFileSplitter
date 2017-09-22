@@ -20,6 +20,9 @@ namespace Martin.SQLServer.Dts
         CurrentVersion = 5 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
         , Description = "Extract many outputs from a single Text File"
         , IconResource = "Martin.SQLServer.Dts.Resources.TextFileSplitter.ico"
+#if SQL2017
+    , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2017, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+#endif
 #if SQL2016
     , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2016, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
 #endif
@@ -60,7 +63,7 @@ namespace Martin.SQLServer.Dts
             this.RemoveAllInputsOutputsAndCustomProperties();
             this.ComponentMetaData.Version = 5;  // NB.  Always keep this in sync with the CurrentVersion!!!
             this.ComponentMetaData.UsesDispositions = true;
-            this.ComponentMetaData.ContactInfo = "http://TextFileSplitter.codeplex.com/";
+            this.ComponentMetaData.ContactInfo = "https://github.com/keif888/TextFileSplitter/";
             ManageProperties.AddComponentProperties(this.ComponentMetaData.CustomPropertyCollection);
 
             // PassThrough Record Output
@@ -116,6 +119,11 @@ namespace Martin.SQLServer.Dts
 
             // Get the attributes for the SSIS Package
             int metadataVersion = ComponentMetaData.Version;
+
+            if (this.ComponentMetaData.ContactInfo != "https://github.com/keif888/TextFileSplitter/")
+            {
+                this.ComponentMetaData.ContactInfo = "https://github.com/keif888/TextFileSplitter/";
+            }
 
             if (binaryVersion > metadataVersion)
             {
@@ -319,6 +327,10 @@ namespace Martin.SQLServer.Dts
         public override DTSValidationStatus Validate()
         {
             DTSValidationStatus status = DTSValidationStatus.VS_ISVALID;
+            if (this.ComponentMetaData.ContactInfo != "https://github.com/keif888/TextFileSplitter/")
+            {
+                status = DTSValidationStatus.VS_NEEDSNEWMETADATA;
+            }
             status = ValidateComponentProperties(status);
             status = ValidateOutputs(status);
             return status;
@@ -843,6 +855,12 @@ namespace Martin.SQLServer.Dts
         {
             IDTSOutput100 passThroughOutput = this.ComponentMetaData.OutputCollection[0];
             IDTSOutput100 errorOutput = this.ComponentMetaData.OutputCollection[1];
+
+            if (this.ComponentMetaData.ContactInfo != "https://github.com/keif888/TextFileSplitter/")
+            {
+                this.ComponentMetaData.ContactInfo = "https://github.com/keif888/TextFileSplitter/";
+            }
+
             if (passThroughOutput.OutputColumnCollection.Count == 0)
             {
                 if (!String.IsNullOrEmpty(fileName))

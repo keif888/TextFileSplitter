@@ -5,6 +5,10 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
+#if SQL2017
+[assembly: AssemblyTitle("TextFileSplitter2017")]
+[assembly: AssemblyProduct("TextFileSplitter2017")]
+#endif
 #if SQL2016
 [assembly: AssemblyTitle("TextFileSplitter2016")]
 [assembly: AssemblyProduct("TextFileSplitter2016")]

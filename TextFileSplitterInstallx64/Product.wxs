@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductVersion = "1.0.18.0"?>
+  <?define ProductVersion = "1.0.19.0"?>
   <?define UpgradeCode = "A9EE6818-88C5-4E7F-A2E4-C7BC52E7FF8D"?>
   <?define Manufacturer = "Keith Martin"?>
   <?define PackageCode = "*"?>
@@ -32,6 +32,18 @@
     <UIRef Id="WixUI_Mondo"/>
     <WixVariable Id="WixUILicenseRtf" Value="$(var.TextFileSplitter2012.ProjectDir)\License.rtf" />
 
+    <Property Id="SSIS64_2017_PATH" Secure="yes">
+      <!-- Value="C:\Program Files\Microsoft SQL Server\140\DTS"> -->
+      <RegistrySearch Type="directory" Id="SSIS64_2017_PATH_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\SSIS\Setup\DTSPath" Win64="yes"/>
+      <RegistrySearch Type="directory" Id="SSIS64_2017_PATH_2" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\DTS\Setup" Name="SQLPath" Win64="yes"/>
+      <DirectorySearch AssignToProperty="yes" Id="SSIS64_2017_PATH_3" Path="[ProgramFiles64Folder]\Microsoft SQL Server\140\DTS" />
+    </Property>
+    <Property Id="SSIS32_2017_PATH" Secure="yes">
+      <!-- Value="C:\Program Files (x86)\Microsoft SQL Server\140\DTS"> -->
+      <RegistrySearch Type="directory" Id="SSIS32_2017_PATH_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\SSIS\Setup\DTSPath" Win64="no"/>
+      <RegistrySearch Type="directory" Id="SSIS32_2017_PATH_2" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\DTS\Setup" Name="SQLPath" Win64="no"/>
+      <DirectorySearch AssignToProperty="yes" Id="SSIS32_2017_PATH_3" Path="[ProgramFilesFolder]\Microsoft SQL Server\140\DTS" />
+    </Property>
     <Property Id="SSIS64_2016_PATH" Secure="yes">
       <!-- Value="C:\Program Files\Microsoft SQL Server\130\DTS"> -->
       <RegistrySearch Type="directory" Id="SSIS64_2016_PATH_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\130\SSIS\Setup\DTSPath" Win64="yes"/>
@@ -82,6 +94,16 @@
     </Property>
 
 
+
+    <Property Id="SSIS64_2017" Secure="yes">
+      <RegistrySearch Type="raw" Id="SSIS64_2017_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\DTS\Setup" Name="Edition" Win64="yes"/>
+      <!--<RegistrySearch Type="raw" Id="SSIS64_2017_2" Root="HKCR" Key="IntegrationServices.Package.140" Win64="yes"/> -->
+    </Property>
+
+    <Property Id="SSIS32_2017" Secure="yes">
+      <RegistrySearch Type="raw" Id="SSIS32_2017_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\DTS\Setup" Name="Edition" Win64="no"/>
+      <RegistrySearch Type="raw" Id="SSIS32_2017_2" Root="HKCR" Key="IntegrationServices.Package.140" Win64="no"/>
+    </Property>
 
     <Property Id="SSIS64_2016" Secure="yes">
       <RegistrySearch Type="raw" Id="SSIS64_2016_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\130\DTS\Setup" Name="Edition" Win64="yes"/>
@@ -140,6 +162,10 @@
         <File Id="FileHelperDLLGac" Name="$(var.FileHelpers.TargetFileName)" Source="$(var.FileHelpers.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
       </Component>
 
+      <Component Id="SQL2017GAC" Guid="617d8ff9-f461-4807-2017-24f2635b45cd">
+        <File Id="SQL2017DLLGAC" Name="$(var.TextFileSplitter2017.TargetFileName)" Source="$(var.TextFileSplitter2017.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
+      </Component>
+
       <Component Id="SQL2016GAC" Guid="be3edb5e-e140-471a-8287-59a806db8cd7">
         <File Id="SQL2016DLLGAC" Name="$(var.TextFileSplitter2016.TargetFileName)" Source="$(var.TextFileSplitter2016.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
       </Component>
@@ -155,6 +181,38 @@
       <Component Id="SQL2008GAC" Guid="C2A15C13-01DE-4BC7-B9D8-7B3AA6F5F367">
         <File Id="SQL2008DLLGAC" Name="$(var.TextFileSplitter2008.TargetFileName)" Source="$(var.TextFileSplitter2008.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
       </Component>
+
+      <Directory Id="SSIS64_2017_PATH" Name="SSIS64_2017_PATH">
+        <Directory Id="SQL2017x64Pipeline" Name="PipelineComponents">
+          <Component Id="SQL2017x64DLL" Guid="0cdf752a-e541-4384-2017-d80101259335" Win64="yes">
+            <File Id="SQL2017x64DLLFile" Name="$(var.TextFileSplitter2017.TargetFileName)" Source="$(var.TextFileSplitter2017.TargetPath)"  Checksum="yes"/>
+          </Component>
+        </Directory>
+        <Directory Id="SQL2017x64Upgrade" Name="UpgradeMappings">
+          <Component Id="SQL2017x64UpgradeMapping" Guid="0c19e15a-c991-44ec-2017-69f4b607665c" Win64="yes">
+            <File Id="SQL2017x64UpgradeFile" Name="TextFileSplitter2017.xml" Source="$(var.TextFileSplitter2017.ProjectDir)\TextFileSplitter2017.xml" Checksum="yes"/>
+          </Component>
+          <Component Id="SQL2017x64UpgradeMappingExtension" Guid="8144960d-2017-4773-aec9-03bce1e80a0e" Win64="yes">
+            <File Id="SQL2017x64UpgradeFileExtension" Name="TextFileSplitter2017.extensions.xml" Source="$(var.TextFileSplitter2017.ProjectDir)\TextFileSplitter2017.extensions.xml" Checksum="yes"/>
+          </Component>
+        </Directory>
+      </Directory>
+
+      <Directory Id="SSIS32_2017_PATH" Name="SSIS32_2017_PATH">
+        <Directory Id="SQL2017x32Pipeline" Name="PipelineComponents">
+          <Component Id="SQL2017x32DLL" Guid="00b40c42-c764-49b2-2017-2547cfc0f6a2" Win64="no">
+            <File Id="SQL2017x32DLLFile" Name="$(var.TextFileSplitter2017.TargetFileName)" Source="$(var.TextFileSplitter2017.TargetPath)"  Checksum="yes"/>
+          </Component>
+        </Directory>
+        <Directory Id="SQL2017x32Upgrade" Name="UpgradeMappings">
+          <Component Id="SQL2017x32UpgradeMapping" Guid="460ee318-c58c-4eb4-2017-5cc4ff016e4c" Win64="no">
+            <File Id="SQL2017x32UpgradeFile" Name="TextFileSplitter2017.xml" Source="$(var.TextFileSplitter2017.ProjectDir)\TextFileSplitter2017.xml" Checksum="yes"/>
+          </Component>
+          <Component Id="SQL2017x32UpgradeMappingExtension" Guid="6dda4a21-3a24-4ef4-2017-ac463ed769db" Win64="no">
+            <File Id="SQL2017x32UpgradeFileExtension" Name="TextFileSplitter2017.extensions.xml" Source="$(var.TextFileSplitter2017.ProjectDir)\TextFileSplitter2017.extensions.xml" Checksum="yes"/>
+          </Component>
+        </Directory>
+      </Directory>
 
       <Directory Id="SSIS64_2016_PATH" Name="SSIS64_2016_PATH">
         <Directory Id="SQL2016x64Pipeline" Name="PipelineComponents">
@@ -264,6 +322,22 @@
     </Directory>
 
     <Feature Id="Complete" Level="1" Title="Text File Splitter Installer 1.0" Description="An SSIS Component to split Delimted Text files" Display="expand">
+      <Feature Id="SQL2017" Level="1" Title="SQL 2017">
+        <Feature Id="SQL2017x64" Level="1" Title="x64" ConfigurableDirectory="SSIS64_2017_PATH">
+          <ComponentRef Id="SQL2017x64DLL"/>
+          <ComponentRef Id="SQL2017x64UpgradeMapping"/>
+          <ComponentRef Id="SQL2017x64UpgradeMappingExtension"/>
+          <Condition Level="1004">NOT SSIS64_2017</Condition>
+        </Feature>
+        <Feature Id="SQL2017x32" Level="1" Title="x86" ConfigurableDirectory="SSIS32_2017_PATH">
+          <ComponentRef Id="SQL2017x32DLL"/>
+          <ComponentRef Id="SQL2017x32UpgradeMapping"/>
+          <ComponentRef Id="SQL2017x32UpgradeMappingExtension"/>
+          <Condition Level="1004">NOT SSIS32_2017</Condition>
+        </Feature>
+        <ComponentRef Id="SQL2017GAC" />
+        <Condition Level="1004">NOT (SSIS32_2017 OR SSIS64_2017)</Condition>
+      </Feature>
       <Feature Id="SQL2016" Level="1" Title="SQL 2016">
         <Feature Id="SQL2016x64" Level="1" Title="x64" ConfigurableDirectory="SSIS64_2016_PATH">
           <ComponentRef Id="SQL2016x64DLL"/>
@@ -330,7 +404,7 @@
     <!-- Display a Warning dialog box IF SSIS isn't detected-->
     <UI>
       <InstallUISequence>
-        <Show Dialog="SSISWarning" Before="ResumeDlg">NOT Installed AND NOT (SSIS64_2014 OR SSIS32_2014 OR SSIS64_2012 OR SSIS32_2012 OR SSIS64_2008 OR SSIS32_2008)</Show>
+        <Show Dialog="SSISWarning" Before="ResumeDlg">NOT Installed AND NOT (SSIS64_2017 OR SSIS32_2017 OR SSIS64_2016 OR SSIS32_2016 OR SSIS64_2014 OR SSIS32_2014 OR SSIS64_2012 OR SSIS32_2012 OR SSIS64_2008 OR SSIS32_2008)</Show>
       </InstallUISequence>
       <Dialog Id="SSISWarning" Width="200" Height="100">
         <Control Type="Text" Id="text1" Width="194" Height="14" X="4" Y="8" Text="SQL Server Integration Services was not detected" />
