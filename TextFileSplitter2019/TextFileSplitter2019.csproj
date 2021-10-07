@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Martin.SQLServer.Dts</RootNamespace>
+    <AssemblyName>TextFileSplitter2019</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SQL2019</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;SQL2019</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>TextFileSplitter2019.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\TextFileSplitter.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.SqlServer.Dts.Design, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\keith\Documents\Repos\SQL2019DLLs\Microsoft.SqlServer.Dts.Design.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.DTSPipelineWrap, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>D:\keith\Documents\Repos\SQL2019DLLs\Microsoft.SqlServer.DTSPipelineWrap.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SQLServer.DTSRuntimeWrap, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=x86">
+      <HintPath>D:\keith\Documents\Repos\SQL2019DLLs\Microsoft.SqlServer.DTSRuntimeWrap.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SQLServer.ManagedDTS, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>D:\keith\Documents\Repos\SQL2019DLLs\Microsoft.SqlServer.ManagedDTS.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.PipelineHost, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>D:\keith\Documents\Repos\SQL2019DLLs\Microsoft.SqlServer.PipelineHost.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\TextFileSplitter2012\DataFlowComponentUI.cs">
+      <Link>DataFlowComponentUI.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\DrawingControl.cs">
+      <Link>DrawingControl.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\ManageColumns.cs">
+      <Link>ManageColumns.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\ManageProperties.cs">
+      <Link>ManageProperties.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\MasterSelection.cs">
+      <Link>MasterSelection.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\MasterSelection.designer.cs">
+      <Link>MasterSelection.designer.cs</Link>
+      <DependentUpon>MasterSelection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\MessageStrings.cs">
+      <Link>MessageStrings.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\Properties\AssemblyInfo.cs">
+      <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\Properties\Resources.Designer.cs">
+      <Link>Properties\Resources.Designer.cs</Link>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\SplitOutput.cs">
+      <Link>SplitOutput.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\SSISOutput.cs">
+      <Link>SSISOutput.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\SSISOutputColumn.cs">
+      <Link>SSISOutputColumn.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\SSISProperty.cs">
+      <Link>SSISProperty.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\TextFileSplitter.cs">
+      <Link>TextFileSplitter.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\TextFileSplitterForm.cs">
+      <Link>TextFileSplitterForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\TextFileSplitterForm.designer.cs">
+      <Link>TextFileSplitterForm.designer.cs</Link>
+      <DependentUpon>TextFileSplitterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\TextFileSplitterUI.cs">
+      <Link>TextFileSplitterUI.cs</Link>
+    </Compile>
+    <Compile Include="..\TextFileSplitter2012\Utilities.cs">
+      <Link>Utilities.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\TextFileSplitter2012\MasterSelection.resx">
+      <Link>MasterSelection.resx</Link>
+      <DependentUpon>MasterSelection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\TextFileSplitter2012\Properties\Resources.resx">
+      <Link>Properties\Resources.resx</Link>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\TextFileSplitter2012\TextFileSplitterForm.resx">
+      <Link>TextFileSplitterForm.resx</Link>
+      <DependentUpon>TextFileSplitterForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\TextFileSplitter2012\Attributions.txt">
+      <Link>Attributions.txt</Link>
+    </Content>
+    <EmbeddedResource Include="Resources\TextFileSplitter.ico" />
+    <Content Include="TextFileSplitter2019.extensions.xml" />
+    <Content Include="TextFileSplitter2019.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TextFileSplitter2019.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FileHelpers\FileHelpers.csproj">
+      <Project>{eb8633ff-ceed-40ee-8d1a-ca1bf5678c42}</Project>
+      <Name>FileHelpers</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+      SET SSV=15
+      ECHO [$(ConfigurationName)]
+      if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio\2017\Enterprise\Team Tools\Performance Tools\x64\vsinstr" "$(TargetDir)$(TargetName).dll" -verbose  -coverage
+      if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\$(TargetName).snk"
+      if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GACUtil.exe" -u $(TargetName)
+      if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
+      if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
+      if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GacUtil.exe" -i "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\$(TargetName).DLL"
+      if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
+      if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).extensions.xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

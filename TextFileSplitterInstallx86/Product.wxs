@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductVersion = "1.0.19.0"?>
+  <?define ProductVersion = "1.0.20.0"?>
   <?define UpgradeCode = "944FC76C-F623-480F-A10D-A1994713BF87"?>
   <?define Manufacturer = "Keith Martin"?>
   <?define PackageCode = "*"?>
@@ -31,6 +31,12 @@
     <WixVariable Id="WixUILicenseRtf" Value="$(var.TextFileSplitter2012.ProjectDir)\License.rtf" />
 
     <!-- Find the path for SSIS' installation files. -->
+    <Property Id="SSIS32_2019_PATH" Secure="yes">
+      <!-- Value="C:\Program Files (x86)\Microsoft SQL Server\140\DTS"> -->
+      <RegistrySearch Type="directory" Id="SSIS32_2019_PATH_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\SSIS\Setup\DTSPath" Win64="no"/>
+      <RegistrySearch Type="directory" Id="SSIS32_2019_PATH_2" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\DTS\Setup" Name="SQLPath" Win64="no"/>
+      <DirectorySearch AssignToProperty="yes" Id="SSIS32_2019_PATH_3" Path="[ProgramFilesFolder]\Microsoft SQL Server\140\DTS" />
+    </Property>
     <Property Id="SSIS32_2017_PATH" Secure="yes">
       <!-- Value="C:\Program Files (x86)\Microsoft SQL Server\140\DTS"> -->
       <RegistrySearch Type="directory" Id="SSIS32_2017_PATH_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\SSIS\Setup\DTSPath" Win64="no"/>
@@ -63,6 +69,10 @@
 
 
     <!-- Try and detect if SSIS is installed.  This doesn't work for BIDS/SSDTBI install's. -->
+    <Property Id="SSIS32_2019" Secure="yes">
+      <RegistrySearch Type="raw" Id="SSIS32_2019_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\DTS\Setup" Name="Edition" Win64="no"/>
+      <RegistrySearch Type="raw" Id="SSIS32_2019_2" Root="HKCR" Key="IntegrationServices.Package.140" Win64="no"/>
+    </Property>
     <Property Id="SSIS32_2017" Secure="yes">
       <RegistrySearch Type="raw" Id="SSIS32_2017_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\140\DTS\Setup" Name="Edition" Win64="no"/>
       <RegistrySearch Type="raw" Id="SSIS32_2017_2" Root="HKCR" Key="IntegrationServices.Package.140" Win64="no"/>
@@ -103,6 +113,10 @@
         <File Id="FileHelperDLLGac" Name="$(var.FileHelpers.TargetFileName)" Source="$(var.FileHelpers.TargetPath)" Assembly=".net" KeyPath="yes"/>
       </Component>
 
+      <Component Id="SQL2019GAC" Guid="617d8ff9-f461-4807-2019-24f2635b45cd">
+        <File Id="SQL2019DLLGAC" Name="$(var.TextFileSplitter2019.TargetFileName)" Source="$(var.TextFileSplitter2019.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
+      </Component>
+
       <Component Id="SQL2017GAC" Guid="617d8ff9-f461-4807-2017-24f2635b45cd">
         <File Id="SQL2017DLLGAC" Name="$(var.TextFileSplitter2017.TargetFileName)" Source="$(var.TextFileSplitter2017.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
       </Component>
@@ -122,6 +136,22 @@
       <Component Id="SQL2008GAC" Guid="C2A15C13-01DE-4BC7-B9D8-7B3AA6F5F367">
         <File Id="SQL2008DLLGAC" Name="$(var.TextFileSplitter2008.TargetFileName)" Source="$(var.TextFileSplitter2008.TargetPath)" Assembly=".net" KeyPath="yes"/>
       </Component>
+
+      <Directory Id="SSIS32_2019_PATH" Name="SSIS32_2019_PATH">
+        <Directory Id="SQL2019x32Pipeline" Name="PipelineComponents">
+          <Component Id="SQL2019x32DLL" Guid="00b40c42-c764-49b2-2019-2547cfc0f6a2" Win64="no">
+            <File Id="SQL2019x32DLLFile" Name="$(var.TextFileSplitter2019.TargetFileName)" Source="$(var.TextFileSplitter2019.TargetPath)"  Checksum="yes"/>
+          </Component>
+        </Directory>
+        <Directory Id="SQL2019x32Upgrade" Name="UpgradeMappings">
+          <Component Id="SQL2019x32UpgradeMapping" Guid="460ee318-c58c-4eb4-2019-5cc4ff016e4c" Win64="no">
+            <File Id="SQL2019x32UpgradeFile" Name="TextFileSplitter2019.xml" Source="$(var.TextFileSplitter2019.ProjectDir)\TextFileSplitter2019.xml" Checksum="yes"/>
+          </Component>
+          <Component Id="SQL2019x32UpgradeMappingExtension" Guid="6dda4a21-3a24-4ef4-2019-ac463ed769db" Win64="no">
+            <File Id="SQL2019x32UpgradeFileExtension" Name="TextFileSplitter2019.extensions.xml" Source="$(var.TextFileSplitter2019.ProjectDir)\TextFileSplitter2019.extensions.xml" Checksum="yes"/>
+          </Component>
+        </Directory>
+      </Directory>
 
       <Directory Id="SSIS32_2017_PATH" Name="SSIS32_2017_PATH">
         <Directory Id="SQL2017x32Pipeline" Name="PipelineComponents">
@@ -194,6 +224,16 @@
     </Directory>
 
     <Feature Id="Complete" Level="1" Title="Text File Splitter Installer 1.0" Description="An SSIS Component to split Delimted Text files" Display="expand">
+      <Feature Id="SQL2019" Level="1" Title="SQL 2019">
+        <Feature Id="SQL2019x32" Level="1" Title="x86" ConfigurableDirectory="SSIS32_2019_PATH">
+          <ComponentRef Id="SQL2019x32DLL"/>
+          <ComponentRef Id="SQL2019x32UpgradeMapping"/>
+          <ComponentRef Id="SQL2019x32UpgradeMappingExtension"/>
+          <Condition Level="1004">NOT SSIS32_2019</Condition>
+        </Feature>
+        <ComponentRef Id="SQL2019GAC" />
+        <Condition Level="1004">NOT SSIS32_2019</Condition>
+      </Feature>
       <Feature Id="SQL2017" Level="1" Title="SQL 2017">
         <Feature Id="SQL2017x32" Level="1" Title="x86" ConfigurableDirectory="SSIS32_2017_PATH">
           <ComponentRef Id="SQL2017x32DLL"/>

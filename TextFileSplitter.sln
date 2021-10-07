@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFileSplitter2016", "Tex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFileSplitter2017", "TextFileSplitter2017\TextFileSplitter2017.csproj", "{879C134E-D64B-436E-841B-C69689506AF7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextFileSplitter2019", "TextFileSplitter2019\TextFileSplitter2019.csproj", "{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}"
+EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TextFileSplitterInstallx86", "TextFileSplitterInstallx86\TextFileSplitterInstallx86.wixproj", "{7995D5C2-ED1A-42E4-8CCD-CA0276A50311}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "TextFileSplitterInstallx64", "TextFileSplitterInstallx64\TextFileSplitterInstallx64.wixproj", "{36B4B188-EAC8-477B-9596-B762F4920494}"
@@ -227,8 +229,35 @@ Global
 		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|x64.ActiveCfg = Release|Any CPU
 		{6910816A-8EB5-4E8F-84CF-FA15FEBDB467}.UnitTest|x86.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Debug|x64.Build.0 = Debug|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Debug|x86.Build.0 = Debug|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Release|x64.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Release|x64.Build.0 = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Release|x86.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.Release|x86.Build.0 = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.UnitTest|Any CPU.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.UnitTest|Any CPU.Build.0 = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.UnitTest|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.UnitTest|Mixed Platforms.Build.0 = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.UnitTest|x64.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.UnitTest|x64.Build.0 = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.UnitTest|x86.ActiveCfg = Release|Any CPU
+		{D00E68A2-D14A-450D-B54A-AFC5ADE9709C}.UnitTest|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8DDFACC1-A7E9-4238-8425-9A081E5C7BBF}
 	EndGlobalSection
 EndGlobal
