@@ -32,7 +32,7 @@ namespace UnitTestTextFileSplitter
 
             Assert.AreEqual(5, textFileSplitter.Version);
             Assert.AreEqual(true, textFileSplitter.UsesDispositions);
-            Assert.AreEqual("http://TextFileSplitter.codeplex.com/", textFileSplitter.ContactInfo);
+            Assert.AreEqual("https://github.com/keif888/TextFileSplitter/", textFileSplitter.ContactInfo);
             Assert.AreEqual(true, (Boolean)textFileSplitter.CustomPropertyCollection[ManageProperties.isTextDelmited].Value);
             Assert.AreEqual("\"", (String)textFileSplitter.CustomPropertyCollection[ManageProperties.textDelmiter].Value);
             Assert.AreEqual(",", (String)textFileSplitter.CustomPropertyCollection[ManageProperties.columnDelimiter].Value);

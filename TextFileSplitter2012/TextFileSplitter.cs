@@ -48,6 +48,7 @@ namespace Martin.SQLServer.Dts
         private String fileName = String.Empty;
         private int codePage = 1252;
         private string columnDelimter = string.Empty;
+        private string contactURL = "https://github.com/keif888/TextFileSplitter/";
         object ffConnection = null;
 
         public TextFileSplitter()
@@ -66,7 +67,7 @@ namespace Martin.SQLServer.Dts
             this.RemoveAllInputsOutputsAndCustomProperties();
             this.ComponentMetaData.Version = 5;  // NB.  Always keep this in sync with the CurrentVersion!!!
             this.ComponentMetaData.UsesDispositions = true;
-            this.ComponentMetaData.ContactInfo = "https://github.com/keif888/TextFileSplitter/";
+            this.ComponentMetaData.ContactInfo = contactURL;
             ManageProperties.AddComponentProperties(this.ComponentMetaData.CustomPropertyCollection);
 
             // PassThrough Record Output
@@ -123,9 +124,9 @@ namespace Martin.SQLServer.Dts
             // Get the attributes for the SSIS Package
             int metadataVersion = ComponentMetaData.Version;
 
-            if (this.ComponentMetaData.ContactInfo != "https://github.com/keif888/TextFileSplitter/")
+            if (this.ComponentMetaData.ContactInfo != contactURL)
             {
-                this.ComponentMetaData.ContactInfo = "https://github.com/keif888/TextFileSplitter/";
+                this.ComponentMetaData.ContactInfo = contactURL;
             }
 
             if (binaryVersion > metadataVersion)
@@ -330,10 +331,11 @@ namespace Martin.SQLServer.Dts
         public override DTSValidationStatus Validate()
         {
             DTSValidationStatus status = DTSValidationStatus.VS_ISVALID;
-            if (this.ComponentMetaData.ContactInfo != "https://github.com/keif888/TextFileSplitter/")
-            {
-                status = DTSValidationStatus.VS_NEEDSNEWMETADATA;
-            }
+            // The following breaks the component on execution, if using a DTSX created with a version that preceded github.
+            //if (this.ComponentMetaData.ContactInfo != contactURL)
+            //{
+            //    status = DTSValidationStatus.VS_NEEDSNEWMETADATA;
+            //}
             status = ValidateComponentProperties(status);
             status = ValidateOutputs(status);
             return status;
@@ -859,9 +861,9 @@ namespace Martin.SQLServer.Dts
             IDTSOutput100 passThroughOutput = this.ComponentMetaData.OutputCollection[0];
             IDTSOutput100 errorOutput = this.ComponentMetaData.OutputCollection[1];
 
-            if (this.ComponentMetaData.ContactInfo != "https://github.com/keif888/TextFileSplitter/")
+            if (this.ComponentMetaData.ContactInfo != contactURL)
             {
-                this.ComponentMetaData.ContactInfo = "https://github.com/keif888/TextFileSplitter/";
+                this.ComponentMetaData.ContactInfo = contactURL;
             }
 
             if (passThroughOutput.OutputColumnCollection.Count == 0)
