@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <?define ProductVersion = "1.0.21.0"?>
+  <?define ProductVersion = "1.0.22.0"?>
   <?define UpgradeCode = "A9EE6818-88C5-4E7F-A2E4-C7BC52E7FF8D"?>
   <?define Manufacturer = "Keith Martin"?>
   <?define PackageCode = "*"?>
@@ -32,7 +32,19 @@
     <UIRef Id="WixUI_Mondo"/>
     <WixVariable Id="WixUILicenseRtf" Value="$(var.TextFileSplitter2012.ProjectDir)\License.rtf" />
 
-    <Property Id="SSIS64_2019_PATH" Secure="yes">
+	  <Property Id="SSIS64_2022_PATH" Secure="yes">
+		  <!-- Value="C:\Program Files\Microsoft SQL Server\160\DTS"> -->
+		  <RegistrySearch Type="directory" Id="SSIS64_2022_PATH_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\160\SSIS\Setup\DTSPath" Win64="yes"/>
+		  <RegistrySearch Type="directory" Id="SSIS64_2022_PATH_2" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\160\DTS\Setup" Name="SQLPath" Win64="yes"/>
+		  <DirectorySearch AssignToProperty="yes" Id="SSIS64_2022_PATH_3" Path="[ProgramFiles64Folder]\Microsoft SQL Server\160\DTS" />
+	  </Property>
+	  <Property Id="SSIS32_2022_PATH" Secure="yes">
+		  <!-- Value="C:\Program Files (x86)\Microsoft SQL Server\160\DTS"> -->
+		  <RegistrySearch Type="directory" Id="SSIS32_2022_PATH_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\160\SSIS\Setup\DTSPath" Win64="no"/>
+		  <RegistrySearch Type="directory" Id="SSIS32_2022_PATH_2" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\160\DTS\Setup" Name="SQLPath" Win64="no"/>
+		  <DirectorySearch AssignToProperty="yes" Id="SSIS32_2022_PATH_3" Path="[ProgramFilesFolder]\Microsoft SQL Server\160\DTS" />
+	  </Property>
+	  <Property Id="SSIS64_2019_PATH" Secure="yes">
       <!-- Value="C:\Program Files\Microsoft SQL Server\150\DTS"> -->
       <RegistrySearch Type="directory" Id="SSIS64_2019_PATH_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\150\SSIS\Setup\DTSPath" Win64="yes"/>
       <RegistrySearch Type="directory" Id="SSIS64_2019_PATH_2" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\150\DTS\Setup" Name="SQLPath" Win64="yes"/>
@@ -107,7 +119,38 @@
 
 
 
-    <Property Id="SSIS64_2019" Secure="yes">
+	  <Property Id="SSIS64_2022" Secure="yes">
+		  <RegistrySearch Type="raw" Id="SSIS64_2022_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\160\DTS\Setup" Name="Edition" Win64="yes"/>
+		  <!--<RegistrySearch Type="raw" Id="SSIS64_2022_2" Root="HKCR" Key="IntegrationServices.Package.160" Win64="yes"/> -->
+	  </Property>
+
+	  <Property Id="SSIS32_2022" Secure="yes">
+		  <RegistrySearch Type="raw" Id="SSIS32_2022_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\160\DTS\Setup" Name="Edition" Win64="no"/>
+		  <RegistrySearch Type="raw" Id="SSIS32_2022_2" Root="HKCR" Key="IntegrationServices.Package.160" Win64="no"/>
+	  </Property>
+
+	  <Property Id="SSIS64_2022" Secure="yes">
+		  <RegistrySearch Type="raw" Id="SSIS64_2022_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\150\DTS\Setup" Name="Edition" Win64="yes"/>
+		  <!--<RegistrySearch Type="raw" Id="SSIS64_2022_2" Root="HKCR" Key="IntegrationServices.Package.150" Win64="yes"/> -->
+	  </Property>
+
+	  <Property Id="SSIS32_2022" Secure="yes">
+		  <RegistrySearch Type="raw" Id="SSIS32_2022_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\150\DTS\Setup" Name="Edition" Win64="no"/>
+		  <RegistrySearch Type="raw" Id="SSIS32_2022_2" Root="HKCR" Key="IntegrationServices.Package.150" Win64="no"/>
+	  </Property>
+
+
+	  <Property Id="SSIS64_2019" Secure="yes">
+		  <RegistrySearch Type="raw" Id="SSIS64_2019_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\160\DTS\Setup" Name="Edition" Win64="yes"/>
+		  <!--<RegistrySearch Type="raw" Id="SSIS64_2019_2" Root="HKCR" Key="IntegrationServices.Package.160" Win64="yes"/> -->
+	  </Property>
+
+	  <Property Id="SSIS32_2019" Secure="yes">
+		  <RegistrySearch Type="raw" Id="SSIS32_2019_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\160\DTS\Setup" Name="Edition" Win64="no"/>
+		  <RegistrySearch Type="raw" Id="SSIS32_2019_2" Root="HKCR" Key="IntegrationServices.Package.160" Win64="no"/>
+	  </Property>
+	  
+	  <Property Id="SSIS64_2019" Secure="yes">
       <RegistrySearch Type="raw" Id="SSIS64_2019_1" Root="HKLM" Key="SOFTWARE\Microsoft\Microsoft SQL Server\150\DTS\Setup" Name="Edition" Win64="yes"/>
       <!--<RegistrySearch Type="raw" Id="SSIS64_2019_2" Root="HKCR" Key="IntegrationServices.Package.150" Win64="yes"/> -->
     </Property>
@@ -184,7 +227,11 @@
         <File Id="FileHelperDLLGac" Name="$(var.FileHelpers.TargetFileName)" Source="$(var.FileHelpers.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
       </Component>
 
-      <Component Id="SQL2019GAC" Guid="617d8ff9-f461-4807-2019-24f2635b45cd">
+		<Component Id="SQL2022GAC" Guid="617d8ff9-f461-4807-2022-24f2635b45cd">
+			<File Id="SQL2022DLLGAC" Name="$(var.TextFileSplitter2022.TargetFileName)" Source="$(var.TextFileSplitter2022.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
+		</Component>
+
+		<Component Id="SQL2019GAC" Guid="617d8ff9-f461-4807-2019-24f2635b45cd">
         <File Id="SQL2019DLLGAC" Name="$(var.TextFileSplitter2019.TargetFileName)" Source="$(var.TextFileSplitter2019.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
       </Component>
 
@@ -208,7 +255,40 @@
         <File Id="SQL2008DLLGAC" Name="$(var.TextFileSplitter2008.TargetFileName)" Source="$(var.TextFileSplitter2008.TargetPath)" Assembly=".net" KeyPath="yes" Checksum="yes"/>
       </Component>
 
-      <Directory Id="SSIS64_2019_PATH" Name="SSIS64_2019_PATH">
+		<Directory Id="SSIS64_2022_PATH" Name="SSIS64_2022_PATH">
+			<Directory Id="SQL2022x64Pipeline" Name="PipelineComponents">
+				<Component Id="SQL2022x64DLL" Guid="0cdf752a-e541-4384-2022-d80101259335" Win64="yes">
+					<File Id="SQL2022x64DLLFile" Name="$(var.TextFileSplitter2022.TargetFileName)" Source="$(var.TextFileSplitter2022.TargetPath)"  Checksum="yes"/>
+				</Component>
+			</Directory>
+			<Directory Id="SQL2022x64Upgrade" Name="UpgradeMappings">
+				<Component Id="SQL2022x64UpgradeMapping" Guid="0c19e15a-c991-44ec-2022-69f4b607665c" Win64="yes">
+					<File Id="SQL2022x64UpgradeFile" Name="TextFileSplitter2022.xml" Source="$(var.TextFileSplitter2022.ProjectDir)\TextFileSplitter2022.xml" Checksum="yes"/>
+				</Component>
+				<Component Id="SQL2022x64UpgradeMappingExtension" Guid="8144960d-2022-4773-aec9-03bce1e80a0e" Win64="yes">
+					<File Id="SQL2022x64UpgradeFileExtension" Name="TextFileSplitter2022.extensions.xml" Source="$(var.TextFileSplitter2022.ProjectDir)\TextFileSplitter2022.extensions.xml" Checksum="yes"/>
+				</Component>
+			</Directory>
+		</Directory>
+
+		<Directory Id="SSIS32_2022_PATH" Name="SSIS32_2022_PATH">
+			<Directory Id="SQL2022x32Pipeline" Name="PipelineComponents">
+				<Component Id="SQL2022x32DLL" Guid="00b40c42-c764-49b2-2022-2547cfc0f6a2" Win64="no">
+					<File Id="SQL2022x32DLLFile" Name="$(var.TextFileSplitter2022.TargetFileName)" Source="$(var.TextFileSplitter2022.TargetPath)"  Checksum="yes"/>
+				</Component>
+			</Directory>
+			<Directory Id="SQL2022x32Upgrade" Name="UpgradeMappings">
+				<Component Id="SQL2022x32UpgradeMapping" Guid="460ee318-c58c-4eb4-2022-5cc4ff016e4c" Win64="no">
+					<File Id="SQL2022x32UpgradeFile" Name="TextFileSplitter2022.xml" Source="$(var.TextFileSplitter2022.ProjectDir)\TextFileSplitter2022.xml" Checksum="yes"/>
+				</Component>
+				<Component Id="SQL2022x32UpgradeMappingExtension" Guid="6dda4a21-3a24-4ef4-2022-ac463ed769db" Win64="no">
+					<File Id="SQL2022x32UpgradeFileExtension" Name="TextFileSplitter2022.extensions.xml" Source="$(var.TextFileSplitter2022.ProjectDir)\TextFileSplitter2022.extensions.xml" Checksum="yes"/>
+				</Component>
+			</Directory>
+		</Directory>
+
+
+		<Directory Id="SSIS64_2019_PATH" Name="SSIS64_2019_PATH">
         <Directory Id="SQL2019x64Pipeline" Name="PipelineComponents">
           <Component Id="SQL2019x64DLL" Guid="0cdf752a-e541-4384-2019-d80101259335" Win64="yes">
             <File Id="SQL2019x64DLLFile" Name="$(var.TextFileSplitter2019.TargetFileName)" Source="$(var.TextFileSplitter2019.TargetPath)"  Checksum="yes"/>
@@ -380,7 +460,23 @@
     </Directory>
 
     <Feature Id="Complete" Level="1" Title="Text File Splitter Installer 1.0" Description="An SSIS Component to split Delimted Text files" Display="expand">
-      <Feature Id="SQL2019" Level="1" Title="SQL 2019">
+		<Feature Id="SQL2022" Level="1" Title="SQL 2022">
+			<Feature Id="SQL2022x64" Level="1" Title="x64" ConfigurableDirectory="SSIS64_2022_PATH">
+				<ComponentRef Id="SQL2022x64DLL"/>
+				<ComponentRef Id="SQL2022x64UpgradeMapping"/>
+				<ComponentRef Id="SQL2022x64UpgradeMappingExtension"/>
+				<Condition Level="1004">NOT SSIS64_2022</Condition>
+			</Feature>
+			<Feature Id="SQL2022x32" Level="1" Title="x86" ConfigurableDirectory="SSIS32_2022_PATH">
+				<ComponentRef Id="SQL2022x32DLL"/>
+				<ComponentRef Id="SQL2022x32UpgradeMapping"/>
+				<ComponentRef Id="SQL2022x32UpgradeMappingExtension"/>
+				<Condition Level="1004">NOT SSIS32_2022</Condition>
+			</Feature>
+			<ComponentRef Id="SQL2022GAC" />
+			<Condition Level="1004">NOT (SSIS32_2022 OR SSIS64_2022)</Condition>
+		</Feature>
+		<Feature Id="SQL2019" Level="1" Title="SQL 2019">
         <Feature Id="SQL2019x64" Level="1" Title="x64" ConfigurableDirectory="SSIS64_2019_PATH">
           <ComponentRef Id="SQL2019x64DLL"/>
           <ComponentRef Id="SQL2019x64UpgradeMapping"/>
@@ -478,7 +574,7 @@
     <!-- Display a Warning dialog box IF SSIS isn't detected-->
     <UI>
       <InstallUISequence>
-        <Show Dialog="SSISWarning" Before="ResumeDlg">NOT Installed AND NOT (SSIS64_2019 OR SSIS32_2019 OR SSIS64_2017 OR SSIS32_2017 OR SSIS64_2016 OR SSIS32_2016 OR SSIS64_2014 OR SSIS32_2014 OR SSIS64_2012 OR SSIS32_2012 OR SSIS64_2008 OR SSIS32_2008)</Show>
+        <Show Dialog="SSISWarning" Before="ResumeDlg">NOT Installed AND NOT (SSIS64_2022 OR SSIS32_2022 OR SSIS64_2019 OR SSIS32_2019 OR SSIS64_2017 OR SSIS32_2017 OR SSIS64_2016 OR SSIS32_2016 OR SSIS64_2014 OR SSIS32_2014 OR SSIS64_2012 OR SSIS32_2012 OR SSIS64_2008 OR SSIS32_2008)</Show>
       </InstallUISequence>
       <Dialog Id="SSISWarning" Width="200" Height="100">
         <Control Type="Text" Id="text1" Width="194" Height="14" X="4" Y="8" Text="SQL Server Integration Services was not detected" />
