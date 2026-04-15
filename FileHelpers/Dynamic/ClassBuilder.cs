@@ -1,5 +1,6 @@
 using System;
 using System.CodeDom.Compiler;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -48,7 +49,7 @@ namespace FileHelpers.Dynamic
             return ClassFromString(classStr, className, NetLanguage.CSharp);
         }
 
-        private static String[] mReferences;
+        private static List<string> mReferences;
         private static readonly object mReferencesLock = new object();
 
         /// <summary>Compiles the source code passed and returns the Type with the name className.</summary>
@@ -70,28 +71,46 @@ namespace FileHelpers.Dynamic
             bool mustAddSystemData = false;
             lock (mReferencesLock)
             {
+
                 if (mReferences == null)
                 {
-                     var arr = new ArrayList();
+                    mReferences = new List<string>();
+                    var added = new Dictionary<string, bool>();
 
                     foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                     {
                         Module module = assembly.GetModules()[0];
-                        if (module.Name == "mscorlib.dll" || module.Name == "<Unknown>")
+                        if (module.Name == "mscorlib.dll" ||
+                            module.Name == "<Unknown>")
                             continue;
 
                         if (module.Name == "System.Data.dll")
                             mustAddSystemData = true;
 
-                        if (File.Exists(module.FullyQualifiedName)) 
-                            arr.Add(module.FullyQualifiedName);
+                        if (!module.Name.Equals("System.Data.dll", StringComparison.OrdinalIgnoreCase) &&
+                            !module.Name.Equals("System.Core.dll", StringComparison.OrdinalIgnoreCase) &&
+                            !module.Name.Equals("System.dll", StringComparison.OrdinalIgnoreCase) &&
+                            !module.Name.Equals("FileHelpers.dll", StringComparison.OrdinalIgnoreCase) &&
+                            !module.Name.Equals("System.Xml.dll", StringComparison.OrdinalIgnoreCase)
+                            )
+                        {
+                            continue;
+                        }
+
+                        var moduleName = module.Name.ToLower();
+
+                        if (added.ContainsKey(moduleName))
+                            continue;
+                        added.Add(moduleName, true);
+
+                        if (File.Exists(module.FullyQualifiedName))
+                            mReferences.Add(module.FullyQualifiedName);
                     }
 
-                    mReferences = (string[]) arr.ToArray(typeof (string));
                 }
             }
 
-            cp.ReferencedAssemblies.AddRange(mReferences);
+            cp.ReferencedAssemblies.AddRange(mReferences.ToArray());
 
             cp.GenerateExecutable = false;
             cp.GenerateInMemory = true;
