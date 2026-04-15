@@ -20,6 +20,9 @@ namespace Martin.SQLServer.Dts
         CurrentVersion = 5 // NB. Keep this in sync with ProvideCustomProperties and PerformUpgrade.
         , Description = "Extract many outputs from a single Text File"
         , IconResource = "Martin.SQLServer.Dts.Resources.TextFileSplitter.ico"
+#if SQL2025
+    , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2025, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
+#endif
 #if SQL2022
     , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2022, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
 #endif
@@ -28,18 +31,6 @@ namespace Martin.SQLServer.Dts
 #endif
 #if SQL2017
     , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2017, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
-#endif
-#if SQL2016
-    , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2016, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
-#endif
-#if SQL2014
-    , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2014, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
-#endif
-#if SQL2012
-       , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
-#endif
-#if SQL2008
-       , UITypeName = "Martin.SQLServer.Dts.TextFileSplitterForm, TextFileSplitter2008, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc8ffdd352b00674"
 #endif
         , ComponentType = ComponentType.SourceAdapter)]
     public class TextFileSplitter : PipelineComponent

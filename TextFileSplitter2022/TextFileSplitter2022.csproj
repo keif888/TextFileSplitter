@@ -169,15 +169,15 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>SET SSV=16
-rem       ECHO [$(ConfigurationName)]
-rem       if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio\2017\Enterprise\Team Tools\Performance Tools\x64\vsinstr" "$(TargetDir)$(TargetName).dll" -verbose  -coverage
-rem       if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\$(TargetName).snk"
-rem       if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GACUtil.exe" -u $(TargetName)
-rem       if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
-rem       if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
-rem       if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GacUtil.exe" -i "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\$(TargetName).DLL"
-rem       if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
-rem       if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).extensions.xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
+ECHO [$(ConfigurationName)]
+if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio\2017\Enterprise\Team Tools\Performance Tools\x64\vsinstr" "$(TargetDir)$(TargetName).dll" -verbose  -coverage
+if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\$(TargetName).snk"
+if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GACUtil.exe" -u $(TargetName)
+if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
+if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
+if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GacUtil.exe" -i "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\$(TargetName).DLL"
+if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
+if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).extensions.xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
 </PostBuildEvent>
   </PropertyGroup>
 </Project>
