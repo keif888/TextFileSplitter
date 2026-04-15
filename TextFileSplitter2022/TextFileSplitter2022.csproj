@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{afb12f31-32b9-451c-891c-d88fa840c4f8}</ProjectGuid>
+    <ProjectGuid>{AFB12F31-32B9-451C-891C-D88FA840C4F8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Martin.SQLServer.Dts</RootNamespace>
@@ -68,89 +68,89 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\TextFileSplitter2012\DataFlowComponentUI.cs">
+    <Compile Include="..\TextFileSplitter\DataFlowComponentUI.cs">
       <Link>DataFlowComponentUI.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\DrawingControl.cs">
+    <Compile Include="..\TextFileSplitter\DrawingControl.cs">
       <Link>DrawingControl.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\GlobalSuppressions.cs">
+    <Compile Include="..\TextFileSplitter\GlobalSuppressions.cs">
       <Link>GlobalSuppressions.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\ManageColumns.cs">
+    <Compile Include="..\TextFileSplitter\ManageColumns.cs">
       <Link>ManageColumns.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\ManageProperties.cs">
+    <Compile Include="..\TextFileSplitter\ManageProperties.cs">
       <Link>ManageProperties.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\MasterSelection.cs">
+    <Compile Include="..\TextFileSplitter\MasterSelection.cs">
       <Link>MasterSelection.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\MasterSelection.designer.cs">
+    <Compile Include="..\TextFileSplitter\MasterSelection.designer.cs">
       <Link>MasterSelection.designer.cs</Link>
       <DependentUpon>MasterSelection.cs</DependentUpon>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\MessageStrings.cs">
+    <Compile Include="..\TextFileSplitter\MessageStrings.cs">
       <Link>MessageStrings.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\Properties\AssemblyInfo.cs">
+    <Compile Include="..\TextFileSplitter\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\Properties\Resources.Designer.cs">
+    <Compile Include="..\TextFileSplitter\Properties\Resources.Designer.cs">
       <Link>Properties\Resources.Designer.cs</Link>
       <DependentUpon>Resources.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\SplitOutput.cs">
+    <Compile Include="..\TextFileSplitter\SplitOutput.cs">
       <Link>SplitOutput.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\SSISOutput.cs">
+    <Compile Include="..\TextFileSplitter\SSISOutput.cs">
       <Link>SSISOutput.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\SSISOutputColumn.cs">
+    <Compile Include="..\TextFileSplitter\SSISOutputColumn.cs">
       <Link>SSISOutputColumn.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\SSISProperty.cs">
+    <Compile Include="..\TextFileSplitter\SSISProperty.cs">
       <Link>SSISProperty.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\TextFileSplitter.cs">
+    <Compile Include="..\TextFileSplitter\TextFileSplitter.cs">
       <Link>TextFileSplitter.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\TextFileSplitterForm.cs">
+    <Compile Include="..\TextFileSplitter\TextFileSplitterForm.cs">
       <Link>TextFileSplitterForm.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\TextFileSplitterForm.designer.cs">
+    <Compile Include="..\TextFileSplitter\TextFileSplitterForm.designer.cs">
       <Link>TextFileSplitterForm.designer.cs</Link>
       <DependentUpon>TextFileSplitterForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\TextFileSplitterUI.cs">
+    <Compile Include="..\TextFileSplitter\TextFileSplitterUI.cs">
       <Link>TextFileSplitterUI.cs</Link>
     </Compile>
-    <Compile Include="..\TextFileSplitter2012\Utilities.cs">
+    <Compile Include="..\TextFileSplitter\Utilities.cs">
       <Link>Utilities.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\TextFileSplitter2012\MasterSelection.resx">
+    <EmbeddedResource Include="..\TextFileSplitter\MasterSelection.resx">
       <Link>MasterSelection.resx</Link>
       <DependentUpon>MasterSelection.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\TextFileSplitter2012\Properties\Resources.resx">
+    <EmbeddedResource Include="..\TextFileSplitter\Properties\Resources.resx">
       <Link>Properties\Resources.resx</Link>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\TextFileSplitter2012\TextFileSplitterForm.resx">
+    <EmbeddedResource Include="..\TextFileSplitter\TextFileSplitterForm.resx">
       <Link>TextFileSplitterForm.resx</Link>
       <DependentUpon>TextFileSplitterForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\TextFileSplitter2012\Attributions.txt">
+    <Content Include="..\TextFileSplitter\Attributions.txt">
       <Link>Attributions.txt</Link>
     </Content>
     <EmbeddedResource Include="Resources\TextFileSplitter.ico" />
@@ -168,17 +168,16 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-      SET SSV=16
-      ECHO [$(ConfigurationName)]
-      if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio\2017\Enterprise\Team Tools\Performance Tools\x64\vsinstr" "$(TargetDir)$(TargetName).dll" -verbose  -coverage
-      if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\$(TargetName).snk"
-      if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GACUtil.exe" -u $(TargetName)
-      if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
-      if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
-      if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GacUtil.exe" -i "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\$(TargetName).DLL"
-      if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
-      if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).extensions.xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
-    </PostBuildEvent>
+    <PostBuildEvent>SET SSV=16
+rem       ECHO [$(ConfigurationName)]
+rem       if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft Visual Studio\2017\Enterprise\Team Tools\Performance Tools\x64\vsinstr" "$(TargetDir)$(TargetName).dll" -verbose  -coverage
+rem       if [$(ConfigurationName)] == [UnitTest] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\sn" -Ra "$(TargetDir)$(TargetName).dll" "$(TargetDir)\..\..\$(TargetName).snk"
+rem       if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GACUtil.exe" -u $(TargetName)
+rem       if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
+rem       if NOT [$(ConfigurationName)] == [Release] COPY "$(TargetDir)$(TargetName).*" "%25ProgramFiles%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\" /Y
+rem       if NOT [$(ConfigurationName)] == [Release] "%25ProgramFiles(x86)%25\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\GacUtil.exe" -i "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\PipelineComponents\$(TargetName).DLL"
+rem       if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
+rem       if NOT [$(ConfigurationName)] == [Release] COPY "$(ProjectDir)$(TargetName).extensions.xml" "%25ProgramFiles(x86)%25\Microsoft SQL Server\%25SSV%250\DTS\UpgradeMappings" /Y
+</PostBuildEvent>
   </PropertyGroup>
 </Project>

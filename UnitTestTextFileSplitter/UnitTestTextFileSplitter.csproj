@@ -114,10 +114,6 @@
       <Project>{eb8633ff-ceed-40ee-8d1a-ca1bf5678c42}</Project>
       <Name>FileHelpers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TextFileSplitter2016\TextFileSplitter2016.csproj">
-      <Project>{3f6db102-213e-4b0a-83d8-3e309197b8b8}</Project>
-      <Name>TextFileSplitter2016</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="TextFileSplitter.snk" />
